@@ -152,6 +152,7 @@ tr.fc-row-venc td{background:#fdf5f4}
 .pfbtn{padding:4px 14px;border-radius:20px;font-size:11px;border:1px solid #d4d3cf;background:#fff;color:#6b6b66;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
 .pfbtn.active{background:#e8622a;color:#fff;border-color:#e8622a}
 .pfbtn:hover:not(.active){border-color:#e8622a;color:#e8622a}
+.proj-filters{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
 .td-code{font-weight:500;color:#e8622a!important;white-space:nowrap;font-size:10px}
 .estado-badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:600;white-space:nowrap}
 .eb-ejec{background:#e5f7ef;color:#1a8a52}.eb-liq{background:#fef3dc;color:#a0620a}

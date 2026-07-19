@@ -33,6 +33,7 @@
     <div class="sidebar-nav">
       <div class="nav-section">Portafolio</div>
       <div class="nav-item active" id="nav-mis-proyectos" onclick="goToProjectList()">📁 Mis proyectos</div>
+      <div class="nav-item" id="nav-todos-proyectos" style="display:none" onclick="goToTodosProyectos()">📋 Todos los Proyectos</div>
       <div class="nav-item" id="nav-kpis" onclick="goToKPIs()">📊 KPI's</div>
       <div class="nav-item" id="nav-resumen" style="display:none" onclick="goToResumen()">📈 Resumen Ejecutivo</div>
       <div class="nav-item" id="nav-directores" style="display:none" onclick="goToDirectores()">👥 Directores</div>
@@ -281,6 +282,22 @@
       </div>
 
       <!-- Vista: KPI's (todos los roles, todos los proyectos) -->
+      <!-- Vista: Todos los Proyectos (Director/Gerente — todo el portafolio, activos e inactivos) -->
+      <div id="view-todos-proyectos" class="view" style="display:none">
+        <div class="proj-filters" id="estado-filters-todos"></div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th>Código</th><th>Proyecto</th><th>Cliente</th><th>Estado</th>
+              <th>Director/a</th><th>Ciudad</th><th style="text-align:right">Valor total</th>
+              <th style="text-align:right">Pend. cobrar</th><th style="text-align:right">Dif. SN%</th>
+              <th>Avance obra</th>
+            </tr></thead>
+            <tbody id="todos-proyectos-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
       <div id="view-kpis" class="view" style="display:none">
         <button class="back-btn" onclick="goToProjectList()">← Volver a mis proyectos</button>
         <div class="kpi-strip" id="kpi-strip"></div>

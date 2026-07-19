@@ -1,5 +1,5 @@
 /* ═══ CONFIGURA ESTO: pega aquí la URL de tu Apps Script desplegado ═══ */
-const API_URL = 'https://script.google.com/macros/s/AKfycbyd9240h0ZB4mhfqcINHrNbZtv5VVT_JTdmjERshbnzC0c9EGl5aVCuNQUyx1wjiCT-xw/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbyQD0fFborghRu2-V8KbcsgoLM8AHqAGFVph_kVywkcOuPEx9evmKaDhplrx7xzcVTQ8g/exec';
 
 
 /* ═══ FUSIÓN: datos y lógica de Flujo de Caja (del dashboard de Control de Proyectos) ═══
@@ -499,6 +499,7 @@ function rebuildCurrentFinancialView(){
   else if(currentView === 'alertas'){ buildAlertas(); }
   else if(currentView === 'directores'){ buildDirectores(); closeDrawer(); }
   else if(currentView === 'comparativo'){ buildComparativo(); }
+  else if(currentView === 'todos-proyectos'){ buildEstadoFiltersTodos(); buildTodosProyectosTabla(null); }
 }
 
 function computeFilteredProjects(){
@@ -829,7 +830,7 @@ function doLogout(){
   document.getElementById('login-screen').style.display = 'flex';
 }
 
-const ALL_VIEW_IDS = ['view-projects','view-timeline','view-new-project','view-flujocaja','view-kpis','view-resumen','view-alertas','view-directores','view-comparativo'];
+const ALL_VIEW_IDS = ['view-projects','view-timeline','view-new-project','view-flujocaja','view-kpis','view-resumen','view-alertas','view-directores','view-comparativo','view-todos-proyectos'];
 function hideAllViews(){
   ALL_VIEW_IDS.forEach(id => { const el = document.getElementById(id); if(el) el.style.display = 'none'; });
 }
@@ -845,6 +846,7 @@ function enterApp(){
   const puedeVerFinanciero = s.rol === 'Director' || esGerencia;
   document.getElementById('nav-flujo-caja').style.display = puedeVerFinanciero ? 'flex' : 'none';
   document.getElementById('nav-resumen').style.display = puedeVerFinanciero ? 'flex' : 'none';
+  document.getElementById('nav-todos-proyectos').style.display = puedeVerFinanciero ? 'flex' : 'none';
   document.getElementById('nav-directores').style.display = esGerencia ? 'flex' : 'none';
   document.getElementById('nav-comparativo').style.display = esGerencia ? 'flex' : 'none';
   document.getElementById('nav-nuevo-proyecto').style.display = esGerencia ? 'flex' : 'none';
@@ -890,6 +892,57 @@ function goToFlujoCaja(){
   document.getElementById('refresh-btn').style.display = 'none'; // esta vista tiene su propio botón "Actualizar"
   setActiveNav('nav-flujo-caja');
   refreshFlujoCaja();
+}
+
+function goToTodosProyectos(){
+  const s = getSession();
+  if(!(s.rol === 'Director' || s.rol === 'Gerente' || s.rol === 'Admin')) return;
+  currentView = 'todos-proyectos';
+  hideAllViews();
+  showFilters(true);
+  document.getElementById('view-todos-proyectos').style.display = 'block';
+  document.getElementById('topbar-title').textContent = 'TODOS LOS PROYECTOS';
+  document.getElementById('topbar-sub').textContent = s.rol === 'Director' ? 'Todo tu portafolio, activo e histórico' : 'Portafolio completo de Mínima Arquitectos';
+  document.getElementById('refresh-btn').style.display = 'none';
+  setActiveNav('nav-todos-proyectos');
+  buildEstadoFiltersTodos();
+  buildTodosProyectosTabla(null);
+}
+
+function buildEstadoFiltersTodos(){
+  const estados = ['Todos','Finalizado','En Ejecución','En Liquidación','Garantias','Por Iniciar','Cerrado'];
+  const el = document.getElementById('estado-filters-todos');
+  el.innerHTML = '';
+  estados.forEach((e,i) => {
+    const btn = document.createElement('button');
+    btn.className = 'pfbtn' + (i===0 ? ' active' : '');
+    btn.textContent = e + (e!=='Todos' ? ' (' + filteredProjects.filter(p=>p.estado===e).length + ')' : '');
+    btn.onclick = function(){
+      document.querySelectorAll('#estado-filters-todos .pfbtn').forEach(b=>b.classList.remove('active'));
+      this.classList.add('active');
+      buildTodosProyectosTabla(e==='Todos' ? null : e);
+    };
+    el.appendChild(btn);
+  });
+}
+
+function buildTodosProyectosTabla(estadoFiltro){
+  const fp = estadoFiltro ? filteredProjects.filter(p=>p.estado===estadoFiltro) : filteredProjects;
+  document.getElementById('todos-proyectos-tbody').innerHTML = fp.map(p => {
+    const cls = EB[p.estado] || 'eb-cerr';
+    const avC = p.avObra>=75 ? '#1a8a52' : p.avObra>=40 ? '#c08a00' : '#c0392b';
+    const snC = p.difSNpct>35 ? 'td-neg' : p.difSNpct>25 ? 'td-warn' : 'td-ok';
+    return `<tr>
+      <td class="td-code">${p.codigo}</td>
+      <td class="td-primary" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.proyecto}</td>
+      <td>${p.cliente}</td><td><span class="estado-badge ${cls}">${p.estado}</span></td>
+      <td>${p.encargado}</td><td>${p.ciudad||'—'}</td>
+      <td class="td-money" style="text-align:right">${fmtMM(p.valor)}</td>
+      <td class="td-money" style="text-align:right;color:${p.pxCobrar>500000000?'#c0392b':'inherit'}">${fmtMM(p.pxCobrar)}</td>
+      <td class="${snC}" style="text-align:right">${fmtPct(p.difSNpct)}</td>
+      <td><div style="display:flex;align-items:center;gap:5px"><div class="av-bar"><div class="av-fill" style="width:${p.avObra}%;background:${avC}"></div></div><span style="font-size:10px;color:#6b6b66">${p.avObra}%</span></div></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="10" style="text-align:center;color:#aaa;padding:20px">Sin proyectos con este filtro.</td></tr>';
 }
 
 function goToKPIs(){
