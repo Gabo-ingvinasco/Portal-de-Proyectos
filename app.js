@@ -409,15 +409,57 @@ let donutChart,sectorChart,compMesChart,compDirCountChart;
    tiene un campo de "residente" separado (solo 'encargado', que históricamente
    apunta al Director/responsable), así que no hay forma de filtrar por Residente
    todavía. Si se necesita, hay que agregar esa columna al PROJECTS. */
+let dropdownFilteredAll = PROJECTS; // PROJECTS filtrado solo por los desplegables (Año/Mes/Encargado/Estado/Sector), sin restricción de rol — esto alimenta KPI's
+const MESES_NOM=['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+function populateFilters(){
+  const fa=document.getElementById('fil-anio');
+  [...new Set(PROJECTS.map(p=>p.anio).filter(a=>a))].sort().forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;fa.appendChild(o);});
+  const fm=document.getElementById('fil-mes');
+  [...new Set(PROJECTS.map(p=>p.mes).filter(m=>m))].sort((a,b)=>a-b).forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=MESES_NOM[m];fm.appendChild(o);});
+  const fe=document.getElementById('fil-enc');
+  [...new Set(PROJECTS.map(p=>p.encargado))].sort().forEach(e=>{const o=document.createElement('option');o.textContent=e;fe.appendChild(o);});
+  const fs=document.getElementById('fil-sector');
+  [...new Set(PROJECTS.map(p=>p.sector).filter(s=>s))].sort().forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;fs.appendChild(o);});
+}
+
+function applyFilters(){
+  const an=document.getElementById('fil-anio').value;
+  const mn=document.getElementById('fil-mes').value;
+  const en=document.getElementById('fil-enc').value;
+  const es=document.getElementById('fil-estado').value;
+  const sc=document.getElementById('fil-sector').value;
+  dropdownFilteredAll = PROJECTS.filter(p=>{
+    if(an!=='todos'&&p.anio!=an)return false;
+    if(mn!=='todos'&&p.mes!=mn)return false;
+    if(en!=='todos'&&p.encargado!==en)return false;
+    if(es!=='todos'&&p.estado!==es)return false;
+    if(sc!=='todos'&&p.sector!==sc)return false;
+    return true;
+  });
+  computeFilteredProjects();
+  rebuildCurrentFinancialView();
+}
+
+function rebuildCurrentFinancialView(){
+  // Vuelve a dibujar solo la vista financiera que esté activa en este momento
+  if(currentView === 'kpis'){ buildKPIs(); buildFinanceBar(); buildDonut(); buildHealth(); buildSector(); }
+  else if(currentView === 'resumen'){ buildRisks(); buildActions(); }
+  else if(currentView === 'alertas'){ buildAlertas(); }
+  else if(currentView === 'directores'){ buildDirectores(); closeDrawer(); }
+  else if(currentView === 'comparativo'){ buildComparativo(); }
+}
+
 function computeFilteredProjects(){
   const s = getSession();
-  if(s.rol === 'Gerente' || s.rol === 'Admin'){ filteredProjects = PROJECTS; }
-  else if(s.rol === 'Director'){ filteredProjects = PROJECTS.filter(p => p.encargado === s.nombre); }
+  const base = dropdownFilteredAll;
+  if(s.rol === 'Gerente' || s.rol === 'Admin'){ filteredProjects = base; }
+  else if(s.rol === 'Director'){ filteredProjects = base.filter(p => p.encargado === s.nombre); }
   else { filteredProjects = []; }
 }
 
 function buildKPIs(){
-  const fp=PROJECTS; // KPI's: visible a todos, sobre TODOS los proyectos (sin filtrar por rol)
+  const fp=dropdownFilteredAll; // KPI's: visible a todos, filtrable por los desplegables, sin restricción de rol
   const kpis=[
     {n:fp.length,l:"Total proyectos",ic:"total",c:"#e8622a"},
     {n:fp.filter(p=>p.estado==="Finalizado").length,l:"Finalizados",ic:"fin",c:"#5a8a5a"},
@@ -435,7 +477,7 @@ function buildKPIs(){
 }
 
 function buildFinanceBar(){
-  const fp=PROJECTS; // igual que KPIs: visible a todos, cifras agregadas de todo el portafolio
+  const fp=dropdownFilteredAll; // igual que KPIs: visible a todos, filtrable por los desplegables
   const tv=fp.reduce((a,p)=>a+(p.valor||0),0);
   const tf=fp.reduce((a,p)=>a+(p.pxFacturar||0),0);
   const tc=fp.reduce((a,p)=>a+(p.pxCobrar||0),0);
@@ -452,7 +494,7 @@ function buildFinanceBar(){
 }
 
 function buildDonut(){
-  const fp=PROJECTS;
+  const fp=dropdownFilteredAll;
   const counts={};fp.forEach(p=>{counts[p.estado]=(counts[p.estado]||0)+1;});
   const labels=Object.keys(counts),data=labels.map(l=>counts[l]),colors=labels.map(l=>EC[l]||"#888");
   const canvas=document.getElementById('donutChart');
@@ -477,7 +519,7 @@ function buildHealth(){
 }
 
 function buildSector(){
-  const sec={};PROJECTS.forEach(p=>{if(p.sector)sec[p.sector]=(sec[p.sector]||0)+1;});
+  const sec={};dropdownFilteredAll.forEach(p=>{if(p.sector)sec[p.sector]=(sec[p.sector]||0)+1;});
   const sorted=Object.entries(sec).sort((a,b)=>b[1]-a[1]);
   const colors=["#e8622a","#f5a623","#d94f00","#f7c948","#c0392b","#8c7b6e","#e8905a"];
   const canvas=document.getElementById('sectorChart');
@@ -746,6 +788,7 @@ function enterApp(){
   document.getElementById('user-info').innerHTML = '<strong>' + s.nombre + '</strong><br>' + (s.rol || '');
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
+  populateFilters();
   computeFilteredProjects();
   const esGerencia = s.rol === 'Gerente' || s.rol === 'Admin';
   const puedeVerFinanciero = s.rol === 'Director' || esGerencia;
@@ -768,9 +811,14 @@ function setActiveNav(id){
   if(el) el.classList.add('active');
 }
 
+function showFilters(show){
+  document.getElementById('topbar-filters').style.display = show ? 'flex' : 'none';
+}
+
 function goToProjectList(){
   currentView = 'projects';
   hideAllViews();
+  showFilters(false);
   document.getElementById('view-projects').style.display = 'block';
   document.getElementById('topbar-title').textContent = 'MIS PROYECTOS';
   document.getElementById('topbar-sub').textContent = 'Proyectos asignados a tu usuario';
@@ -784,6 +832,7 @@ function goToFlujoCaja(){
   if(!(s.rol === 'Director' || s.rol === 'Gerente' || s.rol === 'Admin')) return; // respaldo; el nav ya está oculto
   currentView = 'flujocaja';
   hideAllViews();
+  showFilters(true);
   document.getElementById('view-flujocaja').style.display = 'block';
   document.getElementById('topbar-title').textContent = 'FLUJO DE CAJA';
   document.getElementById('topbar-sub').textContent = 'Control de hitos de cobro — próximas 12 semanas';
@@ -795,6 +844,7 @@ function goToFlujoCaja(){
 function goToKPIs(){
   currentView = 'kpis';
   hideAllViews();
+  showFilters(true);
   document.getElementById('view-kpis').style.display = 'block';
   document.getElementById('topbar-title').textContent = "KPI'S";
   document.getElementById('topbar-sub').textContent = 'Indicadores generales de todo el portafolio';
@@ -808,6 +858,7 @@ function goToResumen(){
   if(!(s.rol === 'Director' || s.rol === 'Gerente' || s.rol === 'Admin')) return;
   currentView = 'resumen';
   hideAllViews();
+  showFilters(true);
   document.getElementById('view-resumen').style.display = 'block';
   document.getElementById('topbar-title').textContent = 'RESUMEN EJECUTIVO';
   document.getElementById('topbar-sub').textContent = s.rol === 'Director' ? 'Tus proyectos asignados' : 'Portafolio completo';
@@ -819,6 +870,7 @@ function goToResumen(){
 function goToAlertas(){
   currentView = 'alertas';
   hideAllViews();
+  showFilters(true);
   document.getElementById('view-alertas').style.display = 'block';
   document.getElementById('topbar-title').textContent = 'ALERTAS';
   document.getElementById('topbar-sub').textContent = 'Observaciones y riesgos de tus proyectos asignados';
@@ -832,6 +884,7 @@ function goToDirectores(){
   if(!(s.rol === 'Gerente' || s.rol === 'Admin')) return;
   currentView = 'directores';
   hideAllViews();
+  showFilters(true);
   document.getElementById('view-directores').style.display = 'block';
   document.getElementById('topbar-title').textContent = 'DIRECTORES';
   document.getElementById('topbar-sub').textContent = 'Desempeño por director';
@@ -845,6 +898,7 @@ function goToComparativo(){
   if(!(s.rol === 'Gerente' || s.rol === 'Admin')) return;
   currentView = 'comparativo';
   hideAllViews();
+  showFilters(true);
   document.getElementById('view-comparativo').style.display = 'block';
   document.getElementById('topbar-title').textContent = 'COMPARATIVO ANUAL';
   document.getElementById('topbar-sub').textContent = '2025 vs 2026';
@@ -858,6 +912,7 @@ function goToNewProject(){
   if(!(s.rol === 'Gerente' || s.rol === 'Admin')) return; // respaldo; el nav ya está oculto
   currentView = 'new-project';
   hideAllViews();
+  showFilters(false);
   document.getElementById('view-new-project').style.display = 'block';
   document.getElementById('topbar-title').textContent = 'NUEVO PROYECTO';
   document.getElementById('topbar-sub').textContent = 'Crea un proyecto y clónale su checklist';
@@ -906,6 +961,9 @@ async function crearProyecto(){
   btn.disabled = false; btn.textContent = 'Crear proyecto';
 }
 
+let allMyProjects = [];
+let currentProjectStatusFilter = 'todos';
+
 async function loadProjects(){
   const note = document.getElementById('load-note');
   const grid = document.getElementById('projects-grid');
@@ -917,11 +975,31 @@ async function loadProjects(){
     const data = await res.json();
     if(!data.ok) throw new Error(data.error || 'Error desconocido');
     note.style.display = 'none';
-    renderProjects(data.proyectos);
+    allMyProjects = data.proyectos;
+    currentProjectStatusFilter = 'todos';
+    renderProjectStatusTabs();
+    renderProjects(allMyProjects);
   }catch(e){
     handleSessionError_(note, 'No se pudo cargar tus proyectos: ' + e.message);
     grid.innerHTML = '';
   }
+}
+
+function renderProjectStatusTabs(){
+  const wrap = document.getElementById('projects-status-tabs');
+  const counts = {};
+  allMyProjects.forEach(p => { const e = p.estado || 'Sin estado'; counts[e] = (counts[e]||0) + 1; });
+  const estados = Object.keys(counts).sort();
+  const tabs = [{key:'todos', label:'Todos', n: allMyProjects.length}]
+    .concat(estados.map(e => ({key:e, label:e, n:counts[e]})));
+  wrap.innerHTML = tabs.map(t => `<button class="status-tab ${currentProjectStatusFilter===t.key?'active':''}" onclick="filterProjectsByStatus('${t.key.replace(/'/g,"\\'")}')">${t.label} (${t.n})</button>`).join('');
+}
+
+function filterProjectsByStatus(estado){
+  currentProjectStatusFilter = estado;
+  renderProjectStatusTabs();
+  const filtered = estado === 'todos' ? allMyProjects : allMyProjects.filter(p => (p.estado || 'Sin estado') === estado);
+  renderProjects(filtered);
 }
 
 function renderProjects(proyectos){
@@ -950,6 +1028,7 @@ function openProject(p){
   currentView = 'timeline';
   currentFaseIndex = 0;
   hideAllViews();
+  showFilters(false);
   document.getElementById('view-timeline').style.display = 'block';
   document.getElementById('refresh-btn').style.display = 'inline-block';
   setActiveNav('nav-mis-proyectos');

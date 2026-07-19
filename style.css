@@ -231,7 +231,14 @@ tr.fc-row-venc td{background:#fdf5f4}
 .logout-btn{width:100%;background:rgba(255,255,255,.08);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.18);border-radius:7px;padding:8px;font-size:11px;cursor:pointer}
 .logout-btn:hover{background:rgba(255,255,255,.15)}
 .main{margin-left:210px;flex:1;display:flex;flex-direction:column;min-height:100vh}
-.topbar{background:#eae7e3;border-bottom:1px solid #d0cdc8;padding:14px 28px;display:flex;align-items:center;justify-content:space-between}
+.topbar{background:#eae7e3;border-bottom:1px solid #d0cdc8;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.filter-select{appearance:none;border:1px solid #c8c5c0;border-radius:6px;padding:5px 28px 5px 10px;font-size:11px;font-family:'Inter',sans-serif;color:#1a1a1a;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b6b66'/%3E%3C/svg%3E") no-repeat right 8px center;cursor:pointer;outline:none;transition:border-color .15s}
+.filter-select:hover,.filter-select:focus{border-color:#e8622a}
+.status-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.status-tab{padding:6px 16px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid #d4d3cf;background:#fff;color:#6b6b66;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;white-space:nowrap}
+.status-tab.active{background:#e8622a;color:#fff;border-color:#e8622a}
+.status-tab:hover:not(.active){border-color:#e8622a;color:#e8622a}
 .topbar-title{font-family:'Montserrat',sans-serif;font-weight:700;font-size:16px;letter-spacing:.5px}
 .topbar-sub{font-size:11px;color:#6b6b66;margin-top:2px}
 .refresh-btn{font-family:'Montserrat',sans-serif;font-weight:600;font-size:11px;color:#fff;background:#e8622a;border:none;border-radius:7px;padding:8px 14px;cursor:pointer}

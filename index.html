@@ -55,6 +55,24 @@
         <div class="topbar-title" id="topbar-title">MIS PROYECTOS</div>
         <div class="topbar-sub" id="topbar-sub">Proyectos asignados a tu usuario</div>
       </div>
+      <div class="filters" id="topbar-filters" style="display:none">
+        <select class="filter-select" id="fil-anio" onchange="applyFilters()">
+          <option value="todos">Todos los años</option>
+        </select>
+        <select class="filter-select" id="fil-mes" onchange="applyFilters()">
+          <option value="todos">Todos los meses</option>
+        </select>
+        <select class="filter-select" id="fil-enc" onchange="applyFilters()">
+          <option value="todos">Todos los encargados</option>
+        </select>
+        <select class="filter-select" id="fil-estado" onchange="applyFilters()">
+          <option value="todos">Todos los estados</option>
+          <option>Finalizado</option><option>En Ejecución</option><option>En Liquidación</option><option>Garantias</option><option>Por Iniciar</option><option>Cerrado</option>
+        </select>
+        <select class="filter-select" id="fil-sector" onchange="applyFilters()">
+          <option value="todos">Todos los sectores</option>
+        </select>
+      </div>
       <button class="refresh-btn" id="refresh-btn" onclick="refreshCurrentView()">⟳ Actualizar</button>
     </div>
     <div class="content">
@@ -62,6 +80,7 @@
 
       <!-- Vista: listado de proyectos -->
       <div id="view-projects" class="view">
+        <div id="projects-status-tabs" class="status-tabs"></div>
         <div id="projects-grid" class="projects-grid"></div>
       </div>
 
