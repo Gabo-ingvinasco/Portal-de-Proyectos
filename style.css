@@ -298,6 +298,7 @@ tr.fc-row-venc td{background:#fdf5f4}
 .status-pill.ok{background:#e5f7ef;color:#1a8a52}
 .status-pill.no{background:#fbf1ef;color:#c0392b}
 .status-pill.unknown{background:#f0efec;color:#a09c96}
+.status-pill[onclick]:hover{filter:brightness(0.93)}
 .status-pill.pend{background:#fef3dc;color:#a0620a}
 .status-pill.rechazado{background:#fbf1ef;color:#c0392b}
 .calidad-actions{display:flex;gap:4px;margin-top:2px}

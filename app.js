@@ -1,5 +1,5 @@
 /* ═══ CONFIGURA ESTO: pega aquí la URL de tu Apps Script desplegado ═══ */
-const API_URL = 'https://script.google.com/macros/s/AKfycbwbI1-kaBXdcdRgMYDhyKlIOWoYjAINNkDSmrHx-AttXg_tBkB9JpQ3ubNuFDqt2GStMQ/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxk0I32ukU9iMV3oXUYnJcCTu2hPYcuM33fWpsEqSwnWUswifgS4HRhxhe_yakwcI5nmQ/exec';
 
 
 /* ═══ FUSIÓN: datos y lógica de Flujo de Caja (del dashboard de Control de Proyectos) ═══
@@ -1095,9 +1095,10 @@ function selectFase(idx){
   renderFaseDetail(FASE_ORDER[idx]);
 }
 
-function estadoArchivoPill_(archivoCargado){
-  if(archivoCargado === true) return '<span class="status-pill ok">📎 Archivo cargado</span>';
-  if(archivoCargado === false) return '<span class="status-pill no">📎 Sin archivo</span>';
+function estadoArchivoPill_(archivoCargado, archivoUrl){
+  const openAttr = archivoUrl ? ` onclick="window.open('${archivoUrl}','_blank')" style="cursor:pointer" title="Abrir carpeta en Drive"` : '';
+  if(archivoCargado === true) return `<span class="status-pill ok"${openAttr}>📎 Archivo cargado${archivoUrl?' ↗':''}</span>`;
+  if(archivoCargado === false) return `<span class="status-pill no"${openAttr}>📎 Sin archivo${archivoUrl?' ↗':''}</span>`;
   return '<span class="status-pill unknown">📎 Sin verificar</span>';
 }
 
@@ -1128,7 +1129,7 @@ function renderFaseDetail(fase){
       </div>
       <div class="resp">${it.responsable}</div>
       <div class="fase-item-status">
-        ${estadoArchivoPill_(it.archivoCargado)}
+        ${estadoArchivoPill_(it.archivoCargado, it.archivoUrl)}
         ${estadoCalidadPill_(it.vistoBueno)}
         ${calidadBtns}
       </div>
