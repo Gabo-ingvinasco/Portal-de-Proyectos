@@ -1046,8 +1046,10 @@ function openProject(p){
 
 async function loadProjectChecklist(codigo){
   const note = document.getElementById('load-note');
+  const driveNote = document.getElementById('drive-scan-note');
   note.style.display = 'block'; note.className = 'load-note';
   note.textContent = '⏳ Cargando checklist del proyecto...';
+  driveNote.style.display = 'none';
   try{
     const s = getSession();
     const res = await fetch(API_URL + '?action=checklist_proyecto&token=' + encodeURIComponent(s.token) + '&codigo=' + encodeURIComponent(codigo));
@@ -1056,57 +1058,103 @@ async function loadProjectChecklist(codigo){
     note.style.display = 'none';
     window._fasesData = data.fases;
     window._resumenData = data.resumen;
-    renderTimeline(data.fases, data.resumen);
+    if(data.driveScanError){
+      driveNote.style.display = 'block';
+      driveNote.textContent = '⚠ No se pudo revisar la carpeta de Drive de este proyecto (' + data.driveScanError + '). El estado "Archivo cargado" saldrá como "sin verificar" hasta que se resuelva.';
+    }
+    renderFaseSidebar(data.fases, data.resumen);
     renderFaseDetail(FASE_ORDER[currentFaseIndex]);
   }catch(e){
     handleSessionError_(note, 'No se pudo cargar el checklist: ' + e.message);
-    document.getElementById('timeline-wrap').innerHTML = '';
+    document.getElementById('proj-fase-sidebar').innerHTML = '';
     document.getElementById('fase-detail-wrap').innerHTML = '';
   }
 }
 
-function renderTimeline(fases, resumen){
-  const wrap = document.getElementById('timeline-wrap');
-  wrap.innerHTML = `<div class="timeline-track">${FASE_ORDER.map((fase, idx) => {
+function renderFaseSidebar(fases, resumen){
+  const wrap = document.getElementById('proj-fase-sidebar');
+  wrap.innerHTML = FASE_ORDER.map((fase, idx) => {
     const r = resumen[fase] || {total:0, hechos:0};
     const pct = r.total ? Math.round(100 * r.hechos / r.total) : 0;
     const done = r.total > 0 && r.hechos === r.total;
     const cls = (idx === currentFaseIndex ? 'active' : '') + (done ? ' done' : '');
     return `
-      <div class="tl-node ${cls}" onclick="selectFase(${idx})">
-        <div class="tl-circle">${done ? '✓' : idx+1}</div>
-        <div class="tl-label">${fase}</div>
-        <div class="tl-pct">${r.hechos}/${r.total} (${pct}%)</div>
+      <div class="pf-node ${cls}" onclick="selectFase(${idx})">
+        <div class="pf-circle">${done ? '✓' : idx+1}</div>
+        <div class="pf-info">
+          <div class="pf-label">${fase}</div>
+          <div class="pf-pct">${r.hechos}/${r.total} completos (${pct}%)</div>
+        </div>
       </div>`;
-  }).join('')}</div>`;
+  }).join('');
 }
 
 function selectFase(idx){
   currentFaseIndex = idx;
-  renderTimeline(window._fasesData, window._resumenData);
+  renderFaseSidebar(window._fasesData, window._resumenData);
   renderFaseDetail(FASE_ORDER[idx]);
+}
+
+function estadoArchivoPill_(archivoCargado){
+  if(archivoCargado === true) return '<span class="status-pill ok">📎 Archivo cargado</span>';
+  if(archivoCargado === false) return '<span class="status-pill no">📎 Sin archivo</span>';
+  return '<span class="status-pill unknown">📎 Sin verificar</span>';
+}
+
+function estadoCalidadPill_(vistoBueno){
+  if(vistoBueno === 'Aprobado') return '<span class="status-pill ok">✅ Aprobado</span>';
+  if(vistoBueno === 'Rechazado') return '<span class="status-pill rechazado">✅ Rechazado</span>';
+  return '<span class="status-pill pend">✅ Pendiente</span>';
 }
 
 function renderFaseDetail(fase){
   const items = (window._fasesData && window._fasesData[fase]) || [];
   const r = (window._resumenData && window._resumenData[fase]) || {total:0, hechos:0};
   const wrap = document.getElementById('fase-detail-wrap');
-  const itemsHtml = items.length ? items.map(it => `
+  const s = getSession();
+  const puedeDarVistoBueno = s.rol === 'Calidad' || s.rol === 'Gerente' || s.rol === 'Admin';
+  const itemsHtml = items.length ? items.map(it => {
+    const calidadBtns = puedeDarVistoBueno ? `
+      <div class="calidad-actions">
+        <button class="calidad-btn aprobar" onclick="marcarVistoBueno(${it.rowIndex}, 'Aprobado')">Aprobar</button>
+        <button class="calidad-btn rechazar" onclick="marcarVistoBueno(${it.rowIndex}, 'Rechazado')">Rechazar</button>
+      </div>` : '';
+    return `
     <div class="fase-item">
-      <div class="chk ${it.check?'yes':'no'}">${it.check?'✓':'✗'}</div>
       <div class="body">
         <div class="carpeta">${it.carpetaBase}</div>
         <div class="sub">${it.subcarpeta}</div>
         <div class="doc">${it.documento || ''}</div>
       </div>
       <div class="resp">${it.responsable}</div>
-    </div>`).join('') : '<div class="fase-empty">Sin ítems clasificados en esta fase.</div>';
+      <div class="fase-item-status">
+        ${estadoArchivoPill_(it.archivoCargado)}
+        ${estadoCalidadPill_(it.vistoBueno)}
+        ${calidadBtns}
+      </div>
+    </div>`;
+  }).join('') : '<div class="fase-empty">Sin ítems clasificados en esta fase.</div>';
   wrap.innerHTML = `
     <div class="fase-detail-head">
       <div class="fase-detail-title">${fase}</div>
       <div class="fase-detail-count">${r.hechos}/${r.total} completos</div>
     </div>
     ${itemsHtml}`;
+}
+
+async function marcarVistoBueno(rowIndex, estado){
+  const s = getSession();
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'marcar_visto_bueno', token: s.token, codigo: currentProject.codigo, rowIndex, estado })
+    });
+    const data = await res.json();
+    if(!data.ok) throw new Error(data.error || 'Error desconocido');
+    loadProjectChecklist(currentProject.codigo);
+  }catch(e){
+    alert('No se pudo actualizar el Visto Bueno: ' + e.message);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', function(){
