@@ -1,5 +1,5 @@
 /* ═══ CONFIGURA ESTO: pega aquí la URL de tu Apps Script desplegado ═══ */
-const API_URL = 'https://script.google.com/macros/s/AKfycbxk0I32ukU9iMV3oXUYnJcCTu2hPYcuM33fWpsEqSwnWUswifgS4HRhxhe_yakwcI5nmQ/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbz2SmrUKx4Sn5tet28xhj3-K_Q8DGGVwukEDwfujL_BwamL3FO8pXajgtQQUYYO2YzeJw/exec';
 
 
 /* ═══ FUSIÓN: datos y lógica de Flujo de Caja (del dashboard de Control de Proyectos) ═══
@@ -1044,27 +1044,35 @@ function openProject(p){
   loadProjectChecklist(p.codigo);
 }
 
+let _checklistRequestId = 0;
+
 async function loadProjectChecklist(codigo){
   const note = document.getElementById('load-note');
   const driveNote = document.getElementById('drive-scan-note');
   note.style.display = 'block'; note.className = 'load-note';
-  note.textContent = '⏳ Cargando checklist del proyecto...';
+  note.textContent = '⏳ Cargando checklist del proyecto... (puede tardar hasta 1 minuto la primera vez que se revisa la carpeta de Drive de este proyecto)';
   driveNote.style.display = 'none';
+  const miRequestId = ++_checklistRequestId; // si se navega a otro proyecto antes de que esto responda, esta respuesta se descarta
   try{
     const s = getSession();
     const res = await fetch(API_URL + '?action=checklist_proyecto&token=' + encodeURIComponent(s.token) + '&codigo=' + encodeURIComponent(codigo));
     const data = await res.json();
+    // Si mientras esperábamos la respuesta el usuario ya cambió de proyecto
+    // (o de vista), o esta respuesta ya no es la más reciente, se ignora
+    // por completo para no pisar lo que se está viendo ahora.
+    if(miRequestId !== _checklistRequestId || currentView !== 'timeline' || !currentProject || currentProject.codigo !== codigo) return;
     if(!data.ok) throw new Error(data.error || 'Error desconocido');
     note.style.display = 'none';
     window._fasesData = data.fases;
     window._resumenData = data.resumen;
     if(data.driveScanError){
       driveNote.style.display = 'block';
-      driveNote.textContent = '⚠ No se pudo revisar la carpeta de Drive de este proyecto (' + data.driveScanError + '). El estado "Archivo cargado" saldrá como "sin verificar" hasta que se resuelva.';
+      driveNote.textContent = '⚠ ' + data.driveScanError + ' El estado "Archivo cargado" puede salir como "sin verificar" para algunos ítems.';
     }
     renderFaseSidebar(data.fases, data.resumen);
     renderFaseDetail(FASE_ORDER[currentFaseIndex]);
   }catch(e){
+    if(miRequestId !== _checklistRequestId) return;
     handleSessionError_(note, 'No se pudo cargar el checklist: ' + e.message);
     document.getElementById('proj-fase-sidebar').innerHTML = '';
     document.getElementById('fase-detail-wrap').innerHTML = '';
