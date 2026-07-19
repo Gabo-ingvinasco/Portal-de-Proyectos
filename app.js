@@ -1,5 +1,5 @@
 /* ═══ CONFIGURA ESTO: pega aquí la URL de tu Apps Script desplegado ═══ */
-const API_URL = 'https://script.google.com/macros/s/AKfycbyQD0fFborghRu2-V8KbcsgoLM8AHqAGFVph_kVywkcOuPEx9evmKaDhplrx7xzcVTQ8g/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwYrFDoDrueUVmp86bEpNGBmBxSpQMKl15FzXXUIuhuqRRbJFPYWySIyFiiEczomY1yNg/exec';
 
 
 /* ═══ FUSIÓN: datos y lógica de Flujo de Caja (del dashboard de Control de Proyectos) ═══
@@ -1175,6 +1175,7 @@ function openProject(p){
   currentView = 'timeline';
   currentFaseIndex = 0;
   currentCarpetaIndex = 0;
+  currentGrupoFiltro = null;
   currentProjSubtab = 'documental';
   hideAllViews();
   showFilters(false);
@@ -1274,6 +1275,15 @@ function agruparPorCarpeta_(fasesData){
   return porCarpeta;
 }
 
+let currentGrupoFiltro = null; // null = mostrar todos los grupos de la carpeta; string = solo ese grupo
+
+function gruposDeCarpeta_(items){
+  const vistos = [];
+  items.forEach(it => { const g = it.grupo || 'General'; if(!vistos.includes(g)) vistos.push(g); });
+  vistos.sort((a,b) => a.localeCompare(b, 'es', {numeric:true}));
+  return vistos;
+}
+
 function renderCarpetaSidebar(carpetas){
   const wrap = document.getElementById('proj-carpeta-sidebar');
   wrap.innerHTML = CARPETA_ORDER.map((carpeta, idx) => {
@@ -1293,8 +1303,9 @@ function renderCarpetaSidebar(carpetas){
           </div>
         </div>`;
     }
-    const cls = (idx === currentCarpetaIndex ? 'active' : '') + (done ? ' done' : '');
-    return `
+    const esActiva = idx === currentCarpetaIndex;
+    const cls = (esActiva ? 'active' : '') + (done ? ' done' : '');
+    const nodeHtml = `
       <div class="pf-node ${cls}" onclick="selectCarpeta(${idx})">
         <div class="pf-circle">${done ? '✓' : idx+1}</div>
         <div class="pf-info">
@@ -1302,17 +1313,41 @@ function renderCarpetaSidebar(carpetas){
           <div class="pf-pct">${hechos}/${total} completos (${pct}%)</div>
         </div>
       </div>`;
+    // Si esta carpeta está activa, despliega debajo la lista de subcarpetas
+    // (el "grupo" — ej. Administrativo, Contable...) para navegar directo.
+    let gruposHtml = '';
+    if(esActiva){
+      const grupos = gruposDeCarpeta_(items);
+      gruposHtml = grupos.map(g => `
+        <div class="pf-grupo-node ${currentGrupoFiltro===g?'active':''}" onclick="event.stopPropagation();selectGrupo('${g.replace(/'/g,"\\'")}')">${g}</div>
+      `).join('');
+      if(grupos.length){
+        gruposHtml = `<div class="pf-grupo-list">
+          <div class="pf-grupo-node ${currentGrupoFiltro===null?'active':''}" onclick="event.stopPropagation();selectGrupo(null)">Ver todo</div>
+          ${gruposHtml}
+        </div>`;
+      }
+    }
+    return nodeHtml + gruposHtml;
   }).join('');
 }
 
 function selectCarpeta(idx){
   currentCarpetaIndex = idx;
+  currentGrupoFiltro = null;
   renderCarpetaSidebar(window._carpetasData);
   renderCarpetaDetail(CARPETA_ORDER[idx]);
 }
 
+function selectGrupo(grupo){
+  currentGrupoFiltro = grupo;
+  renderCarpetaSidebar(window._carpetasData);
+  renderCarpetaDetail(CARPETA_ORDER[currentCarpetaIndex]);
+}
+
 function renderCarpetaDetail(carpeta){
-  const items = (window._carpetasData && window._carpetasData[carpeta]) || [];
+  const todosLosItems = (window._carpetasData && window._carpetasData[carpeta]) || [];
+  const items = currentGrupoFiltro ? todosLosItems.filter(it => (it.grupo || 'General') === currentGrupoFiltro) : todosLosItems;
   const wrap = document.getElementById('carpeta-detail-wrap');
   if(carpeta === '3. HSE'){
     wrap.innerHTML = `
@@ -1342,26 +1377,34 @@ function renderCarpetaDetail(carpeta){
       </div>
     </div>`;
   }
-  // Agrupa por subcarpeta intermedia (el mismo nivel que ves al navegar Drive,
-  // ej. "1. Administrativo", "2. Contable"...). Si un ítem no tiene grupo
-  // asignado (checklists creados antes de esta función), cae en "General".
-  const grupos = {};
-  const ordenGrupos = [];
-  items.forEach(it => {
-    const g = it.grupo || 'General';
-    if(!grupos[g]){ grupos[g] = []; ordenGrupos.push(g); }
-    grupos[g].push(it);
-  });
-  ordenGrupos.sort((a,b) => a.localeCompare(b, 'es', {numeric:true}));
-
-  const itemsHtml = items.length ? ordenGrupos.map(g => `
-    <div class="grupo-subheader">${g}</div>
-    ${grupos[g].map(renderItem).join('')}
-  `).join('') : '<div class="fase-empty">Sin ítems clasificados en esta carpeta.</div>';
+  let itemsHtml, tituloPanel;
+  if(currentGrupoFiltro){
+    // Un solo grupo seleccionado: título = nombre del grupo, sin sub-encabezados repetidos
+    tituloPanel = CARPETA_LABELS[carpeta] + ' — ' + currentGrupoFiltro;
+    itemsHtml = items.length ? items.map(renderItem).join('') : '<div class="fase-empty">Sin ítems en esta subcarpeta.</div>';
+  } else {
+    // "Ver todo": agrupa por subcarpeta intermedia (el mismo nivel que ves al
+    // navegar Drive, ej. "1. Administrativo", "2. Contable"...). Si un ítem
+    // no tiene grupo asignado (checklists creados antes de esta función),
+    // cae en "General".
+    tituloPanel = CARPETA_LABELS[carpeta];
+    const grupos = {};
+    const ordenGrupos = [];
+    items.forEach(it => {
+      const g = it.grupo || 'General';
+      if(!grupos[g]){ grupos[g] = []; ordenGrupos.push(g); }
+      grupos[g].push(it);
+    });
+    ordenGrupos.sort((a,b) => a.localeCompare(b, 'es', {numeric:true}));
+    itemsHtml = items.length ? ordenGrupos.map(g => `
+      <div class="grupo-subheader">${g}</div>
+      ${grupos[g].map(renderItem).join('')}
+    `).join('') : '<div class="fase-empty">Sin ítems clasificados en esta carpeta.</div>';
+  }
   const total = items.length, hechos = items.filter(it=>it.check).length;
   wrap.innerHTML = `
     <div class="fase-detail-head">
-      <div class="fase-detail-title">${CARPETA_LABELS[carpeta]}</div>
+      <div class="fase-detail-title">${tituloPanel}</div>
       <div class="fase-detail-count">${hechos}/${total} completos</div>
     </div>
     ${itemsHtml}`;

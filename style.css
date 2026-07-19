@@ -310,6 +310,10 @@ tr.fc-row-venc td{background:#fdf5f4}
 .pf-node.disabled{cursor:not-allowed;opacity:.55}
 .pf-node.disabled:hover{background:none}
 .pf-soon-tag{font-size:8px;background:#f0efec;color:#a09c96;border-radius:4px;padding:1px 6px;margin-left:4px;text-transform:uppercase;letter-spacing:.03em}
+.pf-grupo-list{background:#fdf8f4;padding:4px 0 6px}
+.pf-grupo-node{font-family:'Montserrat',sans-serif;font-weight:700;font-size:9.5px;letter-spacing:.03em;text-transform:uppercase;color:#a0620a;padding:6px 18px 6px 58px;cursor:pointer;transition:background .15s}
+.pf-grupo-node:hover{background:#fbeee3}
+.pf-grupo-node.active{background:#fff;color:#e8622a;border-left:2px solid #e8622a;padding-left:56px}
 .proj-layout{display:flex;gap:16px;align-items:flex-start}
 .proj-fase-sidebar{width:220px;flex-shrink:0;background:#fff;border:1px solid #d4d3cf;border-radius:12px;overflow:hidden}
 .pf-node{display:flex;align-items:center;gap:10px;padding:13px 16px;cursor:pointer;border-bottom:1px solid #f0efec;border-left:3px solid transparent;transition:background .15s}
