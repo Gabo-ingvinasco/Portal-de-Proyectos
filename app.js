@@ -1,5 +1,5 @@
 /* ═══ CONFIGURA ESTO: pega aquí la URL de tu Apps Script desplegado ═══ */
-const API_URL = 'PEGA_AQUI_LA_URL_DE_TU_APPS_SCRIPT';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxfhPKUgHkgT3-5zx7a1kXWdKs74OuqR5C7BECGv6bupwG6Sj42cCT8vU7HB5A-3f9fyA/exec';
 
 
 /* ═══ FUSIÓN: datos y lógica de Flujo de Caja (del dashboard de Control de Proyectos) ═══
