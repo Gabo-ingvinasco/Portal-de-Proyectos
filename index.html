@@ -5,7 +5,98 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mínima Arquitectos — Portal de Proyectos</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
-<style>*{box-sizing:border-box;margin:0;padding:0}html,body{height:100%}body{font-family:'Inter',sans-serif;background:#f6f1ee;color:#1a1a1a}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>*{box-sizing:border-box;margin:0;padding:0}html,body{height:100%}body{font-family:'Inter',sans-serif;background:#f6f1ee;color:#1a1a1a}
+/* ═══ FLUJO DE CAJA (fusionado desde el dashboard de Control de Proyectos) ═══ */
+table{width:100%;border-collapse:collapse;font-size:11px}
+thead th{text-align:left;padding:8px 10px;font-size:9px;color:#6b6b66;font-weight:600;letter-spacing:.8px;text-transform:uppercase;border-bottom:1px solid #d4d3cf;background:#f9f8f6;white-space:nowrap}
+tbody td{padding:7px 10px;border-bottom:1px solid #f0efec;color:#6b6b66;vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#fafaf8;cursor:pointer}
+#fcTipoChart{width:190px!important;height:190px!important}
+#fcVencTipoChart{width:150px!important;height:150px!important}
+.kpi-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:16px}
+.kpi{background:#fff;border:1px solid #d4d3cf;border-radius:10px;padding:11px 13px;display:flex;align-items:center;gap:9px}
+.kpi-ico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.kpi-ico.total{background:#fff0e8}.kpi-ico.ejec{background:#e5f7ef}.kpi-ico.liq{background:#fef8e7}
+.kpi-ico.ini{background:#eeeafc}.kpi-ico.cerr{background:#f0f0ee}.kpi-ico.gar{background:#e6f1fb}.kpi-ico.obs{background:#fce8e8}
+.kpi-num{font-family:'Montserrat',sans-serif;font-weight:700;font-size:20px;color:#1a1a1a;line-height:1}
+.kpi-lbl{font-size:9px;color:#6b6b66;margin-top:2px;line-height:1.3}
+.finance-bar{background:#d8d7d7;border-radius:10px;padding:13px 20px;display:grid;grid-template-columns:auto 1fr 1fr 1fr 1fr 1fr;gap:0;margin-bottom:16px;align-items:center}
+.finance-bar-lbl{font-family:'Montserrat',sans-serif;font-size:9px;letter-spacing:1.5px;font-weight:600;color:rgba(26,26,26,.55);text-transform:uppercase;padding-right:18px;border-right:1px solid rgba(26,26,26,.15)}
+.grid12{display:grid;grid-template-columns:1fr 1.5fr;gap:12px;margin-bottom:12px;align-items:stretch}
+.fc-detail-panel{max-height:420px;overflow-y:auto}
+.grid-donut{display:grid;grid-template-columns:1.6fr 1fr;gap:12px;margin-bottom:12px}
+.grid-donut-right{display:flex;flex-direction:column;gap:12px}
+.panel{background:#fff;border:1px solid #d4d3cf;border-radius:10px;padding:14px 16px;overflow:hidden}
+.panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.panel-title{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#6b6b66}
+.donut-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;padding:4px 0}
+.donut-chart-wrap{position:relative;width:190px;height:190px;flex-shrink:0}
+#donutChart{width:190px!important;height:190px!important}
+.donut-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none}
+.donut-big-n{font-size:30px;font-weight:700;color:#1a1a1a;line-height:1}
+.donut-sub{font-size:11px;color:#6b6b66;margin-top:3px;letter-spacing:.03em}
+.legend-list{display:grid;grid-template-columns:1fr 1fr;gap:5px 18px;width:100%;max-width:260px}
+.fc-donut-wrap{flex-direction:row;align-items:center;justify-content:center;gap:28px}
+.fc-tipo-legend-list{display:flex;flex-direction:column;grid-template-columns:none;gap:10px;width:auto;max-width:none}
+.fc-tipo-legend-list .legend-item{min-width:190px}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:#6b6b66;min-width:0}
+.legend-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0}
+.legend-n{font-weight:600;color:#1a1a1a;margin-left:auto}
+.hbar-bg{flex:1;height:5px;background:#f0efec;border-radius:3px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:3px}
+.tbl-wrap{background:#fff;border:1px solid #d4d3cf;border-radius:10px;overflow:hidden}
+.td-primary{font-weight:600;color:#1a1a1a!important}
+.td-money{font-weight:600;color:#1a1a1a!important}
+.dir-tbl-wrap{overflow-x:auto;padding:0 4px 4px}
+.kpi-ico.venc{background:#fce8e8}
+.hb{display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:600;white-space:nowrap}
+.hb-pend{background:#f0f0ee;color:#6b6b66}.hb-pres{background:#fef3dc;color:#a0620a}.hb-cob{background:#e5f7ef;color:#1a8a52}
+.ht-Anticipo{background:#e8f0fb;color:#2e7dd1}.ht-Corte{background:#e5f7ef;color:#1a8a52}
+.ht-Liquidación{background:#fff0e8;color:#e8622a}.ht-Retegarantía{background:#fbe9e5;color:#a82c00}
+.fc-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:10px;color:#6b6b66;margin-bottom:10px}
+.fc-legend span{display:inline-flex;align-items:center;gap:5px}
+.fc-dot{width:8px;height:8px;border-radius:2px;display:inline-block}
+.fc-note{font-size:10px;color:#a0620a;background:#fff8f5;border:1px solid #f0c8b8;border-radius:8px;padding:8px 12px;margin-bottom:12px}
+.fc-venc-chart-col .donut-chart-wrap{width:150px;height:150px}
+.fc-r4-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.fc-resumen-grid{grid-template-columns:1.6fr 1fr}
+@media (max-width:900px){.fc-resumen-grid{grid-template-columns:1fr}}
+.fc-r4-card{border:1px solid #e8e5e0;border-radius:10px;padding:10px 12px;cursor:pointer;transition:all .15s;background:#fff}
+.fc-r4-card:hover{border-color:#e8622a;background:#fff8f5}
+.fc-r4-card.active{border-color:#e8622a;background:#fff3ec;box-shadow:0 0 0 1px #e8622a inset}
+.fc-r4-wk{font-size:9px;letter-spacing:.5px;text-transform:uppercase;color:#a09c96;font-weight:600}
+.fc-r4-date{font-size:11px;color:#1a1a1a;font-weight:600;margin-bottom:8px}
+.fc-r4-row{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#6b6b66;margin-top:4px}
+.fc-r4-val{font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;color:#1a1a1a}
+.fc-r4-val.ing{color:#1a8a52}.fc-r4-val.pres{color:#a0620a}.fc-r4-val.venc{color:#c0392b}
+.fc-r4-detail-wrap{margin-top:12px;border-top:1px solid #f0efec;padding-top:12px}
+.fc-r4-detail-title{font-size:11px;font-weight:600;color:#1a1a1a;margin-bottom:8px}
+.fc-r4-detail-empty{font-size:11px;color:#aaa;padding:8px 0}
+.fc-r4-row.vencido{margin-top:8px;padding:5px 7px;background:#fbeceb;border-radius:6px}
+.fc-r4-row.vencido span:first-child{color:#c0392b;font-weight:600}
+.fc-r4-row.total{margin-top:2px;padding-top:6px;border-top:1px solid #efece7}
+.fc-r4-row.total span:first-child{color:#1a1a1a;font-weight:600;font-size:10px}
+.fc-r4-val.total{color:#1a1a1a}
+.fc-r4-detail-title.venc{color:#c0392b}
+.fc-venc-panel{border:1px solid #f0c8c4}
+.panel-title.venc{color:#c0392b}
+.fc-venc-sub{font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;color:#c0392b}
+.fc-venc-note{font-size:10px;color:#8a5a54;background:#fbf1ef;border-radius:6px;padding:7px 10px;margin-bottom:10px}
+tr.fc-row-venc td{background:#fdf5f4}
+.fc-venc-split{display:flex;gap:18px;align-items:stretch}
+.fc-venc-table-col{flex:2 1 0;min-width:0}
+.fc-venc-chart-col{flex:1 1 0;min-width:200px;border-left:1px solid #f0e8e4;padding-left:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+.fc-venc-chart-title{font-family:'Montserrat',sans-serif;font-weight:700;font-size:10px;letter-spacing:.03em;text-transform:uppercase;color:#a05a52;align-self:flex-start}
+@media (max-width:900px){.fc-venc-split{flex-direction:column}.fc-venc-chart-col{border-left:none;border-top:1px solid #f0e8e4;padding-left:0;padding-top:14px}}
+.fc-refresh-bar{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.fc-refresh-btn{font-family:'Montserrat',sans-serif;font-weight:600;font-size:11px;color:#fff;background:#e8622a;border:none;border-radius:7px;padding:8px 14px;cursor:pointer;transition:background .15s}
+.fc-refresh-btn:hover{background:#d1531f}
+.fc-refresh-btn:disabled{background:#e8b8a2;cursor:wait}
+.fc-refresh-time{font-size:10px;color:#a09c96}
+
+</style>
 </head>
 <body>
 
@@ -32,6 +123,7 @@
     <div class="sidebar-nav">
       <div class="nav-section">Navegación</div>
       <div class="nav-item active" id="nav-mis-proyectos" onclick="goToProjectList()">📁 Mis proyectos</div>
+      <div class="nav-item" id="nav-flujo-caja" style="display:none" onclick="goToFlujoCaja()">💰 Flujo de Caja</div>
       <div class="nav-item" id="nav-nuevo-proyecto" onclick="goToNewProject()">➕ Nuevo proyecto</div>
     </div>
     <div class="sidebar-footer">
@@ -96,6 +188,107 @@
           <div id="np-error" class="np-error"></div>
           <div id="np-success" class="np-success"></div>
           <button class="npc-submit" id="np-submit-btn" onclick="crearProyecto()">Crear proyecto</button>
+        </div>
+      </div>
+
+      <!-- Vista: Flujo de Caja (fusionado, solo Director/Gerente) -->
+      <div id="view-flujocaja" class="view" style="display:none">
+        <button class="back-btn" onclick="goToProjectList()">← Volver a mis proyectos</button>
+        <div class="fc-refresh-bar">
+          <button id="fc-refresh-btn" class="fc-refresh-btn" onclick="refreshFlujoCaja()">⟳ Actualizar datos</button>
+          <span class="fc-refresh-time" id="fc-refresh-time"></span>
+        </div>
+        <div class="fc-note" id="fc-note" style="display:none"></div>
+        <div class="kpi-strip" id="fc-kpi-strip" style="grid-template-columns:repeat(4,1fr)"></div>
+        <div class="grid12 fc-resumen-grid">
+          <div class="panel" style="margin-bottom:0">
+            <div class="panel-head"><div class="panel-title">Resumen próximas 4 semanas</div></div>
+            <div class="fc-r4-grid" id="fc-resumen4"></div>
+          </div>
+          <div class="panel" style="margin-bottom:0">
+            <div class="panel-head"><div class="panel-title">Detalle de la semana seleccionada</div></div>
+            <div id="fc-resumen4-detail" class="fc-detail-panel"></div>
+          </div>
+        </div>
+        <div class="panel fc-venc-panel" style="margin-bottom:12px">
+          <div class="panel-head">
+            <div class="panel-title venc">⚠ Pagos vencidos</div>
+            <div class="fc-venc-sub" id="fc-venc-sub"></div>
+          </div>
+          <div class="fc-venc-note">Hitos cuya fecha de ingreso o presentación ya pasó y cuyo estado sigue en <span class="hb hb-pend">Pendiente</span> (no se ha registrado ni confirmado el ingreso). Independiente de lo que corresponde ingresar/presentar esta semana.</div>
+          <div class="fc-venc-split">
+            <div class="fc-venc-table-col">
+              <div class="tbl-wrap" style="border:none">
+                <table>
+                  <thead><tr>
+                    <th>Proyecto</th><th>Encargado</th><th>Hito</th>
+                    <th style="text-align:right">Valor</th><th>Debía ingresar</th>
+                    <th>Debía presentar</th><th style="text-align:right">Días de atraso</th><th>Estado</th>
+                  </tr></thead>
+                  <tbody id="fc-vencidos-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="fc-venc-chart-col">
+              <div class="fc-venc-chart-title">Vencido por tipo de hito</div>
+              <div class="donut-chart-wrap" style="margin:0 auto">
+                <canvas id="fcVencTipoChart"></canvas>
+                <div class="donut-center" id="fc-venc-donut-center">
+                  <div class="donut-big-n" id="fc-venc-donut-n">—</div>
+                  <div class="donut-sub">hitos</div>
+                </div>
+              </div>
+              <div class="legend-list fc-tipo-legend-list" id="fc-venc-tipo-legend"></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel" style="margin-bottom:12px">
+          <div class="panel-head"><div class="panel-title">Flujo de caja proyectado — próximas 12 semanas</div></div>
+          <div class="fc-legend">
+            <span><i class="fc-dot" style="background:#2e7dd1"></i>Anticipo</span>
+            <span><i class="fc-dot" style="background:#1a8a52"></i>Corte</span>
+            <span><i class="fc-dot" style="background:#e8622a"></i>Liquidación</span>
+            <span><i class="fc-dot" style="background:#a82c00"></i>Retegarantía</span>
+          </div>
+          <div style="height:400px;position:relative"><canvas id="fcSemanaChart"></canvas></div>
+        </div>
+        <div class="panel" style="margin-bottom:12px">
+          <div class="panel-head"><div class="panel-title">Distribución por tipo de hito</div></div>
+          <div class="donut-wrap fc-donut-wrap">
+            <div class="donut-chart-wrap">
+              <canvas id="fcTipoChart"></canvas>
+              <div class="donut-center" id="fc-donut-center">
+                <div class="donut-big-n" id="fc-donut-n">—</div>
+                <div class="donut-sub">hitos</div>
+              </div>
+            </div>
+            <div class="legend-list fc-tipo-legend-list" id="fc-tipo-legend"></div>
+          </div>
+        </div>
+        <div class="panel" style="margin-bottom:12px">
+          <div class="panel-head"><div class="panel-title">Próximos hitos a presentar</div></div>
+          <div class="tbl-wrap" style="border:none">
+            <table>
+              <thead><tr>
+                <th>Semana</th><th>Proyecto</th><th>Encargado</th><th>Hito</th>
+                <th style="text-align:right">Valor</th><th>Estado</th><th style="text-align:center">Presentado</th>
+              </tr></thead>
+              <tbody id="fc-hitos-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel" style="margin-bottom:0">
+          <div class="panel-head"><div class="panel-title">Resumen por proyecto</div></div>
+          <div class="tbl-wrap" style="border:none">
+            <table>
+              <thead><tr>
+                <th>Código</th><th>Proyecto</th><th>Encargado</th><th>Estado</th>
+                <th style="text-align:right">Valor total</th><th style="text-align:right">Programado</th>
+                <th style="text-align:right">Sin programar</th>
+              </tr></thead>
+              <tbody id="fc-proy-tbody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -211,6 +404,400 @@
 /* ═══ CONFIGURA ESTO: pega aquí la URL de tu Apps Script desplegado ═══ */
 const API_URL = 'https://script.google.com/macros/s/AKfycbxfhPKUgHkgT3-5zx7a1kXWdKs74OuqR5C7BECGv6bupwG6Sj42cCT8vU7HB5A-3f9fyA/exec';
 
+
+/* ═══ FUSIÓN: datos y lógica de Flujo de Caja (del dashboard de Control de Proyectos) ═══
+   PROJECTS es un snapshot estático (igual que en el dashboard original) — todavía no
+   está conectado en vivo al Sheet de Proyectos. filteredProjects existe porque la
+   lógica original soportaba filtros de Año/Mes/Encargado/Sector; por ahora, sin esos
+   filtros en el portal, se usa el listado completo. ─── */
+const PROJECTS=[
+  {codigo:"C-25-001",cliente:"TERRANUM DESARROLLO S.A.S.",proyecto:"Terranum Connecta 80 Fase I",estado:"Finalizado",sector:"Corporativo",ciudad:"Bogotá",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2025,mes:3,valor:853302118,liqSN:704370171,difCNpct:13.9,difSN:148931947,difSNpct:17.45,vContable:853302118,vPagado:828829130,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:-6,obs:""},
+  {codigo:"C-25-002",cliente:"STF GROUP S.A.",proyecto:"ELA Mall Plaza NQS",estado:"Finalizado",sector:"Retail",ciudad:"Bogotá",encargado:"Camila Duran",cargo:"Directora de Proyectos",anio:2025,mes:3,valor:282086973,liqSN:214594440,difCNpct:23.78,difSN:67492532,difSNpct:23.93,vContable:284272231,vPagado:276153015,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:11,obs:""},
+  {codigo:"C-25-003",cliente:"MARROQUINERA S.A.S.",proyecto:"Mario Hernandez Outlet Americas",estado:"Finalizado",sector:"Retail",ciudad:"Bogotá",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2025,mes:7,valor:622685912,liqSN:539648050,difCNpct:8.46,difSN:83037862,difSNpct:13.34,vContable:654582318,vPagado:617750760,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:74,obs:""},
+  {codigo:"C-25-004",cliente:"PLENTIA CAPITAL S.A.S",proyecto:"Dollarcity y Kokoriko Melgar",estado:"Finalizado",sector:"Retail",ciudad:"Melgar",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2025,mes:11,valor:2885310099,liqSN:2354313273,difCNpct:16.1,difSN:530996826,difSNpct:18.4,vContable:2890298794,vPagado:2818159360,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:87,obs:""},
+  {codigo:"C-25-005",cliente:"MAPFRE SEGUROS GENERALES DE COLOMBIA S.A",proyecto:"MAPFRE Auditorio CISMAP",estado:"Finalizado",sector:"Corporativo",ciudad:"Bogotá",encargado:"Camila Duran",cargo:"Directora de Proyectos",anio:2025,mes:5,valor:413631659,liqSN:325699504,difCNpct:14.18,difSN:87932155,difSNpct:21.26,vContable:413631659,vPagado:399763958,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
+  {codigo:"C-25-006",cliente:"COLTABACO SAS",proyecto:"Oficinas Coltabaco Medellín",estado:"Finalizado",sector:"Corporativo",ciudad:"Medellín",encargado:"Pablo Alfonso",cargo:"Director de Proyectos",anio:2025,mes:6,valor:1158277148,liqSN:994113100,difCNpct:11.36,difSN:164164048,difSNpct:14.17,vContable:1126598761,vPagado:1073657509,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:16,obs:""},
+  {codigo:"C-25-008",cliente:"SURAMERICANA COMERCIAL SAS",proyecto:"Dollarcity CC Centro Chía",estado:"Finalizado",sector:"Retail",ciudad:"Chia",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2025,mes:6,valor:462456448,liqSN:328573576,difCNpct:24.09,difSN:133882872,difSNpct:28.95,vContable:462456448,vPagado:452735113,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:1,obs:""},
+  {codigo:"C-25-009",cliente:"MONTECITO SAS",proyecto:"Diseño Isla Morada",estado:"Finalizado",sector:"Diseño",ciudad:"Sopo Cundinamarca",encargado:"Sofia Granados",cargo:"Directora Creativa",anio:2025,mes:6,valor:49313600,liqSN:29588160,difCNpct:20,difSN:19725440,difSNpct:40,vContable:49313600,vPagado:35538944,pxCobrar:9862720,pxFacturar:0,avObra:100,avLiq:100,dias:12,obs:""},
+  {codigo:"C-25-010",cliente:"PAULA MORENO",proyecto:"Apto Paula Moreno",estado:"Finalizado",sector:"Vivienda",ciudad:"Bogotá",encargado:"Pablo Alfonso",cargo:"Director de Proyectos",anio:2025,mes:7,valor:285273513,liqSN:236375378,difCNpct:8.01,difSN:48898135,difSNpct:17.14,vContable:276494997,vPagado:276494997,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
+  {codigo:"C-25-011",cliente:"MAPFRE SEGUROS GENERALES DE COLOMBIA S.A",proyecto:"Diseño Fachada MAPFRE",estado:"Finalizado",sector:"Diseño",ciudad:"Bogotá",encargado:"Ricardo Ariza",cargo:"Director Ejecutivo Diseño",anio:2025,mes:7,valor:11755200,liqSN:7053120,difCNpct:20,difSN:4702080,difSNpct:40,vContable:13988688,vPagado:1331761,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
+  {codigo:"C-25-012",cliente:"CENTRO DE SISTEMAS DE ANTIOQUIA S.A.S.",proyecto:"HQ La Playa Medellín",estado:"Finalizado",sector:"Corporativo",ciudad:"Medellín",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2025,mes:7,valor:2688116673,liqSN:2077685962,difCNpct:21.65,difSN:610430711,difSNpct:22.71,vContable:2688116673,vPagado:2637496826,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
+  {codigo:"C-25-013",cliente:"C3 CONSTRUCCIONES Y CONTRATOS SAS",proyecto:"Rediseño Edificio Vatia",estado:"Finalizado",sector:"Diseño",ciudad:"Cali",encargado:"Ricardo Ariza",cargo:"Director Ejecutivo Diseño",anio:2025,mes:7,valor:20964230,liqSN:12578538,difCNpct:20,difSN:8385692,difSNpct:40,vContable:20964230,vPagado:7348686,pxCobrar:12578537,pxFacturar:12578538,avObra:100,avLiq:100,dias:0,obs:""},
+  {codigo:"C-25-014",cliente:"BANCOLOMBIA SA",proyecto:"Bancolombia Carrera 8",estado:"Finalizado",sector:"Bancario",ciudad:"Bogotá",encargado:"Gabriel Vinasco",cargo:"Director de Facilities",anio:2025,mes:7,valor:357552489,liqSN:284680858,difCNpct:16.18,difSN:72871631,difSNpct:20.38,vContable:357552489,vPagado:347380278,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
+  {codigo:"C-25-015",cliente:"INVERSIONES VALENCIA ASOCIADOS SAS",proyecto:"Café SOCA CC Multiplaza Bogotá",estado:"Finalizado",sector:"Retail",ciudad:"Bogotá",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2025,mes:7,valor:321055308,liqSN:272897012,difCNpct:15,difSN:48158296,difSNpct:15,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
+  {codigo:"C-25-016",cliente:"PRODUCTORA Y COMERCIALIZADORA DE ALIMENTOS S.A.S",proyecto:"MIMOS",estado:"Finalizado",sector:"Retail",ciudad:"Bucaramanga",encargado:"Otro",cargo:"Otro",anio:2025,mes:7,valor:50995138,liqSN:43345867,difCNpct:15,difSN:7649271,difSNpct:15,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
+  {codigo:"C-25-017",cliente:"AUTOFINANCIERA COLOMBIA S.A.",proyecto:"Diseño Arq. y Técnico Autofinanciera",estado:"Finalizado",sector:"Diseño",ciudad:"Bogotá",encargado:"Ricardo Ariza",cargo:"Director Ejecutivo Diseño",anio:2025,mes:7,valor:20518575,liqSN:17440789,difCNpct:15,difSN:3077786,difSNpct:15,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
+  {codigo:"C-25-018",cliente:"INVERSIONES JMH SAS",proyecto:"Regus Santafé Drywall y Pintura",estado:"Finalizado",sector:"Corporativo",ciudad:"Bogotá",encargado:"Harold Gonzales",cargo:"Director de Proyectos",anio:2025,mes:7,valor:611601984,liqSN:519861686,difCNpct:15,difSN:91740298,difSNpct:15,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
+  {codigo:"C-25-019",cliente:"CBRE COLOMBIA SAS",proyecto:"GSK Adecuaciones Internas Oficinas",estado:"Finalizado",sector:"Corporativo",ciudad:"Bogotá",encargado:"Pablo Alfonso",cargo:"Director de Proyectos",anio:2025,mes:7,valor:437875784,liqSN:372194416,difCNpct:15,difSN:65681368,difSNpct:15,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
+  {codigo:"C-25-023",cliente:"REGUS COLOMBIA LIMITADA",proyecto:"Regus Calle 90 Urban Plaza",estado:"Finalizado",sector:"Corporativo",ciudad:"Bogotá",encargado:"Gabriel Vinasco",cargo:"Director de Facilities",anio:2025,mes:8,valor:149059293,liqSN:126700399,difCNpct:15,difSN:22358894,difSNpct:15,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
+  {codigo:"C-25-024",cliente:"MAPFRE SEGUROS GENERALES DE COLOMBIA S.A",proyecto:"Adecuaciones Eléctricas Auditorio CISMAP",estado:"Finalizado",sector:"Corporativo",ciudad:"Bogotá",encargado:"Gabriel Vinasco",cargo:"Director de Facilities",anio:2025,mes:8,valor:10393063,liqSN:8834104,difCNpct:15,difSN:1558959,difSNpct:15,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
+  {codigo:"C-25-025",cliente:"TERRANUM DESARROLLO S.A.S.",proyecto:"Terranum Connecta 80 Fase III",estado:"Finalizado",sector:"Corporativo",ciudad:"Bogotá",encargado:"Giovanny Velasquez",cargo:"Coordinador de Proyectos",anio:2025,mes:8,valor:430312650,liqSN:365765752,difCNpct:15,difSN:64546898,difSNpct:15,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
+  {codigo:"C-25-026",cliente:"SURAMERICANA COMERCIAL SAS",proyecto:"Tienda Dollarcity Melgar",estado:"Finalizado",sector:"Retail",ciudad:"Melgar",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2025,mes:8,valor:510808056,liqSN:434186848,difCNpct:15,difSN:76621208,difSNpct:15,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
+  {codigo:"C-25-027",cliente:"COLEGIO MAYOR DE NUESTRA SEÑORA DEL ROSARIO",proyecto:"U. Rosario - Los Ángeles",estado:"En Liquidación",sector:"Obra Civil",ciudad:"Bogotá",encargado:"Harold Gonzales",cargo:"Director de Proyectos",anio:2026,mes:5,valor:1064013371,liqSN:737697500,difCNpct:20.69,difSN:326315871,difSNpct:30.67,vContable:1030897725,vPagado:879248508,pxCobrar:117981868,pxFacturar:0,avObra:100,avLiq:100,dias:95,obs:""},
+  {codigo:"C-25-028",cliente:"REGUS COLOMBIA LIMITADA",proyecto:"Adecuaciones Edificio QBO",estado:"Finalizado",sector:"Facilities",ciudad:"Bogotá",encargado:"Gabriel Vinasco",cargo:"Director de Facilities",anio:2026,mes:5,valor:8889300,liqSN:7555905,difCNpct:15,difSN:1333395,difSNpct:15,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
+  {codigo:"C-25-029",cliente:"REGUS COLOMBIA LIMITADA",proyecto:"Adecuaciones Oficinas Conecta 80",estado:"Finalizado",sector:"Facilities",ciudad:"Bogotá",encargado:"Gabriel Vinasco",cargo:"Director de Facilities",anio:2026,mes:5,valor:26230080,liqSN:22295568,difCNpct:15,difSN:3934512,difSNpct:15,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
+  {codigo:"C-25-030",cliente:"SURAMERICANA COMERCIAL S.A.S.",proyecto:"Tienda Dollarcity Nomad Salitre",estado:"Finalizado",sector:"Retail",ciudad:"Bogotá",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2026,mes:5,valor:652610311,liqSN:554718764,difCNpct:15,difSN:97891547,difSNpct:15,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
+  {codigo:"C-25-031",cliente:"INVERSIONES VALENCIA ASOCIADOS S.A.S.",proyecto:"Café SOCA Héroes",estado:"Finalizado",sector:"Retail",ciudad:"Bogotá",encargado:"Harold Gonzales",cargo:"Director de Proyectos",anio:2026,mes:5,valor:358227930,liqSN:304493740,difCNpct:15,difSN:53734190,difSNpct:15,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
+  {codigo:"C-25-032",cliente:"OFICINAS MULTIPLIKA - FACILITIES",proyecto:"PEI",estado:"En Ejecución",sector:"Facilities",ciudad:"Bogotá",encargado:"Juan Gabriel Pachon",cargo:"Coordinador de Facilities",anio:2026,mes:5,valor:41412000,liqSN:35200200,difCNpct:15,difSN:6211800,difSNpct:15,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
+  {codigo:"C-25-033",cliente:"MAPFRE SEGUROS GENERALES DE COLOMBIA S.A",proyecto:"MAPFRE Fachada Morato",estado:"En Liquidación",sector:"Otros",ciudad:"Bogotá",encargado:"Giovanny Velasquez",cargo:"Coordinador de Proyectos",anio:2026,mes:3,valor:1648760133,liqSN:1188732751,difCNpct:25.42,difSN:460027382,difSNpct:27.9,vContable:1752846977,vPagado:1182204605,pxCobrar:513687298,pxFacturar:245263186,avObra:0,avLiq:0,dias:88,obs:""},
+  {codigo:"C-25-035",cliente:"CARLOS NIETO",proyecto:"Carlos Nieto - Cr 19",estado:"En Liquidación",sector:"Retail",ciudad:"Bogotá",encargado:"Alejandro Pacheco",cargo:"Director de Proyectos",anio:2026,mes:4,valor:822522648,liqSN:698914882,difCNpct:10.68,difSN:123607766,difSNpct:15.03,vContable:980580718,vPagado:774758368,pxCobrar:177253184,pxFacturar:98058070,avObra:0,avLiq:0,dias:54,obs:""},
+  {codigo:"C-25-036",cliente:"REGUS COLOMBIA LIMITADA",proyecto:"Regus Urban Plaza Fase 3 Calle 90",estado:"Finalizado",sector:"Corporativo",ciudad:"Bogotá",encargado:"Gabriel Vinasco",cargo:"Director de Facilities",anio:2026,mes:4,valor:0,liqSN:0,difCNpct:0,difSN:0,difSNpct:0,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
+  {codigo:"C-25-037",cliente:"TERRANUM DESARROLLO S.A.S.",proyecto:"Acabados BTS 3 Piso 3 Connecta Calle 26",estado:"Finalizado",sector:"Corporativo",ciudad:"Bogotá",encargado:"Giovanny Velasquez",cargo:"Coordinador de Proyectos",anio:2026,mes:4,valor:0,liqSN:0,difCNpct:0,difSN:0,difSNpct:0,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
+  {codigo:"C-26-004",cliente:"Marroquineria SAS",proyecto:"Mario Hernandez - Bulevar Niza",estado:"En Liquidación",sector:"Retail",ciudad:"Bogotá",encargado:"Giovanny Velasquez",cargo:"Coordinador de Proyectos",anio:2026,mes:4,valor:666961943,liqSN:452106993,difCNpct:47.52,difSN:214854950,difSNpct:32.21,vContable:662305497,vPagado:450000000,pxCobrar:193331329,pxFacturar:61020944,avObra:100,avLiq:100,dias:2,obs:""},
+  {codigo:"C-26-005",cliente:"Frisby S.A BIC",proyecto:"Frisby Terminal de Carga",estado:"En Liquidación",sector:"Hospitality",ciudad:"Bogotá",encargado:"Andres Rodriguez",cargo:"Director de Obras",anio:2026,mes:3,valor:59380860,liqSN:41739581,difCNpct:42.27,difSN:17641279,difSNpct:29.71,vContable:59380860,vPagado:28833353,pxCobrar:29690430,pxFacturar:29690430,avObra:100,avLiq:95,dias:-2,obs:""},
+  {codigo:"C-26-006",cliente:"Hoteles Estelar S.A",proyecto:"Intercontinental - Fase 1",estado:"En Ejecución",sector:"Hospitality",ciudad:"Cali",encargado:"Luis Mantilla",cargo:"Director Senior Proyectos",anio:2026,mes:7,valor:1776819100,liqSN:1439223471,difCNpct:23.46,difSN:337595629,difSNpct:19,vContable:10920592080,vPagado:953911380,pxCobrar:9962633377,pxFacturar:10729370729,avObra:40,avLiq:20,dias:29,obs:""},
+  {codigo:"C-26-007",cliente:"Marroquineria SAS",proyecto:"Mario Hernandez - Av Chile",estado:"Garantias",sector:"Retail",ciudad:"Bogotá",encargado:"Alejandro Pacheco",cargo:"Director de Proyectos",anio:2026,mes:5,valor:813215525,liqSN:469430759,difCNpct:73.23,difSN:313880136,difSNpct:38.6,vContable:838955150,vPagado:457000000,pxCobrar:361527768,pxFacturar:196184897,avObra:95,avLiq:70,dias:-7,obs:""},
+  {codigo:"C-26-008",cliente:"Frisby S.A BIC",proyecto:"Frisby Pitalito",estado:"En Liquidación",sector:"Retail",ciudad:"Huila",encargado:"Andres Rodriguez",cargo:"Director de Obras",anio:2026,mes:4,valor:48726725,liqSN:39608896,difCNpct:23.02,difSN:9117829,difSNpct:18.71,vContable:48726725,vPagado:23682826,pxCobrar:24363364,pxFacturar:24363362,avObra:100,avLiq:95,dias:1,obs:""},
+  {codigo:"C-26-009",cliente:"Grupo Ethus",proyecto:"IAE",estado:"En Ejecución",sector:"Corporativo",ciudad:"Bogotá",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2026,mes:8,valor:4804104491,liqSN:3113878985,difCNpct:54.28,difSN:1638612173,difSNpct:34.11,vContable:4675657089,vPagado:1976330468,pxCobrar:2617580959,pxFacturar:1807922292,avObra:50,avLiq:50,dias:48,obs:""},
+  {codigo:"C-26-011",cliente:"Grupo Ethus",proyecto:"Terraza Piso 17",estado:"Cerrado",sector:"Corporativo",ciudad:"Medellin",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2026,mes:8,valor:270088406,liqSN:218771609,difCNpct:23.46,difSN:51316797,difSNpct:19,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
+  {codigo:"C-26-013",cliente:"Grupo Ethus",proyecto:"Apartamento Bosheto",estado:"En Liquidación",sector:"Vivienda",ciudad:"Medellin",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2026,mes:5,valor:90670281,liqSN:67113619,difCNpct:35.1,difSN:18089404,difSNpct:19.95,vContable:90670281,vPagado:24427817,pxCobrar:64443789,pxFacturar:0,avObra:91,avLiq:70,dias:17,obs:""},
+  {codigo:"C-26-012",cliente:"",proyecto:"Diseño Miniso Zona T",estado:"En Ejecución",sector:"Diseño",ciudad:"Bogota",encargado:"Ricardo Ariza",cargo:"Director Ejecutivo Diseño",anio:null,mes:null,valor:72279648,liqSN:0,difCNpct:0,difSN:0,difSNpct:0,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
+  {codigo:"C-26-014",cliente:"Conconcreto",proyecto:"Sala de Ventas Moderno",estado:"En Liquidación",sector:"Vivienda",ciudad:"Bogotá",encargado:"Alejandro Pacheco",cargo:"Director de Proyectos",anio:2026,mes:4,valor:107887129,liqSN:66439073,difCNpct:62.39,difSN:38590642,difSNpct:35.77,vContable:107887129,vPagado:28655986,pxCobrar:74374237,pxFacturar:0,avObra:100,avLiq:100,dias:-6,obs:""},
+  {codigo:"C-26-016",cliente:"Hoteles Estelar S.A",proyecto:"Salones Hotel Inter",estado:"En Ejecución",sector:"Hospitality",ciudad:"Cali",encargado:"Luis Mantilla",cargo:"Director Senior Proyectos",anio:2026,mes:4,valor:383554989,liqSN:249310743,difCNpct:53.85,difSN:72875448,difSNpct:19,vContable:383554989,vPagado:190057923,pxCobrar:193497066,pxFacturar:383554989,avObra:30,avLiq:20,dias:-66,obs:""},
+  {codigo:"C-26-017",cliente:"Inversiones Valencia Asociados S.A.S.",proyecto:"Centro de experiencia SOCA",estado:"En Liquidación",sector:"Retail",ciudad:"Bogotá",encargado:"Andres Rodriguez",cargo:"Director de Obras",anio:2026,mes:4,valor:30531551,liqSN:24730556,difCNpct:23.46,difSN:5800995,difSNpct:19,vContable:30531551,vPagado:10000000,pxCobrar:19923799,pxFacturar:6106310,avObra:90,avLiq:0,dias:-44,obs:""},
+  {codigo:"C-26-019",cliente:"Grupo Ethus",proyecto:"Reparaciones locativas - Interaseo piso 11",estado:"En Liquidación",sector:"Corporativo",ciudad:"Bogotá",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2026,mes:4,valor:71281334,liqSN:57737881,difCNpct:23.46,difSN:13543453,difSNpct:19,vContable:71281334,vPagado:0,pxCobrar:69168152,pxFacturar:0,avObra:85,avLiq:0,dias:0,obs:""},
+  {codigo:"C-26-020",cliente:"Aruma",proyecto:"Tienda Aruma Salitre",estado:"En Liquidación",sector:"Retail",ciudad:"Bogotá",encargado:"Andres Rodriguez",cargo:"Director de Obras",anio:2026,mes:6,valor:291201376,liqSN:235873115,difCNpct:23.46,difSN:55328261,difSNpct:19,vContable:291201381,vPagado:145600690,pxCobrar:145600691,pxFacturar:0,avObra:100,avLiq:90,dias:0,obs:""},
+  {codigo:"C-26-021",cliente:"Mall Plaza",proyecto:"Paisajismo Mall plaza",estado:"En Ejecución",sector:"Hospitality",ciudad:"Cali",encargado:"Andres Rodriguez",cargo:"Director de Obras",anio:2026,mes:6,valor:218786945,liqSN:177217425,difCNpct:23.46,difSN:41569520,difSNpct:19,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
+  {codigo:"C-26-022",cliente:"Aruma",proyecto:"Acometida - Aruma Salitre",estado:"En Liquidación",sector:"Retail",ciudad:"Bogotá",encargado:"Andres Rodriguez",cargo:"Director de Obras",anio:2026,mes:6,valor:16357836,liqSN:13249847,difCNpct:23.46,difSN:3107989,difSNpct:19,vContable:16357836,vPagado:8178918,pxCobrar:8178918,pxFacturar:16357836,avObra:0,avLiq:5,dias:0,obs:""},
+  {codigo:"C-26-023",cliente:"Andrea Cuervo",proyecto:"Apartamento 302",estado:"En Ejecución",sector:"Vivienda",ciudad:"Bogotá",encargado:"Giovanny Velasquez",cargo:"Coordinador de Proyectos",anio:2026,mes:6,valor:160120045,liqSN:0,difCNpct:0,difSN:160120045,difSNpct:100,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:20,avLiq:0,dias:0,obs:""},
+  {codigo:"C-26-024",cliente:"Terranum",proyecto:"Terranum Cortezza",estado:"En Ejecución",sector:"Corporativo",ciudad:"Medellin",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2026,mes:6,valor:729945412,liqSN:474464518,difCNpct:53.85,difSN:138689628,difSNpct:19,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
+  {codigo:"C-26-025",cliente:"Zephire",proyecto:"Zephire",estado:"En Ejecución",sector:"Retail",ciudad:"Medellin",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2026,mes:6,valor:195751173,liqSN:127238262,difCNpct:53.85,difSN:39150235,difSNpct:20,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:-19,obs:""},
+  {codigo:"C-26-026",cliente:"Sodimac",proyecto:"Pet Center",estado:"En Ejecución",sector:"Retail",ciudad:"Pereira",encargado:"Andres Rodriguez",cargo:"Director de Obras",anio:2026,mes:6,valor:1148231739,liqSN:803762217,difCNpct:42.86,difSN:183717078,difSNpct:16,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
+  {codigo:"C-26-027",cliente:"Cinepolis",proyecto:"Adecuaciones Baños Cinepolis Plaza Claro",estado:"Por Iniciar",sector:"Otros",ciudad:"Bogotá",encargado:"Andres Rodriguez",cargo:"Director de Obras",anio:2026,mes:6,valor:0,liqSN:0,difCNpct:0,difSN:0,difSNpct:0,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
+  {codigo:"C-25-038",cliente:"Colegio Mayor de Nuestra Señora del Rosario",proyecto:"Laboratorios Quinta Mutis",estado:"En Ejecución",sector:"Obra Civil",ciudad:"Bogotá",encargado:"Giovanny Velasquez",cargo:"Coordinador de Proyectos",anio:2026,mes:7,valor:5252844579,liqSN:4088317501,difCNpct:28.48,difSN:480560804,difSNpct:9.15,vContable:4088317501,vPagado:0,pxCobrar:4088317501,pxFacturar:4088317501,avObra:55,avLiq:50,dias:0,obs:""},
+  {codigo:"C-25-039",cliente:"COLTABACO SAS",proyecto:"Oficinas Coltabaco Bogota Edificio Naos",estado:"Finalizado",sector:"Corporativo",ciudad:"Bogotá",encargado:"Jeison Cera",cargo:"Director de Obras",anio:null,mes:null,valor:0,liqSN:0,difCNpct:0,difSN:0,difSNpct:0,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
+  {codigo:"C-25-040",cliente:"GRUPO ETHUS",proyecto:"Edemsa Piso 16",estado:"Garantias",sector:"Corporativo",ciudad:"Medellin",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2026,mes:2,valor:2407596525,liqSN:1734299760,difCNpct:38.82,difSN:637579294,difSNpct:26.48,vContable:2139571912,vPagado:1402406701,pxCobrar:939710386,pxFacturar:271293330,avObra:0,avLiq:0,dias:-3,obs:""},
+  {codigo:"C-25-041",cliente:"ELÉCTRICAS DE MEDELLÍN - INGENIERÍA Y SERVICIOS S.A.S. - EDEMSA",proyecto:"Diseño Oficinas Edemsa Medellin (grupo Ethuss)",estado:"En Liquidación",sector:"Diseño",ciudad:"Medellin",encargado:"Ricardo Ariza",cargo:"Director Ejecutivo Diseño",anio:2025,mes:11,valor:0,liqSN:0,difCNpct:0,difSN:0,difSNpct:0,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:29,obs:""},
+  {codigo:"C-25-042",cliente:"BRICKS S.A.S.",proyecto:"Diseño Oficina 812 Edifico Citibank (grupo Ethuss)",estado:"En Liquidación",sector:"Diseño",ciudad:"Bogotá",encargado:"Ricardo Ariza",cargo:"Director Ejecutivo Diseño",anio:null,mes:null,valor:0,liqSN:0,difCNpct:0,difSN:0,difSNpct:0,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
+  {codigo:"C-25-043",cliente:"MARROQUINERA S.A.S.",proyecto:"Carros de Personalizacion Mario Hernandez",estado:"En Liquidación",sector:"Otros",ciudad:"Bogotá",encargado:"Jeison Cera",cargo:"Director de Obras",anio:null,mes:null,valor:0,liqSN:0,difCNpct:0,difSN:0,difSNpct:0,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
+  {codigo:"C-25-044",cliente:"MAPFRE SEGUROS GENERALES DE COLOMBIA S.A",proyecto:"Construccion Fachada Edificio 93",estado:"Finalizado",sector:"Otros",ciudad:"Bogotá",encargado:"Giovanny Velasquez",cargo:"Coordinador de Proyectos",anio:null,mes:null,valor:0,liqSN:0,difCNpct:0,difSN:0,difSNpct:0,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
+  {codigo:"C-25-045",cliente:"REGUS COLOMBIA LIMITADA",proyecto:"Diseños Tecnicos Oficinas Nubank Piso 4 - Spaces 80/10",estado:"En Liquidación",sector:"Diseño",ciudad:"Bogotá",encargado:"Ricardo Ariza",cargo:"Director Ejecutivo Diseño",anio:null,mes:null,valor:0,liqSN:0,difCNpct:0,difSN:0,difSNpct:0,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
+  {codigo:"C-25-046",cliente:"REGUS COLOMBIA LTDA",proyecto:"Nubank Space 8011",estado:"En Liquidación",sector:"Corporativo",ciudad:"Bogotá",encargado:"Andres Rodriguez",cargo:"Director de Obras",anio:2026,mes:4,valor:2117089121,liqSN:1672500406,difCNpct:26.58,difSN:444588715,difSNpct:21,vContable:2117089031,vPagado:2114495031,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:54,obs:""},
+  {codigo:"C-25-048",cliente:"GRUPO ETHUS",proyecto:"We Group",estado:"Garantias",sector:"Corporativo",ciudad:"Bogotá",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2026,mes:3,valor:703499282,liqSN:622693841,difCNpct:12.98,difSN:80805441,difSNpct:11.49,vContable:688182995,vPagado:536704250,pxCobrar:131947632,pxFacturar:0,avObra:0,avLiq:0,dias:8,obs:""},
+  {codigo:"C-26-010",cliente:"GRUPO ETHUS",proyecto:"Interaseo Piso 15",estado:"Cerrado",sector:"Corporativo",ciudad:"Medellin",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2026,mes:8,valor:22772316,liqSN:9498095,difCNpct:139.76,difSN:6651679,difSNpct:29.21,vContable:13949867,vPagado:0,pxCobrar:13949867,pxFacturar:13949867,avObra:0,avLiq:0,dias:0,obs:""},
+  {codigo:"C-26-028",cliente:"GRUPO ETHUS",proyecto:"Diseño Terraza Piso 17",estado:"En Ejecución",sector:"Corporativo",ciudad:"",encargado:"Sin asignar",cargo:"",anio:null,mes:null,valor:0,liqSN:0,difCNpct:0,difSN:0,difSNpct:0,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
+  {codigo:"C-26-029",cliente:"GRUPO ETHUS",proyecto:"Diseño Piso 2",estado:"En Ejecución",sector:"Corporativo",ciudad:"",encargado:"Sin asignar",cargo:"",anio:null,mes:null,valor:0,liqSN:0,difCNpct:0,difSN:0,difSNpct:0,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
+  {codigo:"C-26-030",cliente:"GRUPO ETHUS",proyecto:"Diseños Arquitectonicos y Tecnicos Piso 15 - Interaseo",estado:"En Ejecución",sector:"Corporativo",ciudad:"",encargado:"Sin asignar",cargo:"",anio:null,mes:null,valor:0,liqSN:0,difCNpct:0,difSN:0,difSNpct:0,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
+  {codigo:"C-26-031",cliente:"ANDREA CUERVO",proyecto:"Apto 302 - Calle 85 (mobiliario)",estado:"En Ejecución",sector:"Vivienda",ciudad:"",encargado:"Sin asignar",cargo:"",anio:null,mes:null,valor:0,liqSN:0,difCNpct:0,difSN:0,difSNpct:0,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""}
+];
+
+const fmtMM=v=>{if(v===null||v===undefined||isNaN(v)||v===0)return"—";return"$"+Math.round(v).toLocaleString('es-CO');};
+
+const filteredProjects = PROJECTS;
+
+let FLUJO_CAJA=[];
+const FLUJO_SHEET_ID='1CbTHrQqdji7HayP2XuVz_x-aJE4o4CGKq0zI1immtfM';
+const FLUJO_SHEET_GID='327388996';
+const FLUJO_CSV_URL=`https://docs.google.com/spreadsheets/d/${FLUJO_SHEET_ID}/gviz/tq?tqx=out:csv&gid=${FLUJO_SHEET_GID}`;
+
+function parseSheetCSV(text){
+  const rows=[];let row=[];let field='';let inQ=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(inQ){ if(c==='"'){ if(text[i+1]==='"'){field+='"';i++;} else inQ=false; } else field+=c; }
+    else { if(c==='"') inQ=true; else if(c===','){row.push(field);field='';} else if(c==='\n'){row.push(field);rows.push(row);row=[];field='';} else if(c==='\r'){} else field+=c; }
+  }
+  if(field.length||row.length){row.push(field);rows.push(row);}
+  return rows;
+}
+function parseMoneyCO(s){
+  if(!s)return 0;
+  const neg=s.indexOf('-')!==-1;
+  const digits=s.replace(/[^0-9]/g,'');
+  if(!digits)return 0;
+  const n=parseInt(digits,10);
+  return neg?-n:n;
+}
+function parsePctCO(s){
+  if(!s)return 0;
+  const n=parseFloat(s.replace('%','').replace(',','.').trim());
+  return isNaN(n)?0:n;
+}
+function parseSemanaNum(s){
+  if(!s)return null;
+  const m=s.match(/Semana\s+(\d+)/i);
+  return m?parseInt(m[1],10):null;
+}
+function isoFromSemanaNum(n){
+  if(n==null)return null;
+  const d=addDays(SEMANA1_INICIO,(n-1)*7);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+/* Columnas verificadas contra la hoja real (índices 0-based de la fila CSV) */
+const FC_MILESTONE_SPECS=[
+  {tipo:'Anticipo',label:null,pctIdx:8,valorProyIdx:10,fechaProyIdx:11,fechaRealIdx:12,valorRealIdx:13,fechaPresentaIdx:null,estadoIdx:14},
+  {tipo:'Corte',label:'Corte 1',pctIdx:16,valorProyIdx:22,fechaPresentaIdx:23,fechaProyIdx:24,fechaRealIdx:25,valorRealIdx:26,estadoIdx:27},
+  {tipo:'Corte',label:'Corte 2',pctIdx:29,valorProyIdx:35,fechaPresentaIdx:36,fechaProyIdx:37,fechaRealIdx:38,valorRealIdx:39,estadoIdx:40},
+  {tipo:'Corte',label:'Corte 3',pctIdx:42,valorProyIdx:48,fechaPresentaIdx:49,fechaProyIdx:50,fechaRealIdx:51,valorRealIdx:52,estadoIdx:53},
+  {tipo:'Corte',label:'Corte 4',pctIdx:55,valorProyIdx:61,fechaPresentaIdx:62,fechaProyIdx:63,fechaRealIdx:64,valorRealIdx:null,estadoIdx:65},
+  {tipo:'Retegarantía',label:null,pctIdx:73,valorProyIdx:74,fechaProyIdx:75,fechaRealIdx:76,valorRealIdx:null,fechaPresentaIdx:null,estadoIdx:77},
+  {tipo:'Liquidación',label:null,pctIdx:79,valorProyIdx:80,valorRealIdx:81,fechaPresentaIdx:82,fechaProyIdx:83,fechaRealIdx:83,estadoIdx:84},
+];
+function extractHito(row,spec){
+  const pct=parsePctCO(row[spec.pctIdx]);
+  const valorProy=spec.valorProyIdx!=null?parseMoneyCO(row[spec.valorProyIdx]):0;
+  const valorReal=spec.valorRealIdx!=null?parseMoneyCO(row[spec.valorRealIdx]):0;
+  const estadoRaw=(row[spec.estadoIdx]||'').trim();
+  if(!(pct>0||valorProy>0||valorReal>0||estadoRaw!==''))return null;
+  const estado=estadoRaw==='Confirmado'?'Confirmado':'Pendiente';
+  const valor=valorReal>0?valorReal:valorProy;
+  const semanaNumProy=spec.fechaProyIdx!=null?parseSemanaNum(row[spec.fechaProyIdx]):null;
+  const semanaNumReal=spec.fechaRealIdx!=null?parseSemanaNum(row[spec.fechaRealIdx]):null;
+  const semanaNumPresenta=spec.fechaPresentaIdx!=null?parseSemanaNum(row[spec.fechaPresentaIdx]):null;
+  const semanaNum=semanaNumReal!=null?semanaNumReal:semanaNumProy;
+  if(!(valor>0))return null;
+  return{tipo:spec.tipo,label:spec.label||undefined,valor,
+    semana:isoFromSemanaNum(semanaNum),
+    semanaPresenta:isoFromSemanaNum(semanaNumPresenta),
+    fecha:null,estado};
+}
+async function loadFlujoCajaLive(){
+  const note=document.getElementById('fc-note');
+  try{
+    const res=await fetch(FLUJO_CSV_URL,{credentials:'omit'});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const text=await res.text();
+    const rows=parseSheetCSV(text);
+    const dataRows=rows.slice(1).filter(r=>r[1]&&r[1].trim());
+    const result=dataRows.map(row=>{
+      const codigo=row[1].trim();
+      const hitos=FC_MILESTONE_SPECS.map(spec=>extractHito(row,spec)).filter(Boolean);
+      return{codigo,hitos};
+    });
+    FLUJO_CAJA.length=0;
+    FLUJO_CAJA.push(...result);
+    if(note)note.style.display='none';
+  }catch(err){
+    console.error('No se pudo cargar el Flujo de Caja en vivo desde el Google Sheet:',err);
+    if(note){note.style.display='block';note.textContent='⚠ No se pudo conectar con el Google Sheet en vivo (revisa tu conexión o que el archivo siga compartido como "Cualquiera con el enlace"). El cuadro de flujo de caja puede estar incompleto.';}
+  }
+}
+const TIPO_COLOR_FC={Anticipo:'#2e7dd1',Corte:'#1a8a52','Liquidación':'#e8622a','Retegarantía':'#a82c00',Vencido:'#c0392b'};
+function mondayOf(d){const dt=new Date(d);const day=(dt.getDay()+6)%7;dt.setHours(0,0,0,0);dt.setDate(dt.getDate()-day);return dt;}
+function addDays(d,n){const dt=new Date(d);dt.setDate(dt.getDate()+n);return dt;}
+function fcShort(d){return d.toLocaleDateString('es-CO',{day:'2-digit',month:'2-digit'});}
+function fcResolveDate(val,base){if(val==null)return null;if(typeof val==='number')return addDays(base,val);const d=new Date(val+'T00:00:00');return isNaN(d)?null:d;}
+const SEMANA1_INICIO=new Date(2025,11,29);
+function semanaNumOf(d){const diff=Math.round((mondayOf(d)-SEMANA1_INICIO)/(86400000*7));return diff+1;}
+
+let fcSemanaChart,fcTipoChart,fcVencTipoChart;
+let fcActiveWeek=0,fcR4Weeks=[],fcR4Rows=[];
+function fcSelectWeek(i){fcActiveWeek=i;renderResumen4Semanas();}
+function buildResumen4Semanas(weeks,rows){
+  fcR4Weeks=weeks.slice(0,4);
+  fcR4Rows=rows;
+  if(fcActiveWeek>fcR4Weeks.length-1)fcActiveWeek=0;
+  renderResumen4Semanas();
+}
+function esVencido(h,cutoff){
+  const ingOverdue=h.semanaDate&&h.semanaDate<cutoff&&h.estado!=='Confirmado';
+  const presOverdue=h.semanaPresentaDate&&h.semanaPresentaDate<cutoff&&h.estado!=='Confirmado';
+  return ingOverdue||presOverdue;
+}
+function renderResumen4Semanas(){
+  const weeks=fcR4Weeks,rows=fcR4Rows;
+  if(!weeks.length)return;
+  const cards=weeks.map((w,i)=>{
+    const ingresar=rows.filter(h=>h.semanaDate&&h.semanaDate>=w.start&&h.semanaDate<=w.end).reduce((s,h)=>s+h.valor,0);
+    const presentar=rows.filter(h=>h.semanaPresentaDate&&h.semanaPresentaDate>=w.start&&h.semanaPresentaDate<=w.end).reduce((s,h)=>s+h.valor,0);
+    const totalSemana=ingresar+presentar;
+    const esSemanaActual=i===0;
+    const cardCls='fc-r4-card'+(i===fcActiveWeek?' active':'');
+    return`<div class="${cardCls}" onclick="fcSelectWeek(${i})">
+      <div class="fc-r4-wk">Semana ${semanaNumOf(w.start)}${esSemanaActual?' (actual)':''}</div>
+      <div class="fc-r4-date">${fcShort(w.start)}–${fcShort(w.end)}</div>
+      <div class="fc-r4-row"><span>A ingresar</span><span class="fc-r4-val ing">${fmtMM(ingresar)}</span></div>
+      <div class="fc-r4-row"><span>A presentar</span><span class="fc-r4-val pres">${fmtMM(presentar)}</span></div>
+      <div class="fc-r4-row total"><span>Total semana</span><span class="fc-r4-val total">${fmtMM(totalSemana)}</span></div>
+    </div>`;
+  }).join('');
+  document.getElementById('fc-resumen4').innerHTML=cards;
+
+  const w=weeks[fcActiveWeek];
+  const ingRows=rows.filter(h=>h.semanaDate&&h.semanaDate>=w.start&&h.semanaDate<=w.end);
+  const presRows=rows.filter(h=>h.semanaPresentaDate&&h.semanaPresentaDate>=w.start&&h.semanaPresentaDate<=w.end);
+  const rowHtml=list=>list.length?list.map(h=>`<div class="fc-r4-row" style="border-bottom:1px solid #f5f3f0;padding:5px 0">
+      <span><strong style="color:#1a1a1a">${h.proyecto}</strong> — ${h.label||h.tipo} <span class="ht ht-${h.tipo}" style="margin-left:4px">${h.tipo}</span></span>
+      <span class="fc-r4-val" style="font-size:11px">${fmtMM(h.valor)}</span></div>`).join(''):
+    '<div class="fc-r4-detail-empty">Nada programado esta semana.</div>';
+  document.getElementById('fc-resumen4-detail').innerHTML=`
+    <div class="fc-r4-detail-wrap">
+      <div class="fc-r4-detail-title">A ingresar — Semana ${semanaNumOf(w.start)} (${fcShort(w.start)}–${fcShort(w.end)})</div>
+      ${rowHtml(ingRows)}
+      <div class="fc-r4-detail-title" style="margin-top:12px">A presentar — Semana ${semanaNumOf(w.start)} (${fcShort(w.start)}–${fcShort(w.end)})</div>
+      ${rowHtml(presRows)}
+    </div>`;
+}
+/* ── Panel independiente de Pagos Vencidos (no depende de la semana seleccionada) ── */
+function diasAtraso(fecha,today0){
+  if(!fecha)return null;
+  return Math.max(0,Math.round((today0-fecha)/86400000));
+}
+/* Icono ✓/✗ para indicar si el hito ya fue presentado.
+   Solo aplica a hitos con paso de presentación (Corte/Liquidación).
+   ✓ verde: la fecha de presentación ya pasó (se dio por presentado).
+   ✗ rojo: tiene fecha de presentación pero todavía no llega o sigue pendiente.
+   — gris: el hito no requiere presentación (Anticipo/Retegarantía). */
+function presentadoIcon(h,today0){
+  if(!h.semanaPresentaDate)return'<span style="color:#c5c2bc">—</span>';
+  return h.semanaPresentaDate<=today0
+    ?'<span style="color:#1a8a52;font-weight:700;font-size:13px">✓</span>'
+    :'<span style="color:#c0392b;font-weight:700;font-size:13px">✗</span>';
+}
+/* Icono ✓/✗ para el ingreso: ✓ solo si el estado del hito ya quedó Confirmado
+   (el pago realmente entró). ✗ si tenía fecha de ingreso y sigue Pendiente. */
+function ingresoIcon(h){
+  if(!h.semanaDate)return'<span style="color:#c5c2bc">—</span>';
+  return h.estado==='Confirmado'
+    ?'<span style="color:#1a8a52;font-weight:700;font-size:13px">✓</span>'
+    :'<span style="color:#c0392b;font-weight:700;font-size:13px">✗</span>';
+}
+function renderVencidos(vencidosList,today0){
+  const total=vencidosList.reduce((s,h)=>s+h.valor,0);
+  const sub=document.getElementById('fc-venc-sub');
+  sub.textContent=vencidosList.length? `${vencidosList.length} hito(s) — ${fmtMM(total)} en total`:'Sin pagos vencidos';
+  const sorted=[...vencidosList].sort((a,b)=>{
+    const da=a.semanaDate||a.semanaPresentaDate||new Date(0);
+    const db=b.semanaDate||b.semanaPresentaDate||new Date(0);
+    return da-db;
+  });
+  document.getElementById('fc-vencidos-tbody').innerHTML=sorted.length?sorted.map(h=>{
+    const diasIng=diasAtraso(h.semanaDate&&h.semanaDate<today0?h.semanaDate:null,today0);
+    const diasPres=diasAtraso(h.semanaPresentaDate&&h.semanaPresentaDate<today0?h.semanaPresentaDate:null,today0);
+    const dias=[diasIng,diasPres].filter(d=>d!==null);
+    const diasMax=dias.length?Math.max(...dias):null;
+    return`<tr class="fc-row-venc">
+      <td class="td-primary">${h.proyecto}</td><td>${h.encargado||''}</td>
+      <td><span class="ht ht-${h.tipo}">${h.label||h.tipo}</span></td>
+      <td class="td-money" style="text-align:right">${fmtMM(h.valor)}</td>
+      <td>${ingresoIcon(h)} ${h.semanaDate?fcShort(h.semanaDate)+(h.semanaDate<today0?' ⚠':''):'—'}</td>
+      <td>${presentadoIcon(h,today0)} ${h.semanaPresentaDate?fcShort(h.semanaPresentaDate)+(h.semanaPresentaDate<today0?' ⚠':''):'—'}</td>
+      <td style="text-align:right;color:#c0392b;font-weight:600">${diasMax!==null?diasMax+' días':'—'}</td>
+      <td><span class="hb ${h.estado==='Confirmado'?'hb-cob':'hb-pend'}">${h.estado}</span></td></tr>`;
+  }).join(''):
+    '<tr><td colspan="8" style="text-align:center;color:#aaa;padding:20px">No hay pagos vencidos con los filtros actuales</td></tr>';
+
+  const vTipoTotals={Anticipo:0,Corte:0,'Liquidación':0,'Retegarantía':0};
+  vencidosList.forEach(h=>vTipoTotals[h.tipo]+=h.valor);
+  const vLabelsAll=Object.keys(vTipoTotals);
+  const vLabels=vLabelsAll.filter(l=>vTipoTotals[l]>0);
+  const vData=vLabels.map(l=>vTipoTotals[l]);
+  const vColors=vLabels.map(l=>TIPO_COLOR_FC[l]);
+  if(fcVencTipoChart)fcVencTipoChart.destroy();
+  const vencCanvas=document.getElementById('fcVencTipoChart');
+  if(vencCanvas){
+    fcVencTipoChart=new Chart(vencCanvas,{type:'doughnut',
+      data:{labels:vLabels.length?vLabels:['Sin datos'],datasets:[{data:vLabels.length?vData:[1],backgroundColor:vLabels.length?vColors:['#e8e5e0'],borderWidth:6,borderColor:'#fff',borderRadius:8,spacing:4}]},
+      options:{responsive:false,maintainAspectRatio:false,cutout:'58%',plugins:{legend:{display:false},tooltip:{enabled:vLabels.length>0,callbacks:{label:c=>` ${c.label}: ${fmtMM(c.raw)}`}}}}});
+  }
+  const vDonutN=document.getElementById('fc-venc-donut-n');
+  if(vDonutN)vDonutN.textContent=vencidosList.length;
+  const vLegend=document.getElementById('fc-venc-tipo-legend');
+  if(vLegend)vLegend.innerHTML=vLabels.length?vLabels.map((l,i)=>`<div class="legend-item"><div class="legend-dot" style="background:${vColors[i]}"></div><span>${l}</span><span class="legend-n">${fmtMM(vData[i])}</span></div>`).join(''):
+    '<div style="font-size:11px;color:#aaa;text-align:center">Sin pagos vencidos</div>';
+}
+function buildFlujoCaja(){
+  const codigosVisibles=new Set(filteredProjects.map(p=>p.codigo));
+  const today0=mondayOf(new Date());
+  const weeks=[...Array(12)].map((_,i)=>({start:addDays(today0,i*7),end:addDays(today0,i*7+6)}));
+  const rows=[];
+  FLUJO_CAJA.forEach(fc=>{
+    const p=PROJECTS.find(x=>x.codigo===fc.codigo);
+    if(!p||!codigosVisibles.has(fc.codigo))return;
+    fc.hitos.forEach(h=>{
+      rows.push({...h,codigo:fc.codigo,proyecto:p.proyecto,encargado:p.encargado,
+        semanaDate:fcResolveDate(h.semana,today0),fechaDate:fcResolveDate(h.fecha,today0),
+        semanaPresentaDate:fcResolveDate(h.semanaPresenta,today0)});
+    });
+  });
+
+  buildResumen4Semanas(weeks,rows);
+
+  const totalProyectado=rows.filter(h=>h.semanaDate&&h.semanaDate>=weeks[0].start&&h.semanaDate<=weeks[11].end).reduce((s,h)=>s+h.valor,0);
+  const vencidos=rows.filter(h=>esVencido(h,weeks[0].start));
+  const totalVencido=vencidos.reduce((s,h)=>s+h.valor,0);
+  renderVencidos(vencidos,today0);
+  const totalPendiente=rows.filter(h=>h.estado==='Pendiente').reduce((s,h)=>s+h.valor,0);
+  const totalGestionado=rows.filter(h=>h.estado==='Confirmado').reduce((s,h)=>s+h.valor,0);
+
+  const sinHitos=FLUJO_CAJA.filter(fc=>codigosVisibles.has(fc.codigo)&&fc.hitos.length===0).length;
+  const note=document.getElementById('fc-note');
+  if(sinHitos>0){note.style.display='block';note.textContent=`⚠ ${sinHitos} proyecto(s) activos sin hitos programados todavía — complétalos en la pestaña "Flujo de Caja" del Google Sheet y regenera este archivo.`;}
+  else note.style.display='none';
+
+  document.getElementById('fc-kpi-strip').innerHTML=`
+    <div class="kpi"><div class="kpi-ico total"><svg width="16" height="16" fill="none" stroke="#e8622a" stroke-width="1.8" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="9" x2="23" y2="9"/></svg></div>
+      <div><div class="kpi-num">${fmtMM(totalProyectado)}</div><div class="kpi-lbl">Proyectado 12 semanas</div></div></div>
+    <div class="kpi"><div class="kpi-ico venc"><svg width="16" height="16" fill="none" stroke="#c0392b" stroke-width="1.8" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg></div>
+      <div><div class="kpi-num" style="color:#c0392b">${fmtMM(totalVencido)}</div><div class="kpi-lbl">Vencido sin presentar</div></div></div>
+    <div class="kpi"><div class="kpi-ico liq"><svg width="16" height="16" fill="none" stroke="#a0620a" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+      <div><div class="kpi-num" style="color:#a0620a">${fmtMM(totalPendiente)}</div><div class="kpi-lbl">Pendiente por presentar</div></div></div>
+    <div class="kpi"><div class="kpi-ico ejec"><svg width="16" height="16" fill="none" stroke="#1a8a52" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div><div class="kpi-num" style="color:#1a8a52">${fmtMM(totalGestionado)}</div><div class="kpi-lbl">Confirmado</div></div></div>`;
+
+  const byWeek=weeks.map(w=>({Anticipo:0,Corte:0,'Liquidación':0,'Retegarantía':0}));
+  rows.forEach(h=>{if(!h.semanaDate)return;weeks.forEach((w,i)=>{if(h.semanaDate>=w.start&&h.semanaDate<=w.end)byWeek[i][h.tipo]+=h.valor;});});
+  const labels=weeks.map(w=>[`${fcShort(w.start)}–${fcShort(w.end)}`,`Semana ${semanaNumOf(w.start)}`]);
+  if(fcSemanaChart)fcSemanaChart.destroy();
+  fcSemanaChart=new Chart(document.getElementById('fcSemanaChart'),{type:'bar',
+    data:{labels,datasets:['Anticipo','Corte','Liquidación','Retegarantía'].map(t=>({label:t,backgroundColor:TIPO_COLOR_FC[t],data:byWeek.map(w=>w[t]),stack:'s',borderRadius:3}))},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${fmtMM(c.raw)}`}}},
+      scales:{x:{stacked:true,grid:{display:false},ticks:{color:"#6b6b66",font:{size:9}},border:{display:false}},
+               y:{stacked:true,grid:{color:"#f0efec"},ticks:{color:"#6b6b66",font:{size:10},callback:v=>fmtMM(v)},border:{display:false}}}}});
+
+  const tipoTotals={Anticipo:0,Corte:0,'Liquidación':0,'Retegarantía':0};
+  rows.forEach(h=>tipoTotals[h.tipo]+=h.valor);
+  const tLabels=Object.keys(tipoTotals),tData=Object.values(tipoTotals),tColors=tLabels.map(l=>TIPO_COLOR_FC[l]);
+  if(fcTipoChart)fcTipoChart.destroy();
+  fcTipoChart=new Chart(document.getElementById('fcTipoChart'),{type:'doughnut',
+    data:{labels:tLabels,datasets:[{data:tData,backgroundColor:tColors,borderWidth:6,borderColor:'#fff',borderRadius:8,spacing:4}]},
+    options:{responsive:false,maintainAspectRatio:false,cutout:'58%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.label}: ${fmtMM(c.raw)}`}}}}});
+  document.getElementById('fc-donut-n').textContent=rows.length;
+  document.getElementById('fc-tipo-legend').innerHTML=tLabels.map((l,i)=>`<div class="legend-item"><div class="legend-dot" style="background:${tColors[i]}"></div><span>${l}</span><span class="legend-n">${fmtMM(tData[i])}</span></div>`).join('');
+
+  const vencidosSet=new Set(vencidos);
+  const pendRows=rows.filter(h=>h.estado!=='Confirmado'&&!vencidosSet.has(h)).sort((a,b)=>{const av=a.semanaDate?a.semanaDate.getTime():Infinity;const bv=b.semanaDate?b.semanaDate.getTime():Infinity;return av-bv;});
+  document.getElementById('fc-hitos-tbody').innerHTML=pendRows.length?pendRows.map(h=>{
+    const hbCls=h.estado==='Confirmado'?'hb-cob':'hb-pend';
+    return`<tr>
+      <td>${h.semanaDate?fcShort(h.semanaDate):'<em style="color:#bbb">Sin fecha</em>'}</td>
+      <td class="td-primary">${h.proyecto}</td><td>${h.encargado||''}</td>
+      <td><span class="ht ht-${h.tipo}">${h.label||h.tipo}</span></td>
+      <td class="td-money" style="text-align:right">${fmtMM(h.valor)}</td>
+      <td><span class="hb ${hbCls}">${h.estado}</span></td>
+      <td style="text-align:center">${presentadoIcon(h,today0)}</td></tr>`;}).join(''):
+    '<tr><td colspan="7" style="text-align:center;color:#aaa;padding:20px">No hay hitos pendientes con los filtros actuales (los vencidos se muestran en el cuadro de arriba)</td></tr>';
+
+  document.getElementById('fc-proy-tbody').innerHTML=FLUJO_CAJA.filter(fc=>codigosVisibles.has(fc.codigo)).map(fc=>{
+    const p=PROJECTS.find(x=>x.codigo===fc.codigo);if(!p)return'';
+    const programado=fc.hitos.filter(h=>h.tipo!=='Retegarantía').reduce((s,h)=>s+h.valor,0);
+    const sinProgramar=Math.max(0,(p.valor||0)-programado);
+    const cls=EB[p.estado]||"eb-cerr";
+    return`<tr><td class="td-code">${p.codigo}</td><td class="td-primary">${p.proyecto}</td><td>${p.encargado}</td>
+      <td><span class="estado-badge ${cls}">${p.estado}</span></td>
+      <td class="td-money" style="text-align:right">${fmtMM(p.valor)}</td>
+      <td class="td-money" style="text-align:right">${fmtMM(programado)}</td>
+      <td style="text-align:right;color:${sinProgramar>0?'#a0620a':'#aaa'}">${sinProgramar>0?fmtMM(sinProgramar):'—'}</td></tr>`;
+  }).join('');
+}
+
+async function refreshFlujoCaja(){
+  const btn=document.getElementById('fc-refresh-btn');
+  const timeEl=document.getElementById('fc-refresh-time');
+  const fcNote=document.getElementById('fc-note');
+  if(btn){btn.disabled=true;btn.textContent='⟳ Actualizando...';}
+  if(fcNote){fcNote.style.display='block';fcNote.textContent='⏳ Cargando datos en vivo desde el Google Sheet...';}
+  await loadFlujoCajaLive();
+  buildFlujoCaja();
+  if(btn){btn.disabled=false;btn.textContent='⟳ Actualizar datos';}
+  if(timeEl){
+    const now=new Date();
+    const fecha=now.toLocaleDateString('es-CO',{day:'2-digit',month:'2-digit',year:'numeric'});
+    const hora=now.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+    timeEl.textContent='Última actualización: '+fecha+' · '+hora;
+  }
+}
+
 const FASE_ORDER = ['Inicio','Planeación','Ejecución','Cierre','Seguimiento y control'];
 let currentProject = null;
 let currentFaseIndex = 0;
@@ -287,6 +874,8 @@ function enterApp(){
   document.getElementById('user-info').innerHTML = '<strong>' + s.nombre + '</strong><br>' + (s.rol || '');
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
+  const puedeVerFinanciero = s.rol === 'Director' || s.rol === 'Gerente' || s.rol === 'Admin';
+  document.getElementById('nav-flujo-caja').style.display = puedeVerFinanciero ? 'flex' : 'none';
   goToProjectList();
 }
 
@@ -306,6 +895,7 @@ function goToProjectList(){
   document.getElementById('view-projects').style.display = 'block';
   document.getElementById('view-timeline').style.display = 'none';
   document.getElementById('view-new-project').style.display = 'none';
+  document.getElementById('view-flujocaja').style.display = 'none';
   document.getElementById('topbar-title').textContent = 'MIS PROYECTOS';
   document.getElementById('topbar-sub').textContent = 'Proyectos asignados a tu usuario';
   document.getElementById('refresh-btn').style.display = 'inline-block';
@@ -313,11 +903,29 @@ function goToProjectList(){
   loadProjects();
 }
 
+function goToFlujoCaja(){
+  const s = getSession();
+  if(!(s.rol === 'Director' || s.rol === 'Gerente' || s.rol === 'Admin')){
+    return; // el nav ni siquiera debería estar visible, esto es un respaldo
+  }
+  currentView = 'flujocaja';
+  document.getElementById('view-projects').style.display = 'none';
+  document.getElementById('view-timeline').style.display = 'none';
+  document.getElementById('view-new-project').style.display = 'none';
+  document.getElementById('view-flujocaja').style.display = 'block';
+  document.getElementById('topbar-title').textContent = 'FLUJO DE CAJA';
+  document.getElementById('topbar-sub').textContent = 'Control de hitos de cobro — próximas 12 semanas';
+  document.getElementById('refresh-btn').style.display = 'none'; // esta vista tiene su propio botón "Actualizar"
+  setActiveNav('nav-flujo-caja');
+  refreshFlujoCaja();
+}
+
 function goToNewProject(){
   currentView = 'new-project';
   document.getElementById('view-projects').style.display = 'none';
   document.getElementById('view-timeline').style.display = 'none';
   document.getElementById('view-new-project').style.display = 'block';
+  document.getElementById('view-flujocaja').style.display = 'none';
   document.getElementById('topbar-title').textContent = 'NUEVO PROYECTO';
   document.getElementById('topbar-sub').textContent = 'Crea un proyecto y clónale su checklist';
   document.getElementById('refresh-btn').style.display = 'none';
@@ -411,6 +1019,7 @@ function openProject(p){
   document.getElementById('view-projects').style.display = 'none';
   document.getElementById('view-timeline').style.display = 'block';
   document.getElementById('view-new-project').style.display = 'none';
+  document.getElementById('view-flujocaja').style.display = 'none';
   document.getElementById('refresh-btn').style.display = 'inline-block';
   setActiveNav('nav-mis-proyectos');
   document.getElementById('topbar-title').textContent = p.codigo;
