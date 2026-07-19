@@ -5,29 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mínima Arquitectos — Portal de Proyectos</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
-body{font-family:'Inter',sans-serif;background:#f6f1ee;color:#1a1a1a}
-
-/* ═══ CONFIG: pega aquí la URL de tu Apps Script desplegado ═══ */
-</style>
+<style>*{box-sizing:border-box;margin:0;padding:0}html,body{height:100%}body{font-family:'Inter',sans-serif;background:#f6f1ee;color:#1a1a1a}</style>
 </head>
 <body>
 
-<!-- ══════════════ PANTALLA DE LOGIN ══════════════ -->
+<!-- ══════════════ LOGIN ══════════════ -->
 <div id="login-screen" class="login-screen">
   <div class="login-card">
     <div class="login-logo">MÍNIMA<span>ARQUITECTOS</span></div>
     <div class="login-title">Portal de Proyectos</div>
     <div class="login-sub">Ingresa tu código de acceso para continuar</div>
-    <input id="login-code" class="login-input" type="password" placeholder="Código de acceso" autocomplete="off" />
+    <input id="login-correo" class="login-input" type="email" placeholder="Correo" autocomplete="username" style="margin-bottom:10px" />
+    <input id="login-pass" class="login-input" type="password" placeholder="Contraseña" autocomplete="current-password" />
     <button id="login-btn" class="login-btn" onclick="doLogin()">Entrar</button>
     <div id="login-error" class="login-error"></div>
   </div>
 </div>
 
-<!-- ══════════════ PORTAL (oculto hasta iniciar sesión) ══════════════ -->
+<!-- ══════════════ PORTAL ══════════════ -->
 <div id="app" class="app" style="display:none">
   <div class="sidebar">
     <div class="sidebar-logo">
@@ -35,9 +30,8 @@ body{font-family:'Inter',sans-serif;background:#f6f1ee;color:#1a1a1a}
       <div class="sub">PORTAL DE PROYECTOS</div>
     </div>
     <div class="sidebar-nav">
-      <div class="nav-section">Checklist</div>
-      <div class="nav-item active" data-sheet="MINIMA" onclick="switchSheet('MINIMA',this)">Plantilla Mínima</div>
-      <div class="nav-item" data-sheet="ENEL" onclick="switchSheet('ENEL',this)">Plantilla ENEL</div>
+      <div class="nav-section">Navegación</div>
+      <div class="nav-item active" onclick="goToProjectList()">📁 Mis proyectos</div>
     </div>
     <div class="sidebar-footer">
       <div class="upd" id="user-info">—</div>
@@ -48,15 +42,26 @@ body{font-family:'Inter',sans-serif;background:#f6f1ee;color:#1a1a1a}
   <div class="main">
     <div class="topbar">
       <div>
-        <div class="topbar-title">FASES DEL PROYECTO</div>
-        <div class="topbar-sub" id="topbar-sub">Checklist organizado por fase — Mínima Arquitectos</div>
+        <div class="topbar-title" id="topbar-title">MIS PROYECTOS</div>
+        <div class="topbar-sub" id="topbar-sub">Proyectos asignados a tu usuario</div>
       </div>
-      <button class="refresh-btn" id="refresh-btn" onclick="loadChecklist()">⟳ Actualizar</button>
+      <button class="refresh-btn" id="refresh-btn" onclick="refreshCurrentView()">⟳ Actualizar</button>
     </div>
-
     <div class="content">
       <div id="load-note" class="load-note" style="display:none"></div>
-      <div id="fases-wrap" class="fases-wrap"></div>
+
+      <!-- Vista: listado de proyectos -->
+      <div id="view-projects" class="view">
+        <div id="projects-grid" class="projects-grid"></div>
+      </div>
+
+      <!-- Vista: timeline de un proyecto -->
+      <div id="view-timeline" class="view" style="display:none">
+        <button class="back-btn" onclick="goToProjectList()">← Volver a mis proyectos</button>
+        <div id="project-header" class="project-header"></div>
+        <div id="timeline-wrap" class="timeline-wrap"></div>
+        <div id="fase-detail-wrap" class="fase-detail-wrap"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -65,57 +70,79 @@ body{font-family:'Inter',sans-serif;background:#f6f1ee;color:#1a1a1a}
 /* ═══ LOGIN ═══ */
 .login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#474545}
 .login-card{background:#fff;border-radius:14px;padding:40px 36px;width:340px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.25)}
-.login-logo{font-family:'Montserrat',sans-serif;font-weight:700;font-size:20px;letter-spacing:1px;color:#1a1a1a;margin-bottom:4px}
+.login-logo{font-family:'Montserrat',sans-serif;font-weight:700;font-size:20px;letter-spacing:1px;color:#1a1a1a}
 .login-logo span{display:block;font-size:8px;letter-spacing:3px;font-weight:600;color:#e8622a;margin-top:2px}
 .login-title{font-family:'Montserrat',sans-serif;font-weight:700;font-size:15px;color:#1a1a1a;margin-top:20px}
 .login-sub{font-size:11px;color:#6b6b66;margin-top:6px;margin-bottom:20px}
-.login-input{width:100%;border:1px solid #d4d3cf;border-radius:8px;padding:11px 14px;font-size:13px;font-family:'Inter',sans-serif;outline:none;transition:border-color .15s;letter-spacing:1px}
+.login-input{width:100%;border:1px solid #d4d3cf;border-radius:8px;padding:11px 14px;font-size:13px;outline:none;letter-spacing:1px}
 .login-input:focus{border-color:#e8622a}
-.login-btn{width:100%;margin-top:12px;background:#e8622a;color:#fff;border:none;border-radius:8px;padding:11px;font-family:'Montserrat',sans-serif;font-weight:600;font-size:12px;cursor:pointer;transition:background .15s}
+.login-btn{width:100%;margin-top:12px;background:#e8622a;color:#fff;border:none;border-radius:8px;padding:11px;font-family:'Montserrat',sans-serif;font-weight:600;font-size:12px;cursor:pointer}
 .login-btn:hover{background:#d1531f}
 .login-btn:disabled{background:#e8b8a2;cursor:wait}
 .login-error{color:#c0392b;font-size:11px;margin-top:12px;min-height:14px}
 
-/* ═══ SHELL (mismo lenguaje visual del dashboard de portafolio) ═══ */
+/* ═══ SHELL ═══ */
 .app{display:flex;min-height:100vh}
 .sidebar{position:fixed;left:0;top:0;width:210px;height:100%;background:#474545;display:flex;flex-direction:column;z-index:100}
 .sidebar-logo{padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,.18)}
-.logo-text{font-family:'Montserrat',sans-serif;font-weight:700;font-size:16px;color:#fff;letter-spacing:.5px}
+.logo-text{font-family:'Montserrat',sans-serif;font-weight:700;font-size:16px;color:#fff}
 .logo-text span{display:block;font-size:7px;letter-spacing:2px;color:#f59d1d;margin-top:2px}
 .sidebar-logo .sub{font-family:'Montserrat',sans-serif;font-size:8px;letter-spacing:2px;color:rgba(255,255,255,.35);text-transform:uppercase;margin-top:10px}
 .sidebar-nav{flex:1;padding:14px 0}
 .nav-section{padding:8px 20px 4px;font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.55);text-transform:uppercase;font-weight:600}
-.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:12px;color:rgba(255,255,255,.82);cursor:pointer;transition:all .15s;border-left:2px solid transparent}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:12px;color:rgba(255,255,255,.82);cursor:pointer;border-left:2px solid transparent}
 .nav-item:hover{background:rgba(255,255,255,.04)}
 .nav-item.active{color:#fff;background:rgba(245,157,29,.22);border-left-color:#f59d1d}
 .sidebar-footer{padding:14px 20px;border-top:1px solid rgba(255,255,255,.18)}
 .sidebar-footer .upd{font-size:11px;color:rgba(255,255,255,.75);line-height:1.5;margin-bottom:10px}
-.logout-btn{width:100%;background:rgba(255,255,255,.08);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.18);border-radius:7px;padding:8px;font-family:'Inter',sans-serif;font-size:11px;cursor:pointer;transition:background .15s}
+.logout-btn{width:100%;background:rgba(255,255,255,.08);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.18);border-radius:7px;padding:8px;font-size:11px;cursor:pointer}
 .logout-btn:hover{background:rgba(255,255,255,.15)}
 .main{margin-left:210px;flex:1;display:flex;flex-direction:column;min-height:100vh}
 .topbar{background:#eae7e3;border-bottom:1px solid #d0cdc8;padding:14px 28px;display:flex;align-items:center;justify-content:space-between}
-.topbar-title{font-family:'Montserrat',sans-serif;font-weight:700;font-size:16px;letter-spacing:.5px;color:#1a1a1a}
+.topbar-title{font-family:'Montserrat',sans-serif;font-weight:700;font-size:16px;letter-spacing:.5px}
 .topbar-sub{font-size:11px;color:#6b6b66;margin-top:2px}
-.refresh-btn{font-family:'Montserrat',sans-serif;font-weight:600;font-size:11px;color:#fff;background:#e8622a;border:none;border-radius:7px;padding:8px 14px;cursor:pointer;transition:background .15s}
+.refresh-btn{font-family:'Montserrat',sans-serif;font-weight:600;font-size:11px;color:#fff;background:#e8622a;border:none;border-radius:7px;padding:8px 14px;cursor:pointer}
 .refresh-btn:hover{background:#d1531f}
 .content{flex:1;padding:24px 28px 40px}
 .load-note{font-size:11px;color:#a0620a;background:#fff8f5;border:1px solid #f0c8b8;border-radius:8px;padding:9px 14px;margin-bottom:16px}
 .load-note.error{color:#c0392b;background:#fbf1ef;border-color:#f0c8c4}
+.view{display:block}
 
-/* ═══ FASES ═══ */
-.fases-wrap{display:flex;flex-direction:column;gap:14px}
-.fase-panel{background:#fff;border:1px solid #d4d3cf;border-radius:12px;overflow:hidden}
-.fase-head{display:flex;align-items:center;gap:14px;padding:16px 20px;cursor:pointer;user-select:none}
-.fase-badge{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;font-weight:700;font-size:16px;color:#fff;flex-shrink:0}
-.fase-info{flex:1;min-width:0}
-.fase-name{font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;color:#1a1a1a;letter-spacing:.3px}
-.fase-progress-track{background:#eeece9;border-radius:5px;height:6px;margin-top:7px;overflow:hidden}
-.fase-progress-fill{height:100%;border-radius:5px;transition:width .3s}
-.fase-count{font-size:11px;color:#6b6b66;white-space:nowrap}
-.fase-chevron{font-size:11px;color:#a09c96;transition:transform .2s;flex-shrink:0}
-.fase-panel.open .fase-chevron{transform:rotate(180deg)}
-.fase-items{display:none;border-top:1px solid #eeece9}
-.fase-panel.open .fase-items{display:block}
+/* ═══ LISTADO DE PROYECTOS ═══ */
+.projects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.project-card{background:#fff;border:1px solid #d4d3cf;border-radius:12px;padding:16px 18px;cursor:pointer;transition:box-shadow .15s,transform .15s}
+.project-card:hover{box-shadow:0 8px 20px rgba(0,0,0,.08);transform:translateY(-2px)}
+.project-card .pc-codigo{font-family:'Montserrat',sans-serif;font-size:9px;letter-spacing:.05em;color:#a09c96;text-transform:uppercase}
+.project-card .pc-nombre{font-family:'Montserrat',sans-serif;font-weight:700;font-size:14px;color:#1a1a1a;margin-top:4px}
+.project-card .pc-cliente{font-size:11px;color:#6b6b66;margin-top:3px}
+.project-card .pc-roles{display:flex;gap:5px;flex-wrap:wrap;margin-top:12px}
+.pc-role-tag{font-size:9px;background:#fff3e9;color:#a0620a;border-radius:5px;padding:2px 7px}
+.projects-empty{padding:40px;text-align:center;color:#aaa;font-size:13px}
+
+/* ═══ TIMELINE POR PROYECTO ═══ */
+.back-btn{background:none;border:none;color:#e8622a;font-family:'Montserrat',sans-serif;font-weight:600;font-size:11px;cursor:pointer;margin-bottom:16px;padding:0}
+.back-btn:hover{text-decoration:underline}
+.project-header{background:#fff;border:1px solid #d4d3cf;border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+.project-header .ph-codigo{font-size:9px;letter-spacing:.05em;color:#a09c96;text-transform:uppercase}
+.project-header .ph-nombre{font-family:'Montserrat',sans-serif;font-weight:700;font-size:16px;color:#1a1a1a;margin-top:3px}
+.project-header .ph-drive{font-family:'Montserrat',sans-serif;font-weight:600;font-size:11px;color:#fff;background:#474545;border-radius:7px;padding:8px 14px;text-decoration:none;white-space:nowrap}
+.project-header .ph-drive:hover{background:#333}
+
+.timeline-wrap{position:relative;padding:30px 10px 10px;margin-bottom:6px}
+.timeline-track{display:flex;justify-content:space-between;position:relative}
+.timeline-track::before{content:'';position:absolute;top:19px;left:5%;right:5%;height:2px;background:#d4d3cf;z-index:0}
+.tl-node{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;cursor:pointer;flex:1}
+.tl-circle{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;font-weight:700;font-size:16px;color:#fff;background:#c8c5c0;border:4px solid #f6f1ee;transition:background .15s,transform .15s}
+.tl-node:hover .tl-circle{transform:scale(1.06)}
+.tl-node.active .tl-circle{background:#e8622a}
+.tl-node.done .tl-circle{background:#1a8a52}
+.tl-label{font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;color:#1a1a1a;margin-top:8px;text-align:center}
+.tl-pct{font-size:10px;color:#6b6b66;margin-top:2px}
+
+.fase-detail-wrap{background:#fff;border:1px solid #d4d3cf;border-radius:12px;overflow:hidden}
+.fase-detail-head{padding:16px 20px;border-bottom:1px solid #eeece9;display:flex;align-items:center;justify-content:space-between}
+.fase-detail-title{font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;color:#1a1a1a}
+.fase-detail-count{font-size:11px;color:#6b6b66}
 .fase-item{display:flex;align-items:flex-start;gap:12px;padding:12px 20px;border-bottom:1px solid #f5f3f0}
 .fase-item:last-child{border-bottom:none}
 .fase-item .chk{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px}
@@ -130,142 +157,231 @@ body{font-family:'Inter',sans-serif;background:#f6f1ee;color:#1a1a1a}
 </style>
 
 <script>
-/* ═══════════════════════════════════════════════════════════
-   CONFIGURA ESTO: pega aquí la URL de tu Apps Script desplegado
-   (Implementar → Nueva implementación → Aplicación web → Copiar URL)
-   ═══════════════════════════════════════════════════════════ */
-const API_URL = 'https://script.google.com/macros/s/AKfycbyvCcj8tRB1kOCduOschbG6OpDT9otNzaBjhj4E6COHL9ziCYs0r8jxsV-CAqaSPf6TVg/exec';
+/* ═══ CONFIGURA ESTO: pega aquí la URL de tu Apps Script desplegado ═══ */
+const API_URL = 'https://script.google.com/macros/s/AKfycbxIBAOAk3hkQphnvttmRn2hTb5Q_SxhV1VuAlb7E5-B2sx0VX2U3yoeO8YIqv0kkTWWdg/exec';
 
 const FASE_ORDER = ['Inicio','Planeación','Ejecución','Cierre','Seguimiento y control'];
-const FASE_COLOR = {
-  'Inicio':'#f59d1d','Planeación':'#474545','Ejecución':'#f59d1d',
-  'Cierre':'#474545','Seguimiento y control':'#f59d1d'
-};
-let currentSheet = 'MINIMA';
+let currentProject = null;
+let currentFaseIndex = 0;
+let currentView = 'projects'; // 'projects' | 'timeline'
 
-function saveSession(nombre, rol){
+function handleSessionError_(note, message){
+  note.className = 'load-note error';
+  note.textContent = '⚠ ' + message;
+  if(/sesi[oó]n/i.test(message)){
+    note.textContent += ' Redirigiendo al login...';
+    setTimeout(doLogout, 1800);
+  }
+}
+
+function saveSession(token, nombre, rol){
+  sessionStorage.setItem('mn_token', token);
   sessionStorage.setItem('mn_nombre', nombre);
   sessionStorage.setItem('mn_rol', rol);
 }
 function getSession(){
-  return { nombre: sessionStorage.getItem('mn_nombre'), rol: sessionStorage.getItem('mn_rol') };
+  return {
+    token: sessionStorage.getItem('mn_token'),
+    nombre: sessionStorage.getItem('mn_nombre'),
+    rol: sessionStorage.getItem('mn_rol')
+  };
 }
 function clearSession(){
+  sessionStorage.removeItem('mn_token');
   sessionStorage.removeItem('mn_nombre');
   sessionStorage.removeItem('mn_rol');
 }
 
 async function doLogin(){
-  const code = document.getElementById('login-code').value.trim();
+  const correo = document.getElementById('login-correo').value.trim();
+  const pass = document.getElementById('login-pass').value;
   const btn = document.getElementById('login-btn');
   const errEl = document.getElementById('login-error');
   errEl.textContent = '';
-  if(!code){ errEl.textContent = 'Ingresa tu código.'; return; }
+  if(!correo || !pass){ errEl.textContent = 'Ingresa tu correo y contraseña.'; return; }
   if(API_URL.indexOf('PEGA_AQUI') !== -1){
-    errEl.textContent = 'Falta configurar API_URL en este archivo (ver instrucciones).';
+    errEl.textContent = 'Falta configurar API_URL en este archivo.';
     return;
   }
   btn.disabled = true; btn.textContent = 'Verificando...';
   try{
-    const res = await fetch(API_URL + '?action=login&code=' + encodeURIComponent(code));
+    // POST con body como texto plano (evita el preflight CORS que Apps Script no maneja)
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'login', correo, contrasena: pass })
+    });
     const data = await res.json();
     if(data.ok){
-      saveSession(data.nombre, data.rol);
+      saveSession(data.token, data.nombre, data.rol);
       enterApp();
     } else {
-      errEl.textContent = data.error || 'Código inválido.';
+      errEl.textContent = data.error || 'Correo o contraseña incorrectos.';
     }
   }catch(e){
-    errEl.textContent = 'No se pudo conectar con el servidor. Revisa la configuración de API_URL.';
+    errEl.textContent = 'No se pudo conectar con el servidor.';
   }
   btn.disabled = false; btn.textContent = 'Entrar';
 }
 
 function doLogout(){
   clearSession();
-  document.getElementById('login-code').value = '';
+  document.getElementById('login-correo').value = '';
+  document.getElementById('login-pass').value = '';
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
 }
 
 function enterApp(){
   const s = getSession();
-  document.getElementById('user-info').innerHTML =
-    '<strong>' + s.nombre + '</strong><br>' + (s.rol || '');
+  document.getElementById('user-info').innerHTML = '<strong>' + s.nombre + '</strong><br>' + (s.rol || '');
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
-  loadChecklist();
+  goToProjectList();
 }
 
-function switchSheet(sheet, el){
-  currentSheet = sheet;
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('topbar-sub').textContent =
-    'Checklist organizado por fase — Plantilla ' + sheet;
-  loadChecklist();
+function refreshCurrentView(){
+  if(currentView === 'projects') loadProjects();
+  else loadProjectChecklist(currentProject.codigo);
 }
 
-async function loadChecklist(){
+function goToProjectList(){
+  currentView = 'projects';
+  document.getElementById('view-projects').style.display = 'block';
+  document.getElementById('view-timeline').style.display = 'none';
+  document.getElementById('topbar-title').textContent = 'MIS PROYECTOS';
+  document.getElementById('topbar-sub').textContent = 'Proyectos asignados a tu usuario';
+  loadProjects();
+}
+
+async function loadProjects(){
   const note = document.getElementById('load-note');
-  const wrap = document.getElementById('fases-wrap');
-  const btn = document.getElementById('refresh-btn');
+  const grid = document.getElementById('projects-grid');
   note.style.display = 'block'; note.className = 'load-note';
-  note.textContent = '⏳ Cargando checklist en vivo...';
-  btn.disabled = true;
+  note.textContent = '⏳ Cargando tus proyectos...';
   try{
-    const res = await fetch(API_URL + '?action=checklist&sheet=' + encodeURIComponent(currentSheet));
+    const s = getSession();
+    const res = await fetch(API_URL + '?action=proyectos&token=' + encodeURIComponent(s.token));
     const data = await res.json();
     if(!data.ok) throw new Error(data.error || 'Error desconocido');
     note.style.display = 'none';
-    renderFases(data.fases, data.resumen);
+    renderProjects(data.proyectos);
   }catch(e){
-    note.className = 'load-note error';
-    note.textContent = '⚠ No se pudo cargar el checklist: ' + e.message;
-    wrap.innerHTML = '';
+    handleSessionError_(note, 'No se pudo cargar tus proyectos: ' + e.message);
+    grid.innerHTML = '';
   }
-  btn.disabled = false;
 }
 
-function renderFases(fases, resumen){
-  const wrap = document.getElementById('fases-wrap');
-  wrap.innerHTML = FASE_ORDER.map((fase, idx) => {
-    const items = fases[fase] || [];
-    const r = resumen[fase] || {total:0, hechos:0};
-    const pct = r.total ? Math.round(100 * r.hechos / r.total) : 0;
-    const color = FASE_COLOR[fase];
-    const itemsHtml = items.length ? items.map(it => `
-      <div class="fase-item">
-        <div class="chk ${it.check?'yes':'no'}">${it.check?'✓':'✗'}</div>
-        <div class="body">
-          <div class="carpeta">${it.carpetaBase}</div>
-          <div class="sub">${it.subcarpeta}</div>
-          <div class="doc">${it.documento || ''}</div>
-        </div>
-        <div class="resp">${it.responsable}</div>
-      </div>`).join('') : '<div class="fase-empty">Sin ítems clasificados en esta fase.</div>';
+function renderProjects(proyectos){
+  const grid = document.getElementById('projects-grid');
+  if(!proyectos.length){
+    grid.innerHTML = '<div class="projects-empty">No tienes proyectos asignados todavía. Si crees que es un error, contacta a quien administra el portal.</div>';
+    return;
+  }
+  grid.innerHTML = proyectos.map(p => {
+    const roles = [];
+    if(p.director) roles.push('Director: ' + p.director);
+    if(p.residente) roles.push('Residente: ' + p.residente);
+    if(p.gerente) roles.push('Gerente: ' + p.gerente);
     return `
-      <div class="fase-panel ${idx===0?'open':''}">
-        <div class="fase-head" onclick="this.parentElement.classList.toggle('open')">
-          <div class="fase-badge" style="background:${color}">${idx+1}</div>
-          <div class="fase-info">
-            <div class="fase-name">${fase}</div>
-            <div class="fase-progress-track"><div class="fase-progress-fill" style="width:${pct}%;background:${color}"></div></div>
-          </div>
-          <div class="fase-count">${r.hechos}/${r.total} completos</div>
-          <div class="fase-chevron">▾</div>
-        </div>
-        <div class="fase-items">${itemsHtml}</div>
-      </div>`;
+    <div class="project-card" onclick='openProject(${JSON.stringify(p)})'>
+      <div class="pc-codigo">${p.codigo}${p.estado ? ' · ' + p.estado : ''}</div>
+      <div class="pc-nombre">${p.nombre}</div>
+      <div class="pc-cliente">${p.cliente || ''}</div>
+      <div class="pc-roles">${roles.map(r=>`<span class="pc-role-tag">${r}</span>`).join('')}</div>
+    </div>`;
   }).join('');
 }
 
-// ─── Al cargar la página: ¿ya hay sesión activa? ───
+function openProject(p){
+  currentProject = p;
+  currentView = 'timeline';
+  currentFaseIndex = 0;
+  document.getElementById('view-projects').style.display = 'none';
+  document.getElementById('view-timeline').style.display = 'block';
+  document.getElementById('topbar-title').textContent = p.codigo;
+  document.getElementById('topbar-sub').textContent = p.nombre;
+  document.getElementById('project-header').innerHTML = `
+    <div>
+      <div class="ph-codigo">${p.codigo}${p.cliente ? ' · ' + p.cliente : ''}</div>
+      <div class="ph-nombre">${p.nombre}</div>
+    </div>
+    ${p.carpetaDrive ? `<a class="ph-drive" href="${p.carpetaDrive}" target="_blank" rel="noopener">📁 Abrir carpeta en Drive</a>` : ''}
+  `;
+  loadProjectChecklist(p.codigo);
+}
+
+async function loadProjectChecklist(codigo){
+  const note = document.getElementById('load-note');
+  note.style.display = 'block'; note.className = 'load-note';
+  note.textContent = '⏳ Cargando checklist del proyecto...';
+  try{
+    const s = getSession();
+    const res = await fetch(API_URL + '?action=checklist_proyecto&token=' + encodeURIComponent(s.token) + '&codigo=' + encodeURIComponent(codigo));
+    const data = await res.json();
+    if(!data.ok) throw new Error(data.error || 'Error desconocido');
+    note.style.display = 'none';
+    window._fasesData = data.fases;
+    window._resumenData = data.resumen;
+    renderTimeline(data.fases, data.resumen);
+    renderFaseDetail(FASE_ORDER[currentFaseIndex]);
+  }catch(e){
+    handleSessionError_(note, 'No se pudo cargar el checklist: ' + e.message);
+    document.getElementById('timeline-wrap').innerHTML = '';
+    document.getElementById('fase-detail-wrap').innerHTML = '';
+  }
+}
+
+function renderTimeline(fases, resumen){
+  const wrap = document.getElementById('timeline-wrap');
+  wrap.innerHTML = `<div class="timeline-track">${FASE_ORDER.map((fase, idx) => {
+    const r = resumen[fase] || {total:0, hechos:0};
+    const pct = r.total ? Math.round(100 * r.hechos / r.total) : 0;
+    const done = r.total > 0 && r.hechos === r.total;
+    const cls = (idx === currentFaseIndex ? 'active' : '') + (done ? ' done' : '');
+    return `
+      <div class="tl-node ${cls}" onclick="selectFase(${idx})">
+        <div class="tl-circle">${done ? '✓' : idx+1}</div>
+        <div class="tl-label">${fase}</div>
+        <div class="tl-pct">${r.hechos}/${r.total} (${pct}%)</div>
+      </div>`;
+  }).join('')}</div>`;
+}
+
+function selectFase(idx){
+  currentFaseIndex = idx;
+  renderTimeline(window._fasesData, window._resumenData);
+  renderFaseDetail(FASE_ORDER[idx]);
+}
+
+function renderFaseDetail(fase){
+  const items = (window._fasesData && window._fasesData[fase]) || [];
+  const r = (window._resumenData && window._resumenData[fase]) || {total:0, hechos:0};
+  const wrap = document.getElementById('fase-detail-wrap');
+  const itemsHtml = items.length ? items.map(it => `
+    <div class="fase-item">
+      <div class="chk ${it.check?'yes':'no'}">${it.check?'✓':'✗'}</div>
+      <div class="body">
+        <div class="carpeta">${it.carpetaBase}</div>
+        <div class="sub">${it.subcarpeta}</div>
+        <div class="doc">${it.documento || ''}</div>
+      </div>
+      <div class="resp">${it.responsable}</div>
+    </div>`).join('') : '<div class="fase-empty">Sin ítems clasificados en esta fase.</div>';
+  wrap.innerHTML = `
+    <div class="fase-detail-head">
+      <div class="fase-detail-title">${fase}</div>
+      <div class="fase-detail-count">${r.hechos}/${r.total} completos</div>
+    </div>
+    ${itemsHtml}`;
+}
+
 document.addEventListener('DOMContentLoaded', function(){
   const s = getSession();
-  if(s.nombre){ enterApp(); }
-  document.getElementById('login-code').addEventListener('keydown', function(e){
-    if(e.key === 'Enter') doLogin();
+  if(s.nombre && s.token){ enterApp(); }
+  ['login-correo','login-pass'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', function(e){
+      if(e.key === 'Enter') doLogin();
+    });
   });
 });
 </script>
