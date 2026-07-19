@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mínima Arquitectos — Portal de Proyectos</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Inter',sans-serif;background:#f6f1ee;color:#1a1a1a}
+
+/* ═══ CONFIG: pega aquí la URL de tu Apps Script desplegado ═══ */
+</style>
+</head>
+<body>
+
+<!-- ══════════════ PANTALLA DE LOGIN ══════════════ -->
+<div id="login-screen" class="login-screen">
+  <div class="login-card">
+    <div class="login-logo">MÍNIMA<span>ARQUITECTOS</span></div>
+    <div class="login-title">Portal de Proyectos</div>
+    <div class="login-sub">Ingresa tu código de acceso para continuar</div>
+    <input id="login-code" class="login-input" type="password" placeholder="Código de acceso" autocomplete="off" />
+    <button id="login-btn" class="login-btn" onclick="doLogin()">Entrar</button>
+    <div id="login-error" class="login-error"></div>
+  </div>
+</div>
+
+<!-- ══════════════ PORTAL (oculto hasta iniciar sesión) ══════════════ -->
+<div id="app" class="app" style="display:none">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-text">MÍNIMA<span>ARQUITECTOS</span></div>
+      <div class="sub">PORTAL DE PROYECTOS</div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-section">Checklist</div>
+      <div class="nav-item active" data-sheet="MINIMA" onclick="switchSheet('MINIMA',this)">Plantilla Mínima</div>
+      <div class="nav-item" data-sheet="ENEL" onclick="switchSheet('ENEL',this)">Plantilla ENEL</div>
+    </div>
+    <div class="sidebar-footer">
+      <div class="upd" id="user-info">—</div>
+      <button class="logout-btn" onclick="doLogout()">Cerrar sesión</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">FASES DEL PROYECTO</div>
+        <div class="topbar-sub" id="topbar-sub">Checklist organizado por fase — Mínima Arquitectos</div>
+      </div>
+      <button class="refresh-btn" id="refresh-btn" onclick="loadChecklist()">⟳ Actualizar</button>
+    </div>
+
+    <div class="content">
+      <div id="load-note" class="load-note" style="display:none"></div>
+      <div id="fases-wrap" class="fases-wrap"></div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* ═══ LOGIN ═══ */
+.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#474545}
+.login-card{background:#fff;border-radius:14px;padding:40px 36px;width:340px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.login-logo{font-family:'Montserrat',sans-serif;font-weight:700;font-size:20px;letter-spacing:1px;color:#1a1a1a;margin-bottom:4px}
+.login-logo span{display:block;font-size:8px;letter-spacing:3px;font-weight:600;color:#e8622a;margin-top:2px}
+.login-title{font-family:'Montserrat',sans-serif;font-weight:700;font-size:15px;color:#1a1a1a;margin-top:20px}
+.login-sub{font-size:11px;color:#6b6b66;margin-top:6px;margin-bottom:20px}
+.login-input{width:100%;border:1px solid #d4d3cf;border-radius:8px;padding:11px 14px;font-size:13px;font-family:'Inter',sans-serif;outline:none;transition:border-color .15s;letter-spacing:1px}
+.login-input:focus{border-color:#e8622a}
+.login-btn{width:100%;margin-top:12px;background:#e8622a;color:#fff;border:none;border-radius:8px;padding:11px;font-family:'Montserrat',sans-serif;font-weight:600;font-size:12px;cursor:pointer;transition:background .15s}
+.login-btn:hover{background:#d1531f}
+.login-btn:disabled{background:#e8b8a2;cursor:wait}
+.login-error{color:#c0392b;font-size:11px;margin-top:12px;min-height:14px}
+
+/* ═══ SHELL (mismo lenguaje visual del dashboard de portafolio) ═══ */
+.app{display:flex;min-height:100vh}
+.sidebar{position:fixed;left:0;top:0;width:210px;height:100%;background:#474545;display:flex;flex-direction:column;z-index:100}
+.sidebar-logo{padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,.18)}
+.logo-text{font-family:'Montserrat',sans-serif;font-weight:700;font-size:16px;color:#fff;letter-spacing:.5px}
+.logo-text span{display:block;font-size:7px;letter-spacing:2px;color:#f59d1d;margin-top:2px}
+.sidebar-logo .sub{font-family:'Montserrat',sans-serif;font-size:8px;letter-spacing:2px;color:rgba(255,255,255,.35);text-transform:uppercase;margin-top:10px}
+.sidebar-nav{flex:1;padding:14px 0}
+.nav-section{padding:8px 20px 4px;font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.55);text-transform:uppercase;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:12px;color:rgba(255,255,255,.82);cursor:pointer;transition:all .15s;border-left:2px solid transparent}
+.nav-item:hover{background:rgba(255,255,255,.04)}
+.nav-item.active{color:#fff;background:rgba(245,157,29,.22);border-left-color:#f59d1d}
+.sidebar-footer{padding:14px 20px;border-top:1px solid rgba(255,255,255,.18)}
+.sidebar-footer .upd{font-size:11px;color:rgba(255,255,255,.75);line-height:1.5;margin-bottom:10px}
+.logout-btn{width:100%;background:rgba(255,255,255,.08);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.18);border-radius:7px;padding:8px;font-family:'Inter',sans-serif;font-size:11px;cursor:pointer;transition:background .15s}
+.logout-btn:hover{background:rgba(255,255,255,.15)}
+.main{margin-left:210px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:#eae7e3;border-bottom:1px solid #d0cdc8;padding:14px 28px;display:flex;align-items:center;justify-content:space-between}
+.topbar-title{font-family:'Montserrat',sans-serif;font-weight:700;font-size:16px;letter-spacing:.5px;color:#1a1a1a}
+.topbar-sub{font-size:11px;color:#6b6b66;margin-top:2px}
+.refresh-btn{font-family:'Montserrat',sans-serif;font-weight:600;font-size:11px;color:#fff;background:#e8622a;border:none;border-radius:7px;padding:8px 14px;cursor:pointer;transition:background .15s}
+.refresh-btn:hover{background:#d1531f}
+.content{flex:1;padding:24px 28px 40px}
+.load-note{font-size:11px;color:#a0620a;background:#fff8f5;border:1px solid #f0c8b8;border-radius:8px;padding:9px 14px;margin-bottom:16px}
+.load-note.error{color:#c0392b;background:#fbf1ef;border-color:#f0c8c4}
+
+/* ═══ FASES ═══ */
+.fases-wrap{display:flex;flex-direction:column;gap:14px}
+.fase-panel{background:#fff;border:1px solid #d4d3cf;border-radius:12px;overflow:hidden}
+.fase-head{display:flex;align-items:center;gap:14px;padding:16px 20px;cursor:pointer;user-select:none}
+.fase-badge{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;font-weight:700;font-size:16px;color:#fff;flex-shrink:0}
+.fase-info{flex:1;min-width:0}
+.fase-name{font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;color:#1a1a1a;letter-spacing:.3px}
+.fase-progress-track{background:#eeece9;border-radius:5px;height:6px;margin-top:7px;overflow:hidden}
+.fase-progress-fill{height:100%;border-radius:5px;transition:width .3s}
+.fase-count{font-size:11px;color:#6b6b66;white-space:nowrap}
+.fase-chevron{font-size:11px;color:#a09c96;transition:transform .2s;flex-shrink:0}
+.fase-panel.open .fase-chevron{transform:rotate(180deg)}
+.fase-items{display:none;border-top:1px solid #eeece9}
+.fase-panel.open .fase-items{display:block}
+.fase-item{display:flex;align-items:flex-start;gap:12px;padding:12px 20px;border-bottom:1px solid #f5f3f0}
+.fase-item:last-child{border-bottom:none}
+.fase-item .chk{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px}
+.fase-item .chk.yes{background:#e5f7ef;color:#1a8a52}
+.fase-item .chk.no{background:#fbf1ef;color:#c0392b}
+.fase-item .body{flex:1;min-width:0}
+.fase-item .carpeta{font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:#a09c96;margin-bottom:2px}
+.fase-item .sub{font-size:12.5px;font-weight:600;color:#1a1a1a}
+.fase-item .doc{font-size:11px;color:#6b6b66;margin-top:3px;line-height:1.4}
+.fase-item .resp{font-size:10px;color:#a0620a;background:#fff3e9;border-radius:5px;padding:2px 8px;white-space:nowrap;flex-shrink:0;margin-top:1px}
+.fase-empty{padding:24px 20px;text-align:center;color:#aaa;font-size:12px}
+</style>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   CONFIGURA ESTO: pega aquí la URL de tu Apps Script desplegado
+   (Implementar → Nueva implementación → Aplicación web → Copiar URL)
+   ═══════════════════════════════════════════════════════════ */
+const API_URL = 'https://script.google.com/macros/s/AKfycbyvCcj8tRB1kOCduOschbG6OpDT9otNzaBjhj4E6COHL9ziCYs0r8jxsV-CAqaSPf6TVg/exec';
+
+const FASE_ORDER = ['Inicio','Planeación','Ejecución','Cierre','Seguimiento y control'];
+const FASE_COLOR = {
+  'Inicio':'#f59d1d','Planeación':'#474545','Ejecución':'#f59d1d',
+  'Cierre':'#474545','Seguimiento y control':'#f59d1d'
+};
+let currentSheet = 'MINIMA';
+
+function saveSession(nombre, rol){
+  sessionStorage.setItem('mn_nombre', nombre);
+  sessionStorage.setItem('mn_rol', rol);
+}
+function getSession(){
+  return { nombre: sessionStorage.getItem('mn_nombre'), rol: sessionStorage.getItem('mn_rol') };
+}
+function clearSession(){
+  sessionStorage.removeItem('mn_nombre');
+  sessionStorage.removeItem('mn_rol');
+}
+
+async function doLogin(){
+  const code = document.getElementById('login-code').value.trim();
+  const btn = document.getElementById('login-btn');
+  const errEl = document.getElementById('login-error');
+  errEl.textContent = '';
+  if(!code){ errEl.textContent = 'Ingresa tu código.'; return; }
+  if(API_URL.indexOf('PEGA_AQUI') !== -1){
+    errEl.textContent = 'Falta configurar API_URL en este archivo (ver instrucciones).';
+    return;
+  }
+  btn.disabled = true; btn.textContent = 'Verificando...';
+  try{
+    const res = await fetch(API_URL + '?action=login&code=' + encodeURIComponent(code));
+    const data = await res.json();
+    if(data.ok){
+      saveSession(data.nombre, data.rol);
+      enterApp();
+    } else {
+      errEl.textContent = data.error || 'Código inválido.';
+    }
+  }catch(e){
+    errEl.textContent = 'No se pudo conectar con el servidor. Revisa la configuración de API_URL.';
+  }
+  btn.disabled = false; btn.textContent = 'Entrar';
+}
+
+function doLogout(){
+  clearSession();
+  document.getElementById('login-code').value = '';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+function enterApp(){
+  const s = getSession();
+  document.getElementById('user-info').innerHTML =
+    '<strong>' + s.nombre + '</strong><br>' + (s.rol || '');
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  loadChecklist();
+}
+
+function switchSheet(sheet, el){
+  currentSheet = sheet;
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('topbar-sub').textContent =
+    'Checklist organizado por fase — Plantilla ' + sheet;
+  loadChecklist();
+}
+
+async function loadChecklist(){
+  const note = document.getElementById('load-note');
+  const wrap = document.getElementById('fases-wrap');
+  const btn = document.getElementById('refresh-btn');
+  note.style.display = 'block'; note.className = 'load-note';
+  note.textContent = '⏳ Cargando checklist en vivo...';
+  btn.disabled = true;
+  try{
+    const res = await fetch(API_URL + '?action=checklist&sheet=' + encodeURIComponent(currentSheet));
+    const data = await res.json();
+    if(!data.ok) throw new Error(data.error || 'Error desconocido');
+    note.style.display = 'none';
+    renderFases(data.fases, data.resumen);
+  }catch(e){
+    note.className = 'load-note error';
+    note.textContent = '⚠ No se pudo cargar el checklist: ' + e.message;
+    wrap.innerHTML = '';
+  }
+  btn.disabled = false;
+}
+
+function renderFases(fases, resumen){
+  const wrap = document.getElementById('fases-wrap');
+  wrap.innerHTML = FASE_ORDER.map((fase, idx) => {
+    const items = fases[fase] || [];
+    const r = resumen[fase] || {total:0, hechos:0};
+    const pct = r.total ? Math.round(100 * r.hechos / r.total) : 0;
+    const color = FASE_COLOR[fase];
+    const itemsHtml = items.length ? items.map(it => `
+      <div class="fase-item">
+        <div class="chk ${it.check?'yes':'no'}">${it.check?'✓':'✗'}</div>
+        <div class="body">
+          <div class="carpeta">${it.carpetaBase}</div>
+          <div class="sub">${it.subcarpeta}</div>
+          <div class="doc">${it.documento || ''}</div>
+        </div>
+        <div class="resp">${it.responsable}</div>
+      </div>`).join('') : '<div class="fase-empty">Sin ítems clasificados en esta fase.</div>';
+    return `
+      <div class="fase-panel ${idx===0?'open':''}">
+        <div class="fase-head" onclick="this.parentElement.classList.toggle('open')">
+          <div class="fase-badge" style="background:${color}">${idx+1}</div>
+          <div class="fase-info">
+            <div class="fase-name">${fase}</div>
+            <div class="fase-progress-track"><div class="fase-progress-fill" style="width:${pct}%;background:${color}"></div></div>
+          </div>
+          <div class="fase-count">${r.hechos}/${r.total} completos</div>
+          <div class="fase-chevron">▾</div>
+        </div>
+        <div class="fase-items">${itemsHtml}</div>
+      </div>`;
+  }).join('');
+}
+
+// ─── Al cargar la página: ¿ya hay sesión activa? ───
+document.addEventListener('DOMContentLoaded', function(){
+  const s = getSession();
+  if(s.nombre){ enterApp(); }
+  document.getElementById('login-code').addEventListener('keydown', function(e){
+    if(e.key === 'Enter') doLogin();
+  });
+});
+</script>
+</body>
+</html>
