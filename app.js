@@ -1,5 +1,5 @@
 /* ═══ CONFIGURA ESTO: pega aquí la URL de tu Apps Script desplegado ═══ */
-const API_URL = 'https://script.google.com/macros/s/AKfycbwbI1-kaBXdcdRgMYDhyKlIOWoYjAINNkDSmrHx-AttXg_tBkB9JpQ3ubNuFDqt2GStMQ/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwCfbGJis8Xv-gJOGKCHIPwnzXhHYpbD6mOl1ia02NLYr6hsuTeRHAxPjYswt5U_Ixa-w/exec';
 
 
 /* ═══ FUSIÓN: datos y lógica de Flujo de Caja (del dashboard de Control de Proyectos) ═══
@@ -1177,7 +1177,7 @@ function renderCarpetaDetail(carpeta){
   }
   const s = getSession();
   const puedeDarVistoBueno = s.rol === 'Calidad' || s.rol === 'Gerente' || s.rol === 'Admin';
-  const itemsHtml = items.length ? items.map(it => {
+  function renderItem(it){
     const calidadBtns = puedeDarVistoBueno ? `
       <div class="calidad-actions">
         <button class="calidad-btn aprobar" onclick="marcarVistoBueno(${it.rowIndex}, 'Aprobado')">Aprobar</button>
@@ -1196,7 +1196,23 @@ function renderCarpetaDetail(carpeta){
         ${calidadBtns}
       </div>
     </div>`;
-  }).join('') : '<div class="fase-empty">Sin ítems clasificados en esta carpeta.</div>';
+  }
+  // Agrupa por subcarpeta intermedia (el mismo nivel que ves al navegar Drive,
+  // ej. "1. Administrativo", "2. Contable"...). Si un ítem no tiene grupo
+  // asignado (checklists creados antes de esta función), cae en "General".
+  const grupos = {};
+  const ordenGrupos = [];
+  items.forEach(it => {
+    const g = it.grupo || 'General';
+    if(!grupos[g]){ grupos[g] = []; ordenGrupos.push(g); }
+    grupos[g].push(it);
+  });
+  ordenGrupos.sort((a,b) => a.localeCompare(b, 'es', {numeric:true}));
+
+  const itemsHtml = items.length ? ordenGrupos.map(g => `
+    <div class="grupo-subheader">${g}</div>
+    ${grupos[g].map(renderItem).join('')}
+  `).join('') : '<div class="fase-empty">Sin ítems clasificados en esta carpeta.</div>';
   const total = items.length, hechos = items.filter(it=>it.check).length;
   wrap.innerHTML = `
     <div class="fase-detail-head">
