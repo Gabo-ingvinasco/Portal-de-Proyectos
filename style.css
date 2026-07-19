@@ -104,6 +104,39 @@ tr.fc-row-venc td{background:#fdf5f4}
 .health-lbl{font-size:11px;color:#6b6b66;width:90px;flex-shrink:0}
 .health-pct{font-size:11px;font-weight:600;width:34px;text-align:right;flex-shrink:0}
 .hdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.ficha-header{background:#1a1a1a;border-radius:10px;padding:18px 22px;display:grid;grid-template-columns:1fr auto;gap:20px;margin-bottom:14px;align-items:start}
+.ficha-codigo{font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:2px;color:#e8622a;margin-bottom:4px}
+.ficha-nombre{font-family:'Montserrat',sans-serif;font-size:20px;font-weight:700;color:#fff;margin-bottom:6px}
+.ficha-meta{display:flex;gap:20px;flex-wrap:wrap}
+.ficha-meta-item{font-size:11px;color:rgba(255,255,255,.5)}
+.ficha-meta-item span{color:rgba(255,255,255,.85);font-weight:500}
+.ficha-salud{text-align:right}
+.ficha-salud-n{font-family:'Montserrat',sans-serif;font-size:42px;font-weight:700;color:#fff;line-height:1}
+.ficha-salud-l{font-size:10px;color:rgba(255,255,255,.4);margin-top:4px}
+.ficha-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
+.ficha-kpi{background:#fff;border:1px solid #d4d3cf;border-radius:10px;padding:12px 14px}
+.ficha-kpi-v{font-family:'Montserrat',sans-serif;font-size:18px;font-weight:700;color:#1a1a1a}
+.ficha-kpi-l{font-size:9px;color:#6b6b66;margin-top:3px}
+.ficha-kpi-bar{height:3px;background:#f0efec;border-radius:2px;overflow:hidden;margin-top:8px}
+.ficha-kpi-bar-fill{height:100%;border-radius:2px}
+.cronograma-table{min-width:700px;width:100%;border-collapse:collapse;font-size:11px}
+.cronograma-table th{text-align:left;padding:6px 10px;font-size:9px;color:#6b6b66;font-weight:600;letter-spacing:.8px;text-transform:uppercase;border-bottom:1px solid #d4d3cf;background:#f9f8f6;white-space:nowrap}
+.cronograma-table td{padding:6px 10px;border-bottom:1px solid #f0efec;vertical-align:middle}
+.cap-num{font-size:9px;font-weight:700;color:#e8622a;width:50px}
+.cap-bar-wrap{position:relative;height:14px;border-radius:3px;overflow:hidden;background:#f0efec;flex:1}
+.cap-bar-fill{height:100%;border-radius:3px;transition:width .3s}
+.cap-pct{font-size:10px;font-weight:600;width:40px;text-align:right}
+.presupuesto-caps{display:flex;flex-direction:column;gap:6px}
+.cap-row{display:flex;gap:10px;align-items:flex-start;padding:5px 0}
+.cap-icon{width:24px;height:24px;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px}
+.cap-info{flex:1}
+.cap-info-top{display:flex;justify-content:space-between;align-items:center}
+.cap-info-label{font-size:11px;font-weight:600;color:#1a1a1a}
+.cap-info-monto{font-size:11px;font-weight:600;color:#1a1a1a}
+.cap-info-sub{font-size:10px;color:#6b6b66;margin-top:1px}
+.cap-bar-mini{height:3px;background:#f0efec;border-radius:2px;overflow:hidden;margin-top:5px}
+.cap-bar-mini-fill{height:100%;border-radius:2px}
+.muestra-tag{font-size:8px;background:#fff3e9;color:#a0620a;border-radius:4px;padding:2px 7px;text-transform:uppercase;letter-spacing:.03em;font-weight:700;margin-left:8px;vertical-align:middle}
 .action-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #f0efec;cursor:pointer}
 .action-row:last-child{border-bottom:none}
 .aproj{font-size:11px;font-weight:600;color:#1a1a1a;width:110px;flex-shrink:0}

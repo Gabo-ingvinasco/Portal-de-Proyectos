@@ -115,16 +115,29 @@
         <!-- Sub-vista: Resumen general de proyecto -->
         <div id="subview-resumen" class="proj-subview" style="display:none">
           <div id="resumen-proyecto-note" class="load-note" style="display:none"></div>
-          <div id="resumen-proyecto-kpis" class="kpi-strip"></div>
+          <div id="ficha-header" class="ficha-header" style="display:none"></div>
+          <div id="ficha-kpis" class="ficha-kpis"></div>
           <div class="grid2">
             <div class="panel">
-              <div class="panel-head"><div class="panel-title">Curva S — Programado vs Real</div></div>
-              <div id="resumen-curva-nota" class="fase-empty" style="display:none"></div>
-              <div style="height:220px;position:relative"><canvas id="resumenCurvaSChart"></canvas></div>
+              <div class="panel-head"><div class="panel-title">Curva S — Avance del proyecto</div></div>
+              <div id="resumen-curva-nota" class="load-note" style="display:none;margin-bottom:8px"></div>
+              <div style="height:220px;position:relative"><canvas id="curvaSChart"></canvas></div>
             </div>
             <div class="panel">
-              <div class="panel-head"><div class="panel-title">Datos del proyecto</div></div>
-              <div id="resumen-proyecto-detalle"></div>
+              <div class="panel-head"><div class="panel-title">Salud del proyecto</div></div>
+              <div id="ficha-health"></div>
+            </div>
+          </div>
+          <div class="grid2">
+            <div class="panel">
+              <div class="panel-head"><div class="panel-title">Cronograma — Capítulos a ejecutar <span class="muestra-tag">Muestra</span></div></div>
+              <div style="font-size:10px;color:#a0620a;background:#fff8f2;border-radius:6px;padding:6px 10px;margin-bottom:8px">⚠ Datos ilustrativos — todavía no existe un cronograma real por capítulo conectado a este proyecto.</div>
+              <div id="cronograma-list" style="overflow-x:auto"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><div class="panel-title">Presupuesto resumido por capítulo <span class="muestra-tag">Muestra</span></div></div>
+              <div style="font-size:10px;color:#a0620a;background:#fff8f2;border-radius:6px;padding:6px 10px;margin-bottom:8px">⚠ Datos ilustrativos — todavía no existe un presupuesto real por capítulo conectado a este proyecto.</div>
+              <div class="presupuesto-caps" id="presupuesto-caps"></div>
             </div>
           </div>
         </div>

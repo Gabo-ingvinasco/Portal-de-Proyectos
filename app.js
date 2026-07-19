@@ -1,5 +1,5 @@
 /* ═══ CONFIGURA ESTO: pega aquí la URL de tu Apps Script desplegado ═══ */
-const API_URL = 'https://script.google.com/macros/s/AKfycbwCfbGJis8Xv-gJOGKCHIPwnzXhHYpbD6mOl1ia02NLYr6hsuTeRHAxPjYswt5U_Ixa-w/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwbI1-kaBXdcdRgMYDhyKlIOWoYjAINNkDSmrHx-AttXg_tBkB9JpQ3ubNuFDqt2GStMQ/exec';
 
 
 /* ═══ FUSIÓN: datos y lógica de Flujo de Caja (del dashboard de Control de Proyectos) ═══
@@ -81,6 +81,57 @@ const PROJECTS=[
 const fmtMM=v=>{if(v===null||v===undefined||isNaN(v)||v===0)return"—";return"$"+Math.round(v).toLocaleString('es-CO');};
 
 let filteredProjects = PROJECTS;
+
+const PROJ_DETAIL={
+  /* ── C-25-001: Terranum Connecta 80 Fase I ── datos reales Google Sheets */
+  "C-25-001":{
+    curvaS:[
+      {s:"Sem 1",prog:5,real:1},{s:"Sem 2",prog:21,real:16},
+      {s:"Sem 3",prog:46,real:42},{s:"Sem 4",prog:67,real:65},
+      {s:"Sem 5",prog:83,real:80},{s:"Sem 6",prog:100,real:98},
+      {s:"Sem 7",prog:100,real:100}
+    ],
+    capitulos:null
+  },
+  /* ── C-26-009: Oficinas IAE ── datos extraídos del informe PDF */
+  "C-26-009":{
+    curvaS:[
+      {s:"Mar W1",prog:2,real:2},{s:"Mar W2",prog:5,real:4},{s:"Mar W3",prog:9,real:8},
+      {s:"Abr W1",prog:14,real:13},{s:"Abr W2",prog:20,real:18},{s:"Abr W3",prog:27,real:25},
+      {s:"Abr W4",prog:33,real:31},{s:"May W1",prog:39,real:37},{s:"May W2",prog:44,real:42},
+      {s:"May W3",prog:50,real:48},{s:"May W4",prog:55,real:53},{s:"Jun W1",prog:60,real:57},
+      {s:"Jun W2",prog:64,real:61},{s:"Jun W3",prog:67,real:63},{s:"Jun W4",prog:70,real:66}
+    ],
+    capitulos:[
+      {cap:"Preliminares",prog:100,real:100},{cap:"Muros y Cielorasos",prog:100,real:95},
+      {cap:"Voz y Datos",prog:68,real:61},{cap:"Audio y Video",prog:88,real:100},
+      {cap:"Seguridad y Control",prog:68,real:50},{cap:"Mecánicas",prog:63,real:65},
+      {cap:"Pisos y Enchapes",prog:100,real:93},{cap:"Pintura",prog:46,real:21},
+      {cap:"Cielorasos Especiales",prog:78,real:58},{cap:"Sistemas Acústicos",prog:62,real:55},
+      {cap:"Iluminación",prog:74,real:59},{cap:"Carpintería Alum.",prog:94,real:78}
+    ]
+  }
+};
+
+const CAPS = [
+  {n:"CAP 01",nom:"Preliminares",ico:"🏗️",color:"#6b6b66",pct:0,monto:20000},
+  {n:"CAP 02",nom:"Demoliciones",ico:"⚠️",color:"#c0392b",pct:0,monto:56000},
+  {n:"CAP 03",nom:"Obra Civil",ico:"⭕",color:"#4a8fc0",pct:0,monto:131000},
+  {n:"CAP 04",nom:"Muros",ico:"🧱",color:"#c08a00",pct:0,monto:131000},
+  {n:"CAP 05",nom:"Cielos Rasos",ico:"📐",color:"#4a3aa7",pct:0,monto:162000},
+  {n:"CAP 06",nom:"Pisos/Enchapes",ico:"▦",color:"#1a8a52",pct:0,monto:283000},
+  {n:"CAP 07",nom:"Pintura",ico:"🎨",color:"#4a8fc0",pct:0,monto:81000},
+  {n:"CAP 08",nom:"Carpintería",ico:"🪵",color:"#6b6b66",pct:0,monto:283000},
+  {n:"CAP 09",nom:"Eléctrica",ico:"⚡",color:"#c08a00",pct:0,monto:131000},
+  {n:"CAP 10",nom:"Iluminación",ico:"💡",color:"#c0392b",pct:0,monto:91000},
+  {n:"CAP 11",nom:"HVAC",ico:"🌡️",color:"#1a8a52",pct:0,monto:81000},
+  {n:"CAP 12",nom:"Hidro",ico:"💧",color:"#4a8fc0",pct:0,monto:35000},
+  {n:"CAP 13",nom:"RCI",ico:"🚨",color:"#c0392b",pct:0,monto:56000},
+  {n:"CAP 14",nom:"Diseño",ico:"✦",color:"#4a3aa7",pct:0,monto:111000},
+  {n:"CAP 15",nom:"Varios",ico:"◆",color:"#e8622a",pct:0,monto:28000},
+];
+
+
 
 let FLUJO_CAJA=[];
 const FLUJO_SHEET_ID='1CbTHrQqdji7HayP2XuVz_x-aJE4o4CGKq0zI1immtfM';
@@ -1226,60 +1277,136 @@ function renderCarpetaDetail(carpeta){
    General de Proyectos (el mismo de Flujo de Caja), buscados por código.
    Si el proyecto no existe ahí todavía (por ejemplo, se creó solo en el
    Portal y no en ese Sheet), se avisa en vez de inventar datos. ═══ */
-let resumenCurvaSChart;
+let curvaSChart;
 function renderResumenGeneral(codigo){
   const note = document.getElementById('resumen-proyecto-note');
-  const kpisEl = document.getElementById('resumen-proyecto-kpis');
-  const detalleEl = document.getElementById('resumen-proyecto-detalle');
+  const headerEl = document.getElementById('ficha-header');
+  const kpisEl = document.getElementById('ficha-kpis');
+  const healthEl = document.getElementById('ficha-health');
   const curvaNota = document.getElementById('resumen-curva-nota');
   const p = PROJECTS.find(x => x.codigo === codigo);
   if(!p){
     note.style.display = 'block';
     note.className = 'load-note error';
     note.textContent = '⚠ Este proyecto no se encontró en el Sheet de "Control General de Proyectos" — puede que se haya creado solo en este portal. No hay datos financieros/de avance para mostrar todavía.';
-    kpisEl.innerHTML = ''; detalleEl.innerHTML = '';
-    if(resumenCurvaSChart){ resumenCurvaSChart.destroy(); resumenCurvaSChart = null; }
-    curvaNota.style.display = 'block';
-    curvaNota.textContent = 'Sin datos.';
+    headerEl.style.display = 'none'; kpisEl.innerHTML = ''; healthEl.innerHTML = '';
+    document.getElementById('cronograma-list').innerHTML = '';
+    document.getElementById('presupuesto-caps').innerHTML = '';
+    if(curvaSChart){ curvaSChart.destroy(); curvaSChart = null; }
+    curvaNota.style.display = 'none';
     return;
   }
   note.style.display = 'none';
-  const kpis = [
-    {n: p.avObra!=null ? p.avObra+'%' : '—', l:'Avance de obra'},
-    {n: fmtMM(p.valor), l:'Valor total'},
-    {n: fmtMM(p.pxCobrar), l:'Pendiente cobrar'},
-    {n: fmtMM(p.pxFacturar), l:'Pendiente facturar'},
-    {n: p.difSNpct!=null ? fmtPct(p.difSNpct) : '—', l:'Diferencia SN%'},
-    {n: p.dias!=null ? p.dias+' días' : '—', l:'Retraso / adelanto'},
+  headerEl.style.display = 'grid';
+
+  const cls = EB[p.estado] || 'eb-cerr';
+  const salud = Math.round(((p.avObra||0)*0.4) + ((p.avLiq||0)*0.3) + 60*0.3);
+  headerEl.innerHTML = `
+    <div>
+      <div class="ficha-codigo">${p.codigo}</div>
+      <div class="ficha-nombre">${p.proyecto}</div>
+      <div class="ficha-meta">
+        <div class="ficha-meta-item">Cliente: <span>${p.cliente||'—'}</span></div>
+        <div class="ficha-meta-item">Director: <span>${p.encargado||'—'}</span></div>
+        <div class="ficha-meta-item">Ciudad: <span>${p.ciudad||'—'}</span></div>
+        <div class="ficha-meta-item">Sector: <span>${p.sector||'—'}</span></div>
+        <div class="ficha-meta-item">Estado: <span><span class="estado-badge ${cls}" style="font-size:10px">${p.estado}</span></span></div>
+      </div>
+    </div>
+    <div class="ficha-salud">
+      <div class="ficha-salud-n" style="color:${hCol(salud)}">${salud}</div>
+      <div class="ficha-salud-l">Índice de salud /100</div>
+    </div>`;
+
+  const kpiData = [
+    {v: fmtMM(p.valor), l:'Valor del contrato', pct:100, c:'#1a1a1a'},
+    {v: fmtMM(p.vPagado), l:'Facturado', pct: p.valor ? Math.round((p.vPagado||0)/p.valor*100) : 0, c:'#1a8a52'},
+    {v: fmtMM(p.pxCobrar), l:'Pendiente cobrar', pct: p.valor ? Math.round((p.pxCobrar||0)/p.valor*100) : 0, c:'#c0392b'},
+    {v: (p.avObra||0)+'%', l:'Avance de obra', pct: p.avObra||0, c: hCol(p.avObra||0)},
+    {v: fmtPct(p.difSNpct), l:'Diferencia SN', pct: Math.min(p.difSNpct||0,100), c: (p.difSNpct||0)>35?'#c0392b':(p.difSNpct||0)>25?'#c08a00':'#1a8a52'},
   ];
-  kpisEl.innerHTML = kpis.map(k=>`<div class="kpi"><div><div class="kpi-num" style="font-size:16px">${k.n}</div><div class="kpi-lbl">${k.l}</div></div></div>`).join('');
+  kpisEl.innerHTML = kpiData.map(k => `
+    <div class="ficha-kpi">
+      <div class="ficha-kpi-v">${k.v}</div>
+      <div class="ficha-kpi-l">${k.l}</div>
+      <div class="ficha-kpi-bar"><div class="ficha-kpi-bar-fill" style="width:${k.pct}%;background:${k.c}"></div></div>
+    </div>`).join('');
 
-  detalleEl.innerHTML = `
-    <div class="fase-item"><div class="body"><div class="carpeta">Cliente</div><div class="sub">${p.cliente||'—'}</div></div></div>
-    <div class="fase-item"><div class="body"><div class="carpeta">Director/a</div><div class="sub">${p.encargado||'—'} <span style="color:#a09c96;font-weight:400">(${p.cargo||''})</span></div></div></div>
-    <div class="fase-item"><div class="body"><div class="carpeta">Ciudad / Sector</div><div class="sub">${p.ciudad||'—'} · ${p.sector||'—'}</div></div></div>
-    <div class="fase-item"><div class="body"><div class="carpeta">Estado</div><div class="sub">${p.estado||'—'}</div></div></div>
-    ${p.obs ? `<div class="fase-item"><div class="body"><div class="carpeta">Observaciones</div><div class="sub" style="font-weight:400;font-size:11px">${p.obs}</div></div></div>` : ''}
-  `;
+  const healthItems = [
+    {lbl:'Cronograma', pct: p.avObra>=80?85:p.avObra>=50?70:50},
+    {lbl:'Financiero', pct: (p.difSNpct||0)<25?85:(p.difSNpct||0)<35?65:45},
+    {lbl:'Cartera', pct: p.pxCobrar===0?95:p.pxCobrar<p.valor*0.3?70:45},
+    {lbl:'Calidad', pct: p.obs && p.obs.length>5 ? 60 : 85},
+  ];
+  healthEl.innerHTML = healthItems.map(h => `<div class="health-row"><div class="health-lbl">${h.lbl}</div><div class="hbar-bg"><div class="hbar-fill" style="width:${h.pct}%;background:${hCol(h.pct)}"></div></div><div class="health-pct" style="color:${hCol(h.pct)}">${h.pct}%</div><div class="hdot" style="background:${hCol(h.pct)}"></div></div>`).join('')
+    + `<div style="font-size:9px;color:#a09c96;margin-top:6px">HSE: pendiente de desarrollo (ver pestaña Control documental)</div>`;
 
-  // Curva S: todavía no existe una fuente de datos histórica (semana a semana)
-  // de avance programado vs real en el Sheet — por ahora se muestra un punto
-  // único (el % de avance actual) en vez de inventar una curva completa.
-  curvaNota.style.display = 'block';
-  curvaNota.textContent = '⚠ Todavía no hay datos históricos de avance semana a semana en el Sheet, así que la Curva S completa no se puede trazar aún — se muestra solo el punto de avance actual.';
-  if(resumenCurvaSChart) resumenCurvaSChart.destroy();
-  const avance = p.avObra || 0;
-  resumenCurvaSChart = new Chart(document.getElementById('resumenCurvaSChart'), {
-    type: 'line',
-    data: {
-      labels: ['Inicio','Hoy','Fin'],
-      datasets: [
-        {label:'Programado (referencia)', data:[0,50,100], borderColor:'#c8c5c0', borderDash:[5,4], pointRadius:0, tension:.3},
-        {label:'Real (avance actual)', data:[0, avance, null], borderColor:'#e8622a', backgroundColor:'#e8622a', pointRadius:[0,5,0], tension:.3}
-      ]
-    },
-    options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top', labels:{boxWidth:10,font:{size:10}}}}, scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%'}}}}
+  // ── Curva S: usa datos reales si existen para este código (PROJ_DETAIL);
+  // si no, muestra una aproximación genérica basada solo en el % de avance
+  // actual, dejándolo explícito con un aviso — nunca se presenta como real.
+  if(curvaSChart) curvaSChart.destroy();
+  const det = PROJ_DETAIL[p.codigo];
+  let labels, planData, realData;
+  if(det && det.curvaS && det.curvaS.length){
+    curvaNota.style.display = 'none';
+    labels = det.curvaS.map(d=>d.s);
+    planData = det.curvaS.map(d=>d.prog);
+    realData = det.curvaS.map(d=>d.real);
+  } else {
+    curvaNota.style.display = 'block';
+    curvaNota.className = 'load-note';
+    curvaNota.textContent = '⚠ Aproximación — todavía no hay datos históricos semana a semana para este proyecto en el Sheet, así que esta curva es una estimación basada solo en el % de avance actual.';
+    const meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    const avReal = p.avObra||0;
+    const mActual = new Date().getMonth();
+    labels = meses;
+    planData = meses.map((_,i)=>Math.min(100,Math.round((i/(meses.length-1))*100)));
+    realData = meses.map((_,i)=>{ if(i>mActual) return null; const r=Math.round((i/Math.max(mActual,1))*avReal); return Math.min(r,avReal); });
+    realData[mActual] = avReal;
+  }
+  curvaSChart = new Chart(document.getElementById('curvaSChart'), {type:'line', data:{labels, datasets:[
+    {label:'Planeado', data:planData, borderColor:'#1a5fa5', borderDash:[5,4], borderWidth:2, pointRadius:3, pointBackgroundColor:'#1a5fa5', tension:0.4, fill:false},
+    {label:'Real', data:realData, borderColor:'#e8622a', borderWidth:2.5, pointRadius:4, pointBackgroundColor:'#e8622a', tension:0.4, fill:false},
+  ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:true, labels:{font:{size:10}, boxWidth:16, padding:12}}, tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw!=null?ctx.raw+'%':'—'}`}}}, scales:{x:{grid:{display:false}, ticks:{color:'#6b6b66',font:{size:10}}, border:{display:false}}, y:{min:0,max:100, grid:{color:'#f0efec'}, ticks:{color:'#6b6b66',font:{size:10}, callback:v=>v+'%'}, border:{display:false}}}}
   });
+
+  // ── Cronograma y Presupuesto por capítulo: SIEMPRE de muestra (CAPS es un
+  // listado genérico, no datos reales de ningún proyecto) — el aviso ya
+  // está fijo en el HTML de esta sección, y aquí igual queda claro.
+  const pctBase = p.avObra||0;
+  const caps = CAPS.map((c,i)=>{ const variacion=(i%3===0?-8:i%3===1?5:-2); return {...c, pct: Math.max(0,Math.min(100, pctBase+variacion+(i*3%15-7)))}; });
+  document.getElementById('cronograma-list').innerHTML = `<table class="cronograma-table"><thead><tr>
+    <th>Cap.</th><th>Descripción</th><th style="min-width:120px">Avance</th><th style="text-align:right">Selección</th></tr></thead><tbody>
+    ${caps.map(c=>`<tr>
+      <td class="cap-num">${c.n}</td>
+      <td><div style="display:flex;align-items:center;gap:6px"><div style="width:18px;height:18px;border-radius:4px;background:${c.color}22;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0">${c.ico}</div><span style="font-size:11px;font-weight:600;color:${c.color}">${c.nom}</span></div></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="cap-bar-wrap" style="flex:1"><div class="cap-bar-fill" style="width:${c.pct}%;background:${c.color}"></div></div>
+          <span class="cap-pct">${Math.round(c.pct)}%</span>
+        </div>
+      </td>
+      <td style="text-align:right"><div style="display:inline-block;background:${c.color}22;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:600;color:${c.color}">Alcance</div></td>
+    </tr>`).join('')}
+  </tbody></table>`;
+
+  const totalMonto = CAPS.reduce((a,c)=>a+c.monto,0);
+  const factor = p.valor>0 ? p.valor/1e6/totalMonto : 1;
+  document.getElementById('presupuesto-caps').innerHTML = CAPS.map(c=>{
+    const monto = Math.round(c.monto*factor);
+    const pct = Math.round(c.monto/totalMonto*100);
+    return `<div class="cap-row">
+      <div class="cap-icon" style="background:${c.color}22;color:${c.color}">${c.ico}</div>
+      <div class="cap-info">
+        <div class="cap-info-top">
+          <span class="cap-info-label" style="color:${c.color}">${c.n} — ${c.nom}</span>
+          <span class="cap-info-monto">$${monto.toLocaleString()} M</span>
+        </div>
+        <div class="cap-info-sub">${pct}% del presupuesto total · $${c.monto.toLocaleString()}/m²</div>
+        <div class="cap-bar-mini"><div class="cap-bar-mini-fill" style="width:${pct}%;background:${c.color}"></div></div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function renderFaseSidebar(fases, resumen){
