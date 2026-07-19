@@ -31,7 +31,8 @@
     </div>
     <div class="sidebar-nav">
       <div class="nav-section">Navegación</div>
-      <div class="nav-item active" onclick="goToProjectList()">📁 Mis proyectos</div>
+      <div class="nav-item active" id="nav-mis-proyectos" onclick="goToProjectList()">📁 Mis proyectos</div>
+      <div class="nav-item" id="nav-nuevo-proyecto" onclick="goToNewProject()">➕ Nuevo proyecto</div>
     </div>
     <div class="sidebar-footer">
       <div class="upd" id="user-info">—</div>
@@ -61,6 +62,41 @@
         <div id="project-header" class="project-header"></div>
         <div id="timeline-wrap" class="timeline-wrap"></div>
         <div id="fase-detail-wrap" class="fase-detail-wrap"></div>
+      </div>
+
+      <!-- Vista: crear proyecto nuevo -->
+      <div id="view-new-project" class="view" style="display:none">
+        <button class="back-btn" onclick="goToProjectList()">← Volver a mis proyectos</button>
+        <div class="new-project-card">
+          <div class="npc-title">Crear proyecto nuevo</div>
+          <div class="npc-sub">Se agrega a la pestaña "Proyectos" y se le clona automáticamente el checklist de la plantilla elegida (sin HSE).</div>
+          <div class="npc-grid">
+            <label>Código * <input id="np-codigo" placeholder="C-26-034" /></label>
+            <label>Nombre del proyecto * <input id="np-nombre" placeholder="Ej: Oficinas Nubank Piso 4" /></label>
+            <label>Cliente <input id="np-cliente" placeholder="Ej: Nubank" /></label>
+            <label>Plantilla *
+              <select id="np-plantilla">
+                <option value="MINIMA">MINIMA</option>
+                <option value="ENEL">ENEL</option>
+              </select>
+            </label>
+            <label>Estado
+              <select id="np-estado">
+                <option value="Por Iniciar">Por Iniciar</option>
+                <option value="En Ejecución">En Ejecución</option>
+                <option value="En Liquidación">En Liquidación</option>
+                <option value="Garantias">Garantías</option>
+              </select>
+            </label>
+            <label>Director <input id="np-director" placeholder="Nombre exacto, igual que en Usuarios" /></label>
+            <label>Residente <input id="np-residente" placeholder="Nombre exacto, igual que en Usuarios" /></label>
+            <label>Gerente <input id="np-gerente" placeholder="Nombre exacto, igual que en Usuarios" /></label>
+            <label class="npc-full">Carpeta de Drive (link) <input id="np-drive" placeholder="https://drive.google.com/drive/folders/..." /></label>
+          </div>
+          <div id="np-error" class="np-error"></div>
+          <div id="np-success" class="np-success"></div>
+          <button class="npc-submit" id="np-submit-btn" onclick="crearProyecto()">Crear proyecto</button>
+        </div>
       </div>
     </div>
   </div>
@@ -154,6 +190,21 @@
 .fase-item .doc{font-size:11px;color:#6b6b66;margin-top:3px;line-height:1.4}
 .fase-item .resp{font-size:10px;color:#a0620a;background:#fff3e9;border-radius:5px;padding:2px 8px;white-space:nowrap;flex-shrink:0;margin-top:1px}
 .fase-empty{padding:24px 20px;text-align:center;color:#aaa;font-size:12px}
+
+/* ═══ CREAR PROYECTO ═══ */
+.new-project-card{background:#fff;border:1px solid #d4d3cf;border-radius:12px;padding:24px 26px;max-width:720px}
+.npc-title{font-family:'Montserrat',sans-serif;font-weight:700;font-size:15px;color:#1a1a1a}
+.npc-sub{font-size:11px;color:#6b6b66;margin-top:4px;margin-bottom:20px;line-height:1.5}
+.npc-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px}
+.npc-grid label{display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:#6b6b66}
+.npc-grid label.npc-full{grid-column:1 / -1}
+.npc-grid input,.npc-grid select{border:1px solid #d4d3cf;border-radius:7px;padding:9px 11px;font-size:12px;font-family:'Inter',sans-serif;color:#1a1a1a;outline:none}
+.npc-grid input:focus,.npc-grid select:focus{border-color:#e8622a}
+.npc-submit{margin-top:22px;background:#e8622a;color:#fff;border:none;border-radius:8px;padding:11px 22px;font-family:'Montserrat',sans-serif;font-weight:600;font-size:12px;cursor:pointer}
+.npc-submit:hover{background:#d1531f}
+.npc-submit:disabled{background:#e8b8a2;cursor:wait}
+.np-error{color:#c0392b;font-size:11px;margin-top:14px;min-height:14px}
+.np-success{color:#1a8a52;font-size:11px;margin-top:14px;min-height:14px;font-weight:600}
 </style>
 
 <script>
@@ -244,13 +295,74 @@ function refreshCurrentView(){
   else loadProjectChecklist(currentProject.codigo);
 }
 
+function setActiveNav(id){
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const el = document.getElementById(id);
+  if(el) el.classList.add('active');
+}
+
 function goToProjectList(){
   currentView = 'projects';
   document.getElementById('view-projects').style.display = 'block';
   document.getElementById('view-timeline').style.display = 'none';
+  document.getElementById('view-new-project').style.display = 'none';
   document.getElementById('topbar-title').textContent = 'MIS PROYECTOS';
   document.getElementById('topbar-sub').textContent = 'Proyectos asignados a tu usuario';
+  document.getElementById('refresh-btn').style.display = 'inline-block';
+  setActiveNav('nav-mis-proyectos');
   loadProjects();
+}
+
+function goToNewProject(){
+  currentView = 'new-project';
+  document.getElementById('view-projects').style.display = 'none';
+  document.getElementById('view-timeline').style.display = 'none';
+  document.getElementById('view-new-project').style.display = 'block';
+  document.getElementById('topbar-title').textContent = 'NUEVO PROYECTO';
+  document.getElementById('topbar-sub').textContent = 'Crea un proyecto y clónale su checklist';
+  document.getElementById('refresh-btn').style.display = 'none';
+  setActiveNav('nav-nuevo-proyecto');
+  document.getElementById('np-error').textContent = '';
+  document.getElementById('np-success').textContent = '';
+}
+
+async function crearProyecto(){
+  const errEl = document.getElementById('np-error');
+  const okEl = document.getElementById('np-success');
+  const btn = document.getElementById('np-submit-btn');
+  errEl.textContent = ''; okEl.textContent = '';
+
+  const datos = {
+    codigo: document.getElementById('np-codigo').value.trim(),
+    nombre: document.getElementById('np-nombre').value.trim(),
+    cliente: document.getElementById('np-cliente').value.trim(),
+    plantilla: document.getElementById('np-plantilla').value,
+    estado: document.getElementById('np-estado').value,
+    director: document.getElementById('np-director').value.trim(),
+    residente: document.getElementById('np-residente').value.trim(),
+    gerente: document.getElementById('np-gerente').value.trim(),
+    carpetaDrive: document.getElementById('np-drive').value.trim()
+  };
+  if(!datos.codigo || !datos.nombre){
+    errEl.textContent = 'El código y el nombre del proyecto son obligatorios.';
+    return;
+  }
+  btn.disabled = true; btn.textContent = 'Creando...';
+  try{
+    const s = getSession();
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'crear_proyecto', token: s.token, datos })
+    });
+    const data = await res.json();
+    if(!data.ok) throw new Error(data.error || 'Error desconocido');
+    okEl.textContent = '✓ Proyecto creado' + (data.checklist && data.checklist.filas_creadas ? ' con ' + data.checklist.filas_creadas + ' ítems de checklist.' : '.');
+    ['np-codigo','np-nombre','np-cliente','np-director','np-residente','np-gerente','np-drive'].forEach(id => document.getElementById(id).value = '');
+    setTimeout(goToProjectList, 1500);
+  }catch(e){
+    errEl.textContent = '⚠ ' + e.message;
+  }
+  btn.disabled = false; btn.textContent = 'Crear proyecto';
 }
 
 async function loadProjects(){
@@ -298,6 +410,9 @@ function openProject(p){
   currentFaseIndex = 0;
   document.getElementById('view-projects').style.display = 'none';
   document.getElementById('view-timeline').style.display = 'block';
+  document.getElementById('view-new-project').style.display = 'none';
+  document.getElementById('refresh-btn').style.display = 'inline-block';
+  setActiveNav('nav-mis-proyectos');
   document.getElementById('topbar-title').textContent = p.codigo;
   document.getElementById('topbar-sub').textContent = p.nombre;
   document.getElementById('project-header').innerHTML = `
