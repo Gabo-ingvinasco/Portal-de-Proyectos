@@ -96,6 +96,118 @@ tr.fc-row-venc td{background:#fdf5f4}
 .fc-refresh-btn:disabled{background:#e8b8a2;cursor:wait}
 .fc-refresh-time{font-size:10px;color:#a09c96}
 
+
+/* ═══ RESUMEN EJECUTIVO / DIRECTORES / ALERTAS / COMPARATIVO (fusionados) ═══ */
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.grid21{display:grid;grid-template-columns:1.4fr 1fr;gap:12px;margin-bottom:12px}
+.risk-row{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid #f0efec;align-items:flex-start}
+.risk-row:last-child{border-bottom:none}
+.rbadge{padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:.5px;flex-shrink:0;margin-top:1px}
+.rbadge.alta{background:#fce8e8;color:#c0392b}.rbadge.media{background:#fef3dc;color:#a0620a}.rbadge.baja{background:#e5f7ef;color:#1a8a52}
+.risk-proj{font-size:11px;font-weight:600;color:#1a1a1a}
+.risk-desc{font-size:10px;color:#6b6b66;margin-top:1px}
+.health-row{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.health-row:last-child{margin-bottom:0}
+.health-lbl{font-size:11px;color:#6b6b66;width:90px;flex-shrink:0}
+.health-pct{font-size:11px;font-weight:600;width:34px;text-align:right;flex-shrink:0}
+.hdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.action-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #f0efec;cursor:pointer}
+.action-row:last-child{border-bottom:none}
+.aproj{font-size:11px;font-weight:600;color:#1a1a1a;width:110px;flex-shrink:0}
+.adesc{font-size:10px;color:#6b6b66;flex:1}
+.aresp{font-size:10px;color:#a09c96;width:90px;flex-shrink:0}
+.pbadge{padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700}
+.pbadge.alta{background:#fce8e8;color:#c0392b}.pbadge.media{background:#fef3dc;color:#a0620a}.pbadge.baja{background:#e5f7ef;color:#1a8a52}
+.quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.quick-btn{display:flex;flex-direction:column;align-items:center;gap:7px;padding:13px 10px;border:1px solid #d4d3cf;border-radius:10px;cursor:pointer;background:#fff;transition:all .15s;text-align:center}
+.quick-btn:hover{border-color:#e8622a;background:#fff8f5}
+.quick-btn svg{color:#e8622a}
+.quick-btn span{font-size:10px;color:#6b6b66;line-height:1.3}
+.pfbtn{padding:4px 14px;border-radius:20px;font-size:11px;border:1px solid #d4d3cf;background:#fff;color:#6b6b66;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.pfbtn.active{background:#e8622a;color:#fff;border-color:#e8622a}
+.pfbtn:hover:not(.active){border-color:#e8622a;color:#e8622a}
+.td-code{font-weight:500;color:#e8622a!important;white-space:nowrap;font-size:10px}
+.estado-badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:600;white-space:nowrap}
+.eb-ejec{background:#e5f7ef;color:#1a8a52}.eb-liq{background:#fef3dc;color:#a0620a}
+.eb-gar{background:#e6f1fb;color:#1a5fa5}.eb-ini{background:#eeeafc;color:#4a3aa7}.eb-cerr{background:#f0f0ee;color:#6b6b66}
+.eb-fin{background:#5a8a5a;color:#fff;}
+.av-bar{height:4px;border-radius:2px;background:#f0efec;overflow:hidden;width:60px}
+.av-fill{height:100%;border-radius:2px}
+.td-neg{color:#c0392b!important;font-weight:600}.td-warn{color:#a0620a!important;font-weight:600}.td-ok{color:#1a8a52!important;font-weight:600}
+.dir-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.dir-card{background:#fff;border:1px solid #d4d3cf;border-radius:10px;padding:14px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
+.dir-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:#e8622a;transform:scaleX(0);transition:transform .2s}
+.dir-card:hover{border-color:#e8622a}.dir-card:hover::before{transform:scaleX(1)}
+.dir-head{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.dir-av{width:40px;height:40px;border-radius:50%;background:#1a1a1a;display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.dir-name{font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;color:#1a1a1a}
+.dir-cargo{font-size:10px;color:#6b6b66;margin-top:2px}
+.dir-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:10px}
+.dir-kpi{text-align:center;background:#f9f8f6;border-radius:6px;padding:6px 4px}
+.dir-kpi-n{font-family:'Montserrat',sans-serif;font-size:16px;font-weight:700;color:#1a1a1a}
+.dir-kpi-l{font-size:9px;color:#6b6b66;margin-top:1px}
+.dir-fin{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:10px}
+.dir-fin-item{background:#f9f8f6;border-radius:6px;padding:6px 10px}
+.dir-fin-v{font-size:12px;font-weight:600;color:#1a1a1a}
+.dir-fin-l{font-size:9px;color:#6b6b66}
+.dir-dif-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 0;padding:10px 0 0;border-top:1px solid #f0ede8}
+.dir-dif-item{}
+.dir-dif-l{font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.dir-dif-v{font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;line-height:1}
+.dir-av-row{display:flex;align-items:center;gap:8px}
+.dir-av-lbl{font-size:10px;color:#6b6b66;width:80px}
+.dir-av-bg{flex:1;height:4px;background:#f0efec;border-radius:2px;overflow:hidden}
+.dir-av-fill{height:100%;border-radius:2px}
+.dir-pct{font-size:11px;font-weight:600;width:30px;text-align:right}
+.obs-panel{background:#fff8f5;border:1px solid #f0c8b8;border-radius:10px;padding:13px 16px;margin-bottom:12px}
+.obs-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.obs-header svg{color:#e8622a;flex-shrink:0}
+.obs-header-txt{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#e8622a}
+.obs-row{display:flex;gap:8px;padding:4px 0;font-size:11px}
+.obs-code{color:#e8622a;font-weight:600;width:80px;flex-shrink:0}
+.obs-txt{color:#6b6b66}
+.cmp-wrap{display:flex;gap:12px;margin-bottom:12px}
+.cmp-yr{flex:1;background:#fff;border:1px solid #d4d3cf;border-radius:10px;padding:16px 20px;min-width:0}
+.cmp-yr-badge{display:inline-block;padding:3px 14px;border-radius:14px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;letter-spacing:.5px;margin-bottom:12px}
+.cmp-yr-badge.y25{background:#e8f3ec;color:#1a6b3a}
+.cmp-yr-badge.y26{background:#fff4e0;color:#b06a00}
+.cmp-kpi-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.cmp-kpi{background:#f6f4f1;border-radius:6px;padding:10px 12px}
+.cmp-kpi-n{font-family:'Montserrat',sans-serif;font-size:16px;font-weight:700;color:#1a1a1a;line-height:1.1}
+.cmp-kpi-l{font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
+.cmp-sep{display:flex;align-items:center;justify-content:center;width:32px;flex-shrink:0;font-family:'Montserrat',sans-serif;font-weight:800;font-size:10px;color:#bbb;writing-mode:vertical-rl;letter-spacing:2px}
+.comp-table{width:100%;border-collapse:collapse;font-size:12px}
+.comp-table th{text-align:left;padding:8px 12px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#6b6b66;border-bottom:1px solid #e8e6e1;font-weight:600}
+.comp-table td{padding:9px 12px;border-bottom:1px solid #f0ede8;color:#1a1a1a}
+.comp-table tr:last-child td{border-bottom:none}
+.comp-table td:first-child{font-weight:500}
+.comp-table td:nth-child(2){color:#1a6b3a}
+.comp-table td:nth-child(3){color:#b06a00}
+.dir-page-wrap{display:flex;gap:0;align-items:flex-start}
+.dir-grid-col{flex:1;min-width:0}
+.dir-drawer{width:0;overflow:hidden;transition:width .28s ease;flex-shrink:0}
+.dir-drawer.open{width:740px}
+.dir-drawer-inner{width:740px;display:flex;flex-direction:column;gap:12px;padding:0 0 0 12px}
+.dir-panel{background:#fff;border:1px solid #d4d3cf;border-radius:10px;overflow:hidden}
+.dir-drawer-hd{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #f0ede8}
+.dir-drawer-ttl{font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;color:#1a1a1a;letter-spacing:.3px}
+.dir-close-btn{border:none;background:none;cursor:pointer;color:#888;padding:4px;border-radius:4px;line-height:0;flex-shrink:0}
+.dir-close-btn:hover{background:#f0ede8;color:#1a1a1a}
+.dir-tbl-wrap{overflow-x:auto;padding:0 4px 4px}
+.dir-proj-tbl{width:100%;border-collapse:collapse;font-size:11px}
+.dir-proj-tbl th{text-align:left;padding:7px 10px;font-size:9px;letter-spacing:.7px;text-transform:uppercase;color:#888;border-bottom:2px solid #e8e6e1;font-weight:600;white-space:nowrap;background:#fff}
+.dir-proj-tbl td{padding:8px 10px;border-bottom:1px solid #f0ede8;vertical-align:middle;color:#1a1a1a;white-space:nowrap}
+.dir-proj-tbl tr:last-child td{border-bottom:none}
+.dir-proj-tbl tr:hover td{background:#faf9f7}
+.dir-totals{padding:10px 16px;background:#f6f4f1;border-top:2px solid #e8e6e1;display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.dir-tot-item{}
+.dir-tot-l{font-size:8px;text-transform:uppercase;letter-spacing:.5px;color:#888;margin-bottom:2px}
+.dir-tot-v{font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;color:#1a1a1a}
+.dir-card.selected{border-color:#e8622a !important;box-shadow:0 0 0 2px rgba(232,98,42,.15)}
+.dir-card.selected::before{transform:scaleX(1) !important}
+.role-gate-empty{padding:40px;text-align:center;color:#aaa;font-size:13px;background:#fff;border:1px solid #d4d3cf;border-radius:10px}
+
 </style>
 </head>
 <body>
@@ -123,6 +235,11 @@ tr.fc-row-venc td{background:#fdf5f4}
     <div class="sidebar-nav">
       <div class="nav-section">Navegación</div>
       <div class="nav-item active" id="nav-mis-proyectos" onclick="goToProjectList()">📁 Mis proyectos</div>
+      <div class="nav-item" id="nav-kpis" onclick="goToKPIs()">📊 KPI's</div>
+      <div class="nav-item" id="nav-resumen" style="display:none" onclick="goToResumen()">📈 Resumen Ejecutivo</div>
+      <div class="nav-item" id="nav-alertas" onclick="goToAlertas()">⚠️ Alertas</div>
+      <div class="nav-item" id="nav-directores" style="display:none" onclick="goToDirectores()">👥 Directores</div>
+      <div class="nav-item" id="nav-comparativo" style="display:none" onclick="goToComparativo()">📆 Comparativo Anual</div>
       <div class="nav-item" id="nav-flujo-caja" style="display:none" onclick="goToFlujoCaja()">💰 Flujo de Caja</div>
       <div class="nav-item" id="nav-nuevo-proyecto" onclick="goToNewProject()">➕ Nuevo proyecto</div>
     </div>
@@ -291,6 +408,148 @@ tr.fc-row-venc td{background:#fdf5f4}
           </div>
         </div>
       </div>
+
+      <!-- Vista: KPI's (todos los roles, todos los proyectos) -->
+      <div id="view-kpis" class="view" style="display:none">
+        <button class="back-btn" onclick="goToProjectList()">← Volver a mis proyectos</button>
+        <div class="kpi-strip" id="kpi-strip"></div>
+        <div class="finance-bar" id="finance-bar"></div>
+        <div class="grid3">
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Distribución por estado</div></div>
+            <div class="donut-wrap">
+              <div class="donut-chart-wrap">
+                <canvas id="donutChart"></canvas>
+                <div class="donut-center" id="donut-center-text">
+                  <div class="donut-big-n">—</div>
+                  <div class="donut-sub">proyectos</div>
+                </div>
+              </div>
+              <div class="legend-list" id="donut-legend"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Salud general del portafolio</div></div>
+            <div id="health-list"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Proyectos por sector</div></div>
+            <div style="height:150px;position:relative"><canvas id="sectorChart"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vista: Resumen Ejecutivo (Director: solo sus proyectos · Gerente: todos) -->
+      <div id="view-resumen" class="view" style="display:none">
+        <button class="back-btn" onclick="goToProjectList()">← Volver a mis proyectos</button>
+        <div class="grid3">
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Top riesgos</div></div>
+            <div id="risk-list"></div>
+          </div>
+          <div class="panel" style="grid-column:span 2">
+            <div class="panel-head"><div class="panel-title">Atención requerida — acciones</div></div>
+            <div id="action-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vista: Alertas (todos los roles, filtrado por proyecto asignado) -->
+      <div id="view-alertas" class="view" style="display:none">
+        <button class="back-btn" onclick="goToProjectList()">← Volver a mis proyectos</button>
+        <div id="alertas-scope-note" class="load-note" style="display:none"></div>
+        <div class="obs-panel">
+          <div class="obs-header">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
+            <span class="obs-header-txt">Proyectos con observaciones documentales críticas</span>
+          </div>
+          <div id="obs-list"></div>
+        </div>
+        <div class="grid2">
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Proyectos con retraso en entrega</div></div>
+            <div id="delay-list"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Diferencia SN% mayor al 30% — revisión urgente</div></div>
+            <div id="margin-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vista: Directores (solo Gerencia) -->
+      <div id="view-directores" class="view" style="display:none">
+        <button class="back-btn" onclick="goToProjectList()">← Volver a mis proyectos</button>
+        <div class="dir-page-wrap">
+          <div class="dir-grid-col">
+            <div class="dir-grid" id="dir-grid"></div>
+          </div>
+          <div class="dir-drawer" id="dir-drawer">
+            <div class="dir-drawer-inner">
+              <div class="dir-panel">
+                <div class="dir-drawer-hd">
+                  <div class="dir-drawer-ttl" id="dir-drawer-ttl">Proyectos</div>
+                  <button class="dir-close-btn" onclick="closeDrawer()">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                </div>
+                <div class="dir-tbl-wrap">
+                  <table class="dir-proj-tbl" id="dir-proj-tbl">
+                    <thead><tr>
+                      <th>Código</th><th>Proyecto</th><th>Estado</th>
+                      <th style="text-align:right">Valor</th>
+                      <th style="text-align:right">Dif.CCV%</th>
+                      <th style="text-align:right">Dif.SCV%</th>
+                      <th style="text-align:right">Px Facturar</th>
+                      <th style="text-align:right">Px Cobrar</th>
+                      <th style="text-align:right">Avance</th>
+                    </tr></thead>
+                    <tbody id="dir-drawer-body"></tbody>
+                  </table>
+                </div>
+                <div class="dir-totals" id="dir-totals">
+                  <div class="dir-tot-item"><div class="dir-tot-l">Proyectos</div><div class="dir-tot-v" id="tot-n">—</div></div>
+                  <div class="dir-tot-item"><div class="dir-tot-l">Valor total</div><div class="dir-tot-v" id="tot-val">—</div></div>
+                  <div class="dir-tot-item"><div class="dir-tot-l">Pend. facturar</div><div class="dir-tot-v" id="tot-fac" style="color:#c08a00">—</div></div>
+                  <div class="dir-tot-item"><div class="dir-tot-l">Pend. cobrar</div><div class="dir-tot-v" id="tot-cob" style="color:#c0392b">—</div></div>
+                  <div class="dir-tot-item"><div class="dir-tot-l">Dif. CCV% prom.</div><div class="dir-tot-v" id="tot-ccv">—</div></div>
+                  <div class="dir-tot-item"><div class="dir-tot-l">Dif. SCV% prom.</div><div class="dir-tot-v" id="tot-scv">—</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vista: Comparativo Anual (solo Gerencia) -->
+      <div id="view-comparativo" class="view" style="display:none">
+        <button class="back-btn" onclick="goToProjectList()">← Volver a mis proyectos</button>
+        <div class="cmp-wrap">
+          <div class="cmp-yr">
+            <div class="cmp-yr-badge y25">2025</div>
+            <div id="cmp-kpi-25" class="cmp-kpi-grid"></div>
+          </div>
+          <div class="cmp-sep">VS</div>
+          <div class="cmp-yr">
+            <div class="cmp-yr-badge y26">2026</div>
+            <div id="cmp-kpi-26" class="cmp-kpi-grid"></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Valor CCV Finalizados/Cerrados — por Mes</div></div>
+            <div style="height:260px;position:relative"><canvas id="compMesChart"></canvas></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">VS Directores — Número de proyectos</div></div>
+            <div style="height:260px;position:relative"><canvas id="compDirCountChart"></canvas></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">VS Sectores</div></div>
+          <div id="comp-sector-table"></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -402,7 +661,7 @@ tr.fc-row-venc td{background:#fdf5f4}
 
 <script>
 /* ═══ CONFIGURA ESTO: pega aquí la URL de tu Apps Script desplegado ═══ */
-const API_URL = 'https://script.google.com/macros/s/AKfycbxfhPKUgHkgT3-5zx7a1kXWdKs74OuqR5C7BECGv6bupwG6Sj42cCT8vU7HB5A-3f9fyA/exec';
+const API_URL = 'PEGA_AQUI_LA_URL_DE_TU_APPS_SCRIPT';
 
 
 /* ═══ FUSIÓN: datos y lógica de Flujo de Caja (del dashboard de Control de Proyectos) ═══
@@ -483,7 +742,7 @@ const PROJECTS=[
 
 const fmtMM=v=>{if(v===null||v===undefined||isNaN(v)||v===0)return"—";return"$"+Math.round(v).toLocaleString('es-CO');};
 
-const filteredProjects = PROJECTS;
+let filteredProjects = PROJECTS;
 
 let FLUJO_CAJA=[];
 const FLUJO_SHEET_ID='1CbTHrQqdji7HayP2XuVz_x-aJE4o4CGKq0zI1immtfM';
@@ -798,6 +1057,276 @@ async function refreshFlujoCaja(){
   }
 }
 
+
+/* ═══ FUSIÓN: Resumen Ejecutivo / Directores / Alertas / Comparativo / KPI's ═══ */
+const EC={"Finalizado":"#e8622a","En Ejecución":"#f7c400","En Liquidación":"#a82c00","Garantias":"#7a1010","Por Iniciar":"#ffaa44","Cerrado":"#9e8c80"};
+const EB={"Finalizado":"eb-fin","En Ejecución":"eb-ejec","En Liquidación":"eb-liq","Garantias":"eb-gar","Por Iniciar":"eb-ini","Cerrado":"eb-cerr"};
+const fmtPct=v=>v?v.toFixed(1)+"%":"—";
+const hCol=v=>v>=85?"#1a8a52":v>=60?"#c08a00":"#c0392b";
+let donutChart,sectorChart,compMesChart,compDirCountChart;
+
+/* Recalcula filteredProjects según el rol de la sesión activa.
+   Gerente/Admin: todos los proyectos. Director: solo los suyos (por 'encargado').
+   Residente/otros: por ahora ninguno — el PROJECTS estático de este dashboard no
+   tiene un campo de "residente" separado (solo 'encargado', que históricamente
+   apunta al Director/responsable), así que no hay forma de filtrar por Residente
+   todavía. Si se necesita, hay que agregar esa columna al PROJECTS. */
+function computeFilteredProjects(){
+  const s = getSession();
+  if(s.rol === 'Gerente' || s.rol === 'Admin'){ filteredProjects = PROJECTS; }
+  else if(s.rol === 'Director'){ filteredProjects = PROJECTS.filter(p => p.encargado === s.nombre); }
+  else { filteredProjects = []; }
+}
+
+function buildKPIs(){
+  const fp=PROJECTS; // KPI's: visible a todos, sobre TODOS los proyectos (sin filtrar por rol)
+  const kpis=[
+    {n:fp.length,l:"Total proyectos",ic:"total",c:"#e8622a"},
+    {n:fp.filter(p=>p.estado==="Finalizado").length,l:"Finalizados",ic:"fin",c:"#5a8a5a"},
+    {n:fp.filter(p=>p.estado==="En Ejecución").length,l:"En ejecución",ic:"ejec",c:"#1a8a52"},
+    {n:fp.filter(p=>p.estado==="En Liquidación").length,l:"En liquidación",ic:"liq",c:"#c08a00"},
+    {n:fp.filter(p=>p.estado==="Por Iniciar").length,l:"Por iniciar",ic:"ini",c:"#4a3aa7"},
+    {n:fp.filter(p=>p.estado==="Cerrado").length,l:"Cerrados",ic:"cerr",c:"#6b6b66"},
+    {n:fp.filter(p=>p.estado==="Garantias").length,l:"Garantías",ic:"gar",c:"#1a5fa5"},
+  ];
+  const svgs=['<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>','<circle cx="12" cy="12" r="10"/><polyline points="8 12 11 15 16 9"/>','<polygon points="5 3 19 12 5 21 5 3"/>','<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>','<path d="M5 12l5-5 5 5 5-5"/>','<polyline points="20 6 9 17 4 12"/>','<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>'];
+  const el=document.getElementById('kpi-strip');
+  if(el)el.innerHTML=kpis.map((k,i)=>`
+    <div class="kpi"><div class="kpi-ico ${k.ic}"><svg width="16" height="16" fill="none" stroke="${k.c}" stroke-width="1.8" viewBox="0 0 24 24">${svgs[i]}</svg></div>
+    <div><div class="kpi-num">${k.n}</div><div class="kpi-lbl">${k.l}</div></div></div>`).join('');
+}
+
+function buildFinanceBar(){
+  const fp=PROJECTS; // igual que KPIs: visible a todos, cifras agregadas de todo el portafolio
+  const tv=fp.reduce((a,p)=>a+(p.valor||0),0);
+  const tf=fp.reduce((a,p)=>a+(p.pxFacturar||0),0);
+  const tc=fp.reduce((a,p)=>a+(p.pxCobrar||0),0);
+  const as=fp.filter(p=>p.difSNpct>0).length?fp.reduce((a,p)=>a+(p.difSNpct||0),0)/fp.filter(p=>p.difSNpct>0).length:0;
+  const ac=fp.filter(p=>p.difCNpct>0&&p.difCNpct<200).length?fp.reduce((a,p)=>a+(p.difCNpct<200?p.difCNpct||0:0),0)/fp.filter(p=>p.difCNpct>0&&p.difCNpct<200).length:0;
+  const el=document.getElementById('finance-bar');
+  if(el)el.innerHTML=`
+    <div class="finance-bar-lbl">Desempeño<br>financiero</div>
+    <div class="finance-item"><div class="fn">${fmtMM(tv)}</div><div class="fl">Valor total (COP)</div></div>
+    <div class="finance-item"><div class="fn">${fmtMM(tf)}</div><div class="fl">Pendiente facturar</div><div class="fd neg">▼ Gestión requerida</div></div>
+    <div class="finance-item"><div class="fn">${fmtMM(tc)}</div><div class="fl">Pendiente cobrar</div><div class="fd neg">▼ Cartera activa</div></div>
+    <div class="finance-item"><div class="fn">${as.toFixed(1)}%</div><div class="fl">Diferencia SN prom.</div></div>
+    <div class="finance-item"><div class="fn">${ac.toFixed(1)}%</div><div class="fl">Diferencia CN prom.</div></div>`;
+}
+
+function buildDonut(){
+  const fp=PROJECTS;
+  const counts={};fp.forEach(p=>{counts[p.estado]=(counts[p.estado]||0)+1;});
+  const labels=Object.keys(counts),data=labels.map(l=>counts[l]),colors=labels.map(l=>EC[l]||"#888");
+  const canvas=document.getElementById('donutChart');
+  if(!canvas)return;
+  if(donutChart)donutChart.destroy();
+  donutChart=new Chart(canvas,{
+    type:'doughnut',
+    data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:6,borderColor:'#faf9f7',borderRadius:8,spacing:4,hoverOffset:8}]},
+    options:{responsive:false,maintainAspectRatio:false,cutout:'58%',
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw} (${Math.round(ctx.raw/fp.length*100)}%)`}}},
+      animation:{animateRotate:true,duration:700}
+    }
+  });
+  document.getElementById('donut-center-text').innerHTML=`<div class="donut-big-n">${fp.length}</div><div class="donut-sub">proyectos</div>`;
+  document.getElementById('donut-legend').innerHTML=labels.map((l,i)=>`<div class="legend-item"><div class="legend-dot" style="background:${colors[i]}"></div><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l}</span><span class="legend-n">${data[i]}</span></div>`).join('');
+}
+
+function buildHealth(){
+  const items=[{lbl:"Cronograma",pct:70},{lbl:"Financiero",pct:72},{lbl:"Facturación",pct:65},{lbl:"Cartera",pct:55},{lbl:"Documentación",pct:60}];
+  const el=document.getElementById('health-list');
+  if(el)el.innerHTML=items.map(h=>`<div class="health-row"><div class="health-lbl">${h.lbl}</div><div class="hbar-bg"><div class="hbar-fill" style="width:${h.pct}%;background:${hCol(h.pct)}"></div></div><div class="health-pct" style="color:${hCol(h.pct)}">${h.pct}%</div><div class="hdot" style="background:${hCol(h.pct)}"></div></div>`).join('');
+}
+
+function buildSector(){
+  const sec={};PROJECTS.forEach(p=>{if(p.sector)sec[p.sector]=(sec[p.sector]||0)+1;});
+  const sorted=Object.entries(sec).sort((a,b)=>b[1]-a[1]);
+  const colors=["#e8622a","#f5a623","#d94f00","#f7c948","#c0392b","#8c7b6e","#e8905a"];
+  const canvas=document.getElementById('sectorChart');
+  if(!canvas)return;
+  if(sectorChart)sectorChart.destroy();
+  sectorChart=new Chart(canvas,{type:'bar',data:{labels:sorted.map(s=>s[0]),datasets:[{data:sorted.map(s=>s[1]),backgroundColor:colors,borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:"#6b6b66",font:{size:10}},border:{display:false}},y:{grid:{display:false},ticks:{color:"#6b6b66",font:{size:10}},border:{display:false}}}}});
+}
+
+/* NOTA: estos dos usan una lista de ejemplo fija (no calculada desde PROJECTS
+   todavía) — igual que en el dashboard original. Si quieres que reflejen datos
+   reales y respeten el filtro de proyectos del Director, hay que reescribirlos
+   para derivarse de PROJECTS/filteredProjects en vez de un arreglo fijo. */
+function buildRisks(){
+  const risks=[{proj:"IAE — C-26-009",desc:"Retraso 48 días. Cronograma crítico.",nivel:"alta"},{proj:"Intercontinental",desc:"Cartera pendiente masiva. Anomalía contable.",nivel:"alta"},{proj:"Av Chile — C-26-007",desc:"Diferencia SN 44.3% — revisar margen real.",nivel:"media"},{proj:"Reparaciones P11",desc:"Sin documentación contractual básica.",nivel:"media"},{proj:"SOCA — C-26-017",desc:"Sin actas, cronograma, informes ni preliq.",nivel:"media"}];
+  const el=document.getElementById('risk-list');
+  if(el)el.innerHTML=risks.map(r=>`<div class="risk-row"><span class="rbadge ${r.nivel}">${r.nivel.toUpperCase()}</span><div><div class="risk-proj">${r.proj}</div><div class="risk-desc">${r.desc}</div></div></div>`).join('');
+}
+
+function buildActions(){
+  const actions=[{proj:"IAE",desc:"Implementar plan de choque en actividades críticas",resp:"Jeison Cera",prio:"alta"},{proj:"Intercontinental",desc:"Gestionar recaudo y verificar valor contable",resp:"Luis Mantilla",prio:"alta"},{proj:"Reparaciones P11",desc:"Completar documentación básica faltante",resp:"Jeison Cera",prio:"media"},{proj:"SOCA",desc:"Cargar actas, informes y preliquidación",resp:"Andres R.",prio:"media"},{proj:"Av Chile",desc:"Cerrar acta de entrega pendiente",resp:"Alejandro P.",prio:"baja"}];
+  const el=document.getElementById('action-list');
+  if(el)el.innerHTML=actions.map(a=>`<div class="action-row"><div class="aproj">${a.proj}</div><div class="adesc">${a.desc}</div><div class="aresp">${a.resp}</div><span class="pbadge ${a.prio}">${a.prio.toUpperCase()}</span></div>`).join('');
+}
+
+function buildDirectores(){
+  const dirs={};
+  filteredProjects.forEach(p=>{if(!dirs[p.encargado])dirs[p.encargado]={name:p.encargado,cargo:p.cargo,proyectos:[],totalValor:0,totalCobrar:0};dirs[p.encargado].proyectos.push(p);dirs[p.encargado].totalValor+=p.valor||0;dirs[p.encargado].totalCobrar+=p.pxCobrar||0;});
+  document.getElementById('dir-grid').innerHTML=Object.values(dirs).map(d=>{
+    const ejec=d.proyectos.filter(p=>p.estado==="En Ejecución").length;
+    const liq=d.proyectos.filter(p=>p.estado==="En Liquidación").length;
+    const avProm=d.proyectos.length?Math.round(d.proyectos.reduce((a,p)=>a+(p.avObra||0),0)/d.proyectos.length):0;
+    const initials=d.name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+    const avC=hCol(avProm);
+    const ccvArr=d.proyectos.filter(p=>p.difCNpct!=null&&p.difCNpct!==0);
+    const scvArr=d.proyectos.filter(p=>p.difSNpct!=null&&p.difSNpct!==0);
+    const avgCCV=ccvArr.length?ccvArr.reduce((s,p)=>s+(p.difCNpct||0),0)/ccvArr.length:null;
+    const avgSCV=scvArr.length?scvArr.reduce((s,p)=>s+(p.difSNpct||0),0)/scvArr.length:null;
+    const fmtDif=(v,n)=>v==null?`<span style="color:#aaa">—</span>`:`<span style="color:${v>=0?'#1a8a52':'#c0392b'}">${v>=0?'+':''}${v.toFixed(1)}%</span><span style="font-size:9px;color:#aaa;margin-left:3px">(${n} proy.)</span>`;
+    return`<div class="dir-card" data-dir="${d.name}" onclick="openDrawer('${d.name}')">
+      <div class="dir-head"><div class="dir-av">${initials}</div><div><div class="dir-name">${d.name}</div><div class="dir-cargo">${d.cargo}</div></div></div>
+      <div class="dir-kpis">
+        <div class="dir-kpi"><div class="dir-kpi-n">${d.proyectos.length}</div><div class="dir-kpi-l">Proyectos</div></div>
+        <div class="dir-kpi"><div class="dir-kpi-n">${ejec}</div><div class="dir-kpi-l">En ejec.</div></div>
+        <div class="dir-kpi"><div class="dir-kpi-n">${liq}</div><div class="dir-kpi-l">En liq.</div></div>
+      </div>
+      <div class="dir-fin">
+        <div class="dir-fin-item"><div class="dir-fin-v">${fmtMM(d.totalValor)}</div><div class="dir-fin-l">Valor portafolio</div></div>
+        <div class="dir-fin-item"><div class="dir-fin-v" style="color:#c0392b">${fmtMM(d.totalCobrar)}</div><div class="dir-fin-l">Pend. cobrar</div></div>
+      </div>
+      <div class="dir-dif-row">
+        <div class="dir-dif-item"><div class="dir-dif-l">Dif. CCV% prom.</div><div class="dir-dif-v">${fmtDif(avgCCV,ccvArr.length)}</div></div>
+        <div class="dir-dif-item"><div class="dir-dif-l">Dif. SCV% prom.</div><div class="dir-dif-v">${fmtDif(avgSCV,scvArr.length)}</div></div>
+      </div>
+      <div class="dir-av-row"><div class="dir-av-lbl">Avance prom.</div><div class="dir-av-bg"><div class="dir-av-fill" style="width:${avProm}%;background:${avC}"></div></div><div class="dir-pct" style="color:${avC}">${avProm}%</div></div>
+    </div>`;}).join('');
+}
+
+function openDrawer(dirName){
+  document.querySelectorAll('.dir-card').forEach(c=>c.classList.remove('selected'));
+  const card=[...document.querySelectorAll('.dir-card')].find(c=>c.dataset.dir===dirName);
+  if(card)card.classList.add('selected');
+  const projs=filteredProjects.filter(p=>p.encargado===dirName);
+  const EC_local={"Finalizado":"#5a8a5a","En Ejecución":"#1a8a52","En Liquidación":"#c08a00","Garantias":"#1a5fa5","Por Iniciar":"#4a3aa7","Cerrado":"#6b6b66"};
+  const rows=projs.map(p=>{
+    const ccvC=p.difCNpct>0?'#1a8a52':p.difCNpct<0?'#c0392b':'#aaa';
+    const scvC=p.difSNpct>0?'#1a8a52':p.difSNpct<0?'#c0392b':'#aaa';
+    const est=`<span style="background:${EC_local[p.estado]||'#888'};color:#fff;padding:2px 7px;border-radius:10px;font-size:9px;font-weight:600">${p.estado}</span>`;
+    const dCCV=p.difCNpct!=null&&p.difCNpct!==0?`<span style="color:${ccvC}">${p.difCNpct>0?'+':''}${p.difCNpct.toFixed(1)}%</span>`:'<span style="color:#aaa">—</span>';
+    const dSCV=p.difSNpct!=null&&p.difSNpct!==0?`<span style="color:${scvC}">${p.difSNpct>0?'+':''}${p.difSNpct.toFixed(1)}%</span>`:'<span style="color:#aaa">—</span>';
+    const fac=p.pxFacturar>0?`<span style="color:#c08a00">${fmtMM(p.pxFacturar)}</span>`:'<span style="color:#aaa">—</span>';
+    const cob=p.pxCobrar>0?`<span style="color:#c0392b">${fmtMM(p.pxCobrar)}</span>`:'<span style="color:#aaa">—</span>';
+    return `<tr>
+      <td style="font-weight:600;color:#666">${p.codigo}</td>
+      <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis" title="${p.proyecto}">${p.proyecto}</td>
+      <td>${est}</td>
+      <td style="text-align:right">${fmtMM(p.valor)}</td>
+      <td style="text-align:right">${dCCV}</td>
+      <td style="text-align:right">${dSCV}</td>
+      <td style="text-align:right">${fac}</td>
+      <td style="text-align:right">${cob}</td>
+      <td style="text-align:right">${p.avObra!=null?p.avObra+'%':'—'}</td>
+    </tr>`;
+  }).join('');
+  const totVal=projs.reduce((s,p)=>s+(p.valor||0),0);
+  const totFac=projs.reduce((s,p)=>s+(p.pxFacturar||0),0);
+  const totCob=projs.reduce((s,p)=>s+(p.pxCobrar||0),0);
+  document.getElementById('dir-drawer-ttl').textContent=dirName;
+  document.getElementById('dir-drawer-body').innerHTML=rows;
+  const ccvArr2=projs.filter(p=>p.difCNpct!=null&&p.difCNpct!==0);
+  const scvArr2=projs.filter(p=>p.difSNpct!=null&&p.difSNpct!==0);
+  const avgCCV2=ccvArr2.length?ccvArr2.reduce((s,p)=>s+p.difCNpct,0)/ccvArr2.length:null;
+  const avgSCV2=scvArr2.length?scvArr2.reduce((s,p)=>s+p.difSNpct,0)/scvArr2.length:null;
+  const fmtAvg=(v,el)=>{if(v==null){el.textContent='—';el.style.color='#aaa';return;}
+    el.textContent=(v>0?'+':'')+v.toFixed(1)+'%';el.style.color=v>=0?'#1a8a52':'#c0392b';};
+  document.getElementById('tot-n').textContent=projs.length+' proyectos';
+  document.getElementById('tot-val').textContent=fmtMM(totVal);
+  document.getElementById('tot-fac').textContent=totFac>0?fmtMM(totFac):'—';
+  document.getElementById('tot-cob').textContent=totCob>0?fmtMM(totCob):'—';
+  fmtAvg(avgCCV2,document.getElementById('tot-ccv'));
+  fmtAvg(avgSCV2,document.getElementById('tot-scv'));
+  document.getElementById('dir-drawer').classList.add('open');
+}
+function closeDrawer(){
+  document.getElementById('dir-drawer').classList.remove('open');
+  document.querySelectorAll('.dir-card').forEach(c=>c.classList.remove('selected'));
+}
+
+/* Alertas: visible a TODOS los roles, pero filtrado por los proyectos que
+   cada quien puede ver (filteredProjects). Nota: para Residente, hoy esto
+   sale vacío por la misma limitación de datos explicada en computeFilteredProjects. */
+function buildAlertas(){
+  const base=filteredProjects;
+  const note=document.getElementById('alertas-scope-note');
+  if(note){
+    if(base.length===0){
+      note.style.display='block';
+      note.textContent='⚠ No se encontraron proyectos asociados a tu usuario en la base de datos financiera todavía. Habla con tu Gerente para que se agregue tu nombre como responsable en el proyecto correspondiente.';
+    } else note.style.display='none';
+  }
+  const withObs=base.filter(p=>p.obs&&p.obs.length>5);
+  document.getElementById('obs-list').innerHTML=withObs.length?withObs.map(p=>`<div class="obs-row"><span class="obs-code">${p.codigo}</span><span class="obs-txt"><strong style="color:#1a1a1a">${p.proyecto}</strong> — ${p.obs}</span></div>`).join(''):'<div style="font-size:11px;color:#6b6b66;padding:8px 0">Sin observaciones críticas.</div>';
+  const delayed=base.filter(p=>p.dias>10).sort((a,b)=>b.dias-a.dias);
+  document.getElementById('delay-list').innerHTML=delayed.length?delayed.map(p=>`<div class="risk-row"><span class="rbadge ${p.dias>50?'alta':'media'}">${p.dias}d</span><div><div class="risk-proj">${p.proyecto}</div><div class="risk-desc">${p.encargado} — ${p.estado}</div></div></div>`).join(''):'<div style="font-size:11px;color:#6b6b66;padding:8px 0">Sin retrasos significativos.</div>';
+  const highSN=base.filter(p=>p.difSNpct>30&&p.difSNpct<200).sort((a,b)=>b.difSNpct-a.difSNpct);
+  document.getElementById('margin-list').innerHTML=highSN.length?highSN.map(p=>`<div class="risk-row"><span class="rbadge alta">${fmtPct(p.difSNpct)}</span><div><div class="risk-proj">${p.proyecto}</div><div class="risk-desc">${p.encargado} — ${p.estado}</div></div></div>`).join(''):'<div style="font-size:11px;color:#6b6b66;padding:8px 0">Sin diferencias críticas.</div>';
+}
+
+function buildComparativo(){
+  const p25=filteredProjects.filter(p=>p.anio===2025);
+  const p26=filteredProjects.filter(p=>p.anio===2026);
+  function yrCard(pp){
+    const val=pp.reduce((s,p)=>s+p.valor,0);
+    const abonos=pp.reduce((s,p)=>s+p.vPagado,0);
+    const fin=pp.filter(p=>p.estado==='Finalizado'||p.estado==='Cerrado').length;
+    const ejec=pp.filter(p=>p.estado==='En Ejecución').length;
+    const mgnArr=pp.filter(p=>p.difSNpct>0);
+    const mgn=mgnArr.length?mgnArr.reduce((s,p)=>s+p.difSNpct,0)/mgnArr.length:0;
+    return [
+      {n:pp.length,     l:'Proyectos'},
+      {n:fmtMM(val),    l:'Valor CCV'},
+      {n:fmtMM(abonos), l:'Abonos'},
+      {n:fin,           l:'Finalizados'},
+      {n:ejec,          l:'En Ejecución'},
+      {n:mgn.toFixed(1)+'%', l:'Margen SCV'}
+    ].map(k=>`<div class="cmp-kpi"><div class="cmp-kpi-n">${k.n}</div><div class="cmp-kpi-l">${k.l}</div></div>`).join('');
+  }
+  document.getElementById('cmp-kpi-25').innerHTML=yrCard(p25);
+  document.getElementById('cmp-kpi-26').innerHTML=yrCard(p26);
+  const chOpts=(fmt)=>({
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'top',labels:{boxWidth:10,font:{size:11}}},
+      tooltip:{callbacks:{label:c=>c.dataset.label+': '+fmt(c.raw)}}},
+    scales:{y:{ticks:{callback:v=>fmt(v)},grid:{color:'rgba(0,0,0,.04)'}},
+            x:{grid:{display:false},ticks:{font:{size:10},maxRotation:45}}}
+  });
+  const meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const mv25=meses.map((_,i)=>Math.round(p25.filter(p=>(p.estado==='Finalizado'||p.estado==='Cerrado')&&p.mes===i+1).reduce((s,p)=>s+p.valor,0)/1e6));
+  const mv26=meses.map((_,i)=>Math.round(p26.filter(p=>(p.estado==='Finalizado'||p.estado==='Cerrado')&&p.mes===i+1).reduce((s,p)=>s+p.valor,0)/1e6));
+  if(compMesChart)compMesChart.destroy();
+  compMesChart=new Chart(document.getElementById('compMesChart'),{type:'bar',
+    data:{labels:meses,datasets:[
+      {label:'2025',data:mv25,backgroundColor:'#f5a623',borderRadius:4,barPercentage:.65},
+      {label:'2026',data:mv26,backgroundColor:'#e8622a',borderRadius:4,barPercentage:.65}
+    ]},options:chOpts(v=>'$'+v+' M')});
+  const dirs=[...new Set(filteredProjects.map(p=>p.encargado))].sort();
+  const c25=dirs.map(d=>p25.filter(p=>p.encargado===d).length);
+  const c26=dirs.map(d=>p26.filter(p=>p.encargado===d).length);
+  if(compDirCountChart)compDirCountChart.destroy();
+  compDirCountChart=new Chart(document.getElementById('compDirCountChart'),{type:'bar',
+    data:{labels:dirs,datasets:[
+      {label:'2025',data:c25,backgroundColor:'#f5a623',borderRadius:4,barPercentage:.7},
+      {label:'2026',data:c26,backgroundColor:'#e8622a',borderRadius:4,barPercentage:.7}
+    ]},options:chOpts(v=>v+' proy.')});
+  const sects=[...new Set(filteredProjects.map(p=>p.sector).filter(Boolean))].sort();
+  const rows=sects.map(s=>{
+    const s25=p25.filter(p=>p.sector===s);
+    const s26=p26.filter(p=>p.sector===s);
+    return `<tr><td>${s}</td><td>${s25.length} proy. &nbsp;${fmtMM(s25.reduce((a,p)=>a+p.valor,0))}</td><td>${s26.length} proy. &nbsp;${fmtMM(s26.reduce((a,p)=>a+p.valor,0))}</td></tr>`;
+  }).join('');
+  document.getElementById('comp-sector-table').innerHTML=`
+    <table class="comp-table">
+      <thead><tr><th>Sector</th><th>2025</th><th>2026</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+
 const FASE_ORDER = ['Inicio','Planeación','Ejecución','Cierre','Seguimiento y control'];
 let currentProject = null;
 let currentFaseIndex = 0;
@@ -869,19 +1398,29 @@ function doLogout(){
   document.getElementById('login-screen').style.display = 'flex';
 }
 
+const ALL_VIEW_IDS = ['view-projects','view-timeline','view-new-project','view-flujocaja','view-kpis','view-resumen','view-alertas','view-directores','view-comparativo'];
+function hideAllViews(){
+  ALL_VIEW_IDS.forEach(id => { const el = document.getElementById(id); if(el) el.style.display = 'none'; });
+}
+
 function enterApp(){
   const s = getSession();
   document.getElementById('user-info').innerHTML = '<strong>' + s.nombre + '</strong><br>' + (s.rol || '');
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
-  const puedeVerFinanciero = s.rol === 'Director' || s.rol === 'Gerente' || s.rol === 'Admin';
+  computeFilteredProjects();
+  const esGerencia = s.rol === 'Gerente' || s.rol === 'Admin';
+  const puedeVerFinanciero = s.rol === 'Director' || esGerencia;
   document.getElementById('nav-flujo-caja').style.display = puedeVerFinanciero ? 'flex' : 'none';
+  document.getElementById('nav-resumen').style.display = puedeVerFinanciero ? 'flex' : 'none';
+  document.getElementById('nav-directores').style.display = esGerencia ? 'flex' : 'none';
+  document.getElementById('nav-comparativo').style.display = esGerencia ? 'flex' : 'none';
   goToProjectList();
 }
 
 function refreshCurrentView(){
   if(currentView === 'projects') loadProjects();
-  else loadProjectChecklist(currentProject.codigo);
+  else if(currentView === 'timeline') loadProjectChecklist(currentProject.codigo);
 }
 
 function setActiveNav(id){
@@ -892,10 +1431,8 @@ function setActiveNav(id){
 
 function goToProjectList(){
   currentView = 'projects';
+  hideAllViews();
   document.getElementById('view-projects').style.display = 'block';
-  document.getElementById('view-timeline').style.display = 'none';
-  document.getElementById('view-new-project').style.display = 'none';
-  document.getElementById('view-flujocaja').style.display = 'none';
   document.getElementById('topbar-title').textContent = 'MIS PROYECTOS';
   document.getElementById('topbar-sub').textContent = 'Proyectos asignados a tu usuario';
   document.getElementById('refresh-btn').style.display = 'inline-block';
@@ -905,13 +1442,9 @@ function goToProjectList(){
 
 function goToFlujoCaja(){
   const s = getSession();
-  if(!(s.rol === 'Director' || s.rol === 'Gerente' || s.rol === 'Admin')){
-    return; // el nav ni siquiera debería estar visible, esto es un respaldo
-  }
+  if(!(s.rol === 'Director' || s.rol === 'Gerente' || s.rol === 'Admin')) return; // respaldo; el nav ya está oculto
   currentView = 'flujocaja';
-  document.getElementById('view-projects').style.display = 'none';
-  document.getElementById('view-timeline').style.display = 'none';
-  document.getElementById('view-new-project').style.display = 'none';
+  hideAllViews();
   document.getElementById('view-flujocaja').style.display = 'block';
   document.getElementById('topbar-title').textContent = 'FLUJO DE CAJA';
   document.getElementById('topbar-sub').textContent = 'Control de hitos de cobro — próximas 12 semanas';
@@ -920,12 +1453,71 @@ function goToFlujoCaja(){
   refreshFlujoCaja();
 }
 
+function goToKPIs(){
+  currentView = 'kpis';
+  hideAllViews();
+  document.getElementById('view-kpis').style.display = 'block';
+  document.getElementById('topbar-title').textContent = "KPI'S";
+  document.getElementById('topbar-sub').textContent = 'Indicadores generales de todo el portafolio';
+  document.getElementById('refresh-btn').style.display = 'none';
+  setActiveNav('nav-kpis');
+  buildKPIs(); buildFinanceBar(); buildDonut(); buildHealth(); buildSector();
+}
+
+function goToResumen(){
+  const s = getSession();
+  if(!(s.rol === 'Director' || s.rol === 'Gerente' || s.rol === 'Admin')) return;
+  currentView = 'resumen';
+  hideAllViews();
+  document.getElementById('view-resumen').style.display = 'block';
+  document.getElementById('topbar-title').textContent = 'RESUMEN EJECUTIVO';
+  document.getElementById('topbar-sub').textContent = s.rol === 'Director' ? 'Tus proyectos asignados' : 'Portafolio completo';
+  document.getElementById('refresh-btn').style.display = 'none';
+  setActiveNav('nav-resumen');
+  buildRisks(); buildActions();
+}
+
+function goToAlertas(){
+  currentView = 'alertas';
+  hideAllViews();
+  document.getElementById('view-alertas').style.display = 'block';
+  document.getElementById('topbar-title').textContent = 'ALERTAS';
+  document.getElementById('topbar-sub').textContent = 'Observaciones y riesgos de tus proyectos asignados';
+  document.getElementById('refresh-btn').style.display = 'none';
+  setActiveNav('nav-alertas');
+  buildAlertas();
+}
+
+function goToDirectores(){
+  const s = getSession();
+  if(!(s.rol === 'Gerente' || s.rol === 'Admin')) return;
+  currentView = 'directores';
+  hideAllViews();
+  document.getElementById('view-directores').style.display = 'block';
+  document.getElementById('topbar-title').textContent = 'DIRECTORES';
+  document.getElementById('topbar-sub').textContent = 'Desempeño por director';
+  document.getElementById('refresh-btn').style.display = 'none';
+  setActiveNav('nav-directores');
+  buildDirectores();
+}
+
+function goToComparativo(){
+  const s = getSession();
+  if(!(s.rol === 'Gerente' || s.rol === 'Admin')) return;
+  currentView = 'comparativo';
+  hideAllViews();
+  document.getElementById('view-comparativo').style.display = 'block';
+  document.getElementById('topbar-title').textContent = 'COMPARATIVO ANUAL';
+  document.getElementById('topbar-sub').textContent = '2025 vs 2026';
+  document.getElementById('refresh-btn').style.display = 'none';
+  setActiveNav('nav-comparativo');
+  buildComparativo();
+}
+
 function goToNewProject(){
   currentView = 'new-project';
-  document.getElementById('view-projects').style.display = 'none';
-  document.getElementById('view-timeline').style.display = 'none';
+  hideAllViews();
   document.getElementById('view-new-project').style.display = 'block';
-  document.getElementById('view-flujocaja').style.display = 'none';
   document.getElementById('topbar-title').textContent = 'NUEVO PROYECTO';
   document.getElementById('topbar-sub').textContent = 'Crea un proyecto y clónale su checklist';
   document.getElementById('refresh-btn').style.display = 'none';
@@ -1016,10 +1608,8 @@ function openProject(p){
   currentProject = p;
   currentView = 'timeline';
   currentFaseIndex = 0;
-  document.getElementById('view-projects').style.display = 'none';
+  hideAllViews();
   document.getElementById('view-timeline').style.display = 'block';
-  document.getElementById('view-new-project').style.display = 'none';
-  document.getElementById('view-flujocaja').style.display = 'none';
   document.getElementById('refresh-btn').style.display = 'inline-block';
   setActiveNav('nav-mis-proyectos');
   document.getElementById('topbar-title').textContent = p.codigo;
