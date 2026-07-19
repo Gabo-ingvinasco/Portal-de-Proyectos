@@ -1,5 +1,5 @@
 /* ═══ CONFIGURA ESTO: pega aquí la URL de tu Apps Script desplegado ═══ */
-const API_URL = 'https://script.google.com/macros/s/AKfycbwbI1-kaBXdcdRgMYDhyKlIOWoYjAINNkDSmrHx-AttXg_tBkB9JpQ3ubNuFDqt2GStMQ/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwYrFDoDrueUVmp86bEpNGBmBxSpQMKl15FzXXUIuhuqRRbJFPYWySIyFiiEczomY1yNg/exec';
 
 
 /* ═══ FUSIÓN: datos y lógica de Flujo de Caja (del dashboard de Control de Proyectos) ═══
@@ -1030,10 +1030,51 @@ async function loadProjects(){
     currentProjectStatusFilter = 'todos';
     renderProjectStatusTabs();
     renderProjects(allMyProjects);
+    precalentarCarpetasEnSegundoPlano(allMyProjects);
   }catch(e){
     handleSessionError_(note, 'No se pudo cargar tus proyectos: ' + e.message);
     grid.innerHTML = '';
   }
+}
+
+/* ═══ PRECALENTADO DE CACHÉ EN SEGUNDO PLANO ═══
+   Apenas se carga "Mis proyectos", se dispara en silencio el escaneo de
+   Drive de cada proyecto (sin bloquear la pantalla ni esperar respuesta).
+   El caché del backend es COMPARTIDO entre todos los que usan el portal
+   (dura 6 horas) — con que UNA persona deje esto corriendo de fondo un
+   rato, después todos entran instantáneo a cualquier proyecto. Se hace de
+   a pocos a la vez (no todos en paralelo) para no saturar Apps Script. */
+let _precalentando = false;
+async function precalentarCarpetasEnSegundoPlano(proyectos){
+  if(_precalentando) return; // evita relanzar si ya hay uno corriendo
+  _precalentando = true;
+  const CONCURRENCIA = 2;
+  const s = getSession();
+  const cola = [...proyectos];
+  const banner = document.getElementById('precarga-banner');
+  let restantes = cola.length;
+  function actualizarBanner(){
+    if(!banner) return;
+    if(restantes <= 0){ banner.style.display = 'none'; return; }
+    banner.style.display = 'block';
+    banner.textContent = '🔄 Precargando datos de Drive en segundo plano... (' + (cola.length - restantes + 1) + '/' + cola.length + ' — puedes seguir usando el portal mientras tanto)';
+  }
+  async function trabajador(){
+    while(cola.length){
+      const p = cola.shift();
+      actualizarBanner();
+      try{
+        await fetch(API_URL + '?action=checklist_proyecto&token=' + encodeURIComponent(s.token) + '&codigo=' + encodeURIComponent(p.codigo));
+      }catch(e){ /* si uno falla, no importa — se sigue con los demás */ }
+      restantes--;
+      actualizarBanner();
+    }
+  }
+  const workers = [];
+  for(let i=0;i<CONCURRENCIA;i++) workers.push(trabajador());
+  await Promise.all(workers);
+  _precalentando = false;
+  actualizarBanner();
 }
 
 function renderProjectStatusTabs(){
