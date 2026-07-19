@@ -1,5 +1,5 @@
 /* ═══ CONFIGURA ESTO: pega aquí la URL de tu Apps Script desplegado ═══ */
-const API_URL = 'https://script.google.com/macros/s/AKfycbz2SmrUKx4Sn5tet28xhj3-K_Q8DGGVwukEDwfujL_BwamL3FO8pXajgtQQUYYO2YzeJw/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwbI1-kaBXdcdRgMYDhyKlIOWoYjAINNkDSmrHx-AttXg_tBkB9JpQ3ubNuFDqt2GStMQ/exec';
 
 
 /* ═══ FUSIÓN: datos y lógica de Flujo de Caja (del dashboard de Control de Proyectos) ═══
@@ -1023,10 +1023,14 @@ function renderProjects(proyectos){
   }).join('');
 }
 
+let currentProjSubtab = 'documental';
+
 function openProject(p){
   currentProject = p;
   currentView = 'timeline';
   currentFaseIndex = 0;
+  currentCarpetaIndex = 0;
+  currentProjSubtab = 'documental';
   hideAllViews();
   showFilters(false);
   document.getElementById('view-timeline').style.display = 'block';
@@ -1041,7 +1045,17 @@ function openProject(p){
     </div>
     ${p.carpetaDrive ? `<a class="ph-drive" href="${p.carpetaDrive}" target="_blank" rel="noopener">📁 Abrir carpeta en Drive</a>` : ''}
   `;
+  switchProjSubtab('documental');
   loadProjectChecklist(p.codigo);
+  renderResumenGeneral(p.codigo);
+}
+
+function switchProjSubtab(name){
+  currentProjSubtab = name;
+  ['documental','fases','resumen'].forEach(n => {
+    document.getElementById('subview-' + n).style.display = (n === name) ? 'block' : 'none';
+    document.getElementById('subtab-' + n).classList.toggle('active', n === name);
+  });
 }
 
 let _checklistRequestId = 0;
@@ -1065,18 +1079,191 @@ async function loadProjectChecklist(codigo){
     note.style.display = 'none';
     window._fasesData = data.fases;
     window._resumenData = data.resumen;
+    window._carpetasData = agruparPorCarpeta_(data.fases);
     if(data.driveScanError){
       driveNote.style.display = 'block';
       driveNote.textContent = '⚠ ' + data.driveScanError + ' El estado "Archivo cargado" puede salir como "sin verificar" para algunos ítems.';
     }
     renderFaseSidebar(data.fases, data.resumen);
     renderFaseDetail(FASE_ORDER[currentFaseIndex]);
+    renderCarpetaSidebar(window._carpetasData);
+    renderCarpetaDetail(CARPETA_ORDER[currentCarpetaIndex]);
   }catch(e){
     if(miRequestId !== _checklistRequestId) return;
     handleSessionError_(note, 'No se pudo cargar el checklist: ' + e.message);
     document.getElementById('proj-fase-sidebar').innerHTML = '';
     document.getElementById('fase-detail-wrap').innerHTML = '';
+    document.getElementById('proj-carpeta-sidebar').innerHTML = '';
+    document.getElementById('carpeta-detail-wrap').innerHTML = '';
   }
+}
+
+/* ═══ CONTROL DOCUMENTAL — agrupado por carpeta base (no por fase) ═══
+   HSE se deja como recordatorio visual de un desarrollo futuro: no se
+   clona en el checklist (ver Code.gs), así que aquí siempre aparece
+   deshabilitada con la etiqueta "Próximamente". */
+const CARPETA_ORDER = ['1. CLIENTE','2. CONTRATISTAS Y COMPRAS','3. HSE','4. SEGUIMIENTO Y CONTROL','5. GARANTÍAS'];
+const CARPETA_LABELS = {
+  '1. CLIENTE':'Cliente',
+  '2. CONTRATISTAS Y COMPRAS':'Contratistas y Compras',
+  '3. HSE':'HSE',
+  '4. SEGUIMIENTO Y CONTROL':'Seguimiento y Control',
+  '5. GARANTÍAS':'Garantías'
+};
+let currentCarpetaIndex = 0;
+
+function agruparPorCarpeta_(fasesData){
+  const porCarpeta = {};
+  CARPETA_ORDER.forEach(c => porCarpeta[c] = []);
+  Object.values(fasesData || {}).forEach(lista => {
+    (lista || []).forEach(it => {
+      const clave = (it.carpetaBase || '').trim().toUpperCase();
+      const match = CARPETA_ORDER.find(c => clave.indexOf(c.split('. ')[1]) !== -1 || clave === c);
+      if(match) porCarpeta[match].push(it);
+      else {
+        if(!porCarpeta['_otros']) porCarpeta['_otros'] = [];
+        porCarpeta['_otros'].push(it);
+      }
+    });
+  });
+  return porCarpeta;
+}
+
+function renderCarpetaSidebar(carpetas){
+  const wrap = document.getElementById('proj-carpeta-sidebar');
+  wrap.innerHTML = CARPETA_ORDER.map((carpeta, idx) => {
+    const esHSE = carpeta === '3. HSE';
+    const items = carpetas[carpeta] || [];
+    const total = items.length;
+    const hechos = items.filter(it => it.check).length;
+    const pct = total ? Math.round(100 * hechos / total) : 0;
+    const done = total > 0 && hechos === total;
+    if(esHSE){
+      return `
+        <div class="pf-node disabled" title="Pendiente de desarrollo">
+          <div class="pf-circle">🚧</div>
+          <div class="pf-info">
+            <div class="pf-label">${CARPETA_LABELS[carpeta]} <span class="pf-soon-tag">Próximamente</span></div>
+            <div class="pf-pct">Aún no se controla en el portal</div>
+          </div>
+        </div>`;
+    }
+    const cls = (idx === currentCarpetaIndex ? 'active' : '') + (done ? ' done' : '');
+    return `
+      <div class="pf-node ${cls}" onclick="selectCarpeta(${idx})">
+        <div class="pf-circle">${done ? '✓' : idx+1}</div>
+        <div class="pf-info">
+          <div class="pf-label">${CARPETA_LABELS[carpeta]}</div>
+          <div class="pf-pct">${hechos}/${total} completos (${pct}%)</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function selectCarpeta(idx){
+  currentCarpetaIndex = idx;
+  renderCarpetaSidebar(window._carpetasData);
+  renderCarpetaDetail(CARPETA_ORDER[idx]);
+}
+
+function renderCarpetaDetail(carpeta){
+  const items = (window._carpetasData && window._carpetasData[carpeta]) || [];
+  const wrap = document.getElementById('carpeta-detail-wrap');
+  if(carpeta === '3. HSE'){
+    wrap.innerHTML = `
+      <div class="fase-detail-head"><div class="fase-detail-title">HSE</div></div>
+      <div class="fase-empty">Esta carpeta está reservada para un desarrollo futuro — todavía no se controla documentalmente desde el portal.</div>`;
+    return;
+  }
+  const s = getSession();
+  const puedeDarVistoBueno = s.rol === 'Calidad' || s.rol === 'Gerente' || s.rol === 'Admin';
+  const itemsHtml = items.length ? items.map(it => {
+    const calidadBtns = puedeDarVistoBueno ? `
+      <div class="calidad-actions">
+        <button class="calidad-btn aprobar" onclick="marcarVistoBueno(${it.rowIndex}, 'Aprobado')">Aprobar</button>
+        <button class="calidad-btn rechazar" onclick="marcarVistoBueno(${it.rowIndex}, 'Rechazado')">Rechazar</button>
+      </div>` : '';
+    return `
+    <div class="fase-item">
+      <div class="body">
+        <div class="sub">${it.subcarpeta}</div>
+        <div class="doc">${it.documento || ''}</div>
+      </div>
+      <div class="resp">${it.responsable}</div>
+      <div class="fase-item-status">
+        ${estadoArchivoPill_(it.archivoCargado, it.archivoUrl)}
+        ${estadoCalidadPill_(it.vistoBueno)}
+        ${calidadBtns}
+      </div>
+    </div>`;
+  }).join('') : '<div class="fase-empty">Sin ítems clasificados en esta carpeta.</div>';
+  const total = items.length, hechos = items.filter(it=>it.check).length;
+  wrap.innerHTML = `
+    <div class="fase-detail-head">
+      <div class="fase-detail-title">${CARPETA_LABELS[carpeta]}</div>
+      <div class="fase-detail-count">${hechos}/${total} completos</div>
+    </div>
+    ${itemsHtml}`;
+}
+
+/* ═══ RESUMEN GENERAL DE PROYECTO — datos reales del Sheet de Control
+   General de Proyectos (el mismo de Flujo de Caja), buscados por código.
+   Si el proyecto no existe ahí todavía (por ejemplo, se creó solo en el
+   Portal y no en ese Sheet), se avisa en vez de inventar datos. ═══ */
+let resumenCurvaSChart;
+function renderResumenGeneral(codigo){
+  const note = document.getElementById('resumen-proyecto-note');
+  const kpisEl = document.getElementById('resumen-proyecto-kpis');
+  const detalleEl = document.getElementById('resumen-proyecto-detalle');
+  const curvaNota = document.getElementById('resumen-curva-nota');
+  const p = PROJECTS.find(x => x.codigo === codigo);
+  if(!p){
+    note.style.display = 'block';
+    note.className = 'load-note error';
+    note.textContent = '⚠ Este proyecto no se encontró en el Sheet de "Control General de Proyectos" — puede que se haya creado solo en este portal. No hay datos financieros/de avance para mostrar todavía.';
+    kpisEl.innerHTML = ''; detalleEl.innerHTML = '';
+    if(resumenCurvaSChart){ resumenCurvaSChart.destroy(); resumenCurvaSChart = null; }
+    curvaNota.style.display = 'block';
+    curvaNota.textContent = 'Sin datos.';
+    return;
+  }
+  note.style.display = 'none';
+  const kpis = [
+    {n: p.avObra!=null ? p.avObra+'%' : '—', l:'Avance de obra'},
+    {n: fmtMM(p.valor), l:'Valor total'},
+    {n: fmtMM(p.pxCobrar), l:'Pendiente cobrar'},
+    {n: fmtMM(p.pxFacturar), l:'Pendiente facturar'},
+    {n: p.difSNpct!=null ? fmtPct(p.difSNpct) : '—', l:'Diferencia SN%'},
+    {n: p.dias!=null ? p.dias+' días' : '—', l:'Retraso / adelanto'},
+  ];
+  kpisEl.innerHTML = kpis.map(k=>`<div class="kpi"><div><div class="kpi-num" style="font-size:16px">${k.n}</div><div class="kpi-lbl">${k.l}</div></div></div>`).join('');
+
+  detalleEl.innerHTML = `
+    <div class="fase-item"><div class="body"><div class="carpeta">Cliente</div><div class="sub">${p.cliente||'—'}</div></div></div>
+    <div class="fase-item"><div class="body"><div class="carpeta">Director/a</div><div class="sub">${p.encargado||'—'} <span style="color:#a09c96;font-weight:400">(${p.cargo||''})</span></div></div></div>
+    <div class="fase-item"><div class="body"><div class="carpeta">Ciudad / Sector</div><div class="sub">${p.ciudad||'—'} · ${p.sector||'—'}</div></div></div>
+    <div class="fase-item"><div class="body"><div class="carpeta">Estado</div><div class="sub">${p.estado||'—'}</div></div></div>
+    ${p.obs ? `<div class="fase-item"><div class="body"><div class="carpeta">Observaciones</div><div class="sub" style="font-weight:400;font-size:11px">${p.obs}</div></div></div>` : ''}
+  `;
+
+  // Curva S: todavía no existe una fuente de datos histórica (semana a semana)
+  // de avance programado vs real en el Sheet — por ahora se muestra un punto
+  // único (el % de avance actual) en vez de inventar una curva completa.
+  curvaNota.style.display = 'block';
+  curvaNota.textContent = '⚠ Todavía no hay datos históricos de avance semana a semana en el Sheet, así que la Curva S completa no se puede trazar aún — se muestra solo el punto de avance actual.';
+  if(resumenCurvaSChart) resumenCurvaSChart.destroy();
+  const avance = p.avObra || 0;
+  resumenCurvaSChart = new Chart(document.getElementById('resumenCurvaSChart'), {
+    type: 'line',
+    data: {
+      labels: ['Inicio','Hoy','Fin'],
+      datasets: [
+        {label:'Programado (referencia)', data:[0,50,100], borderColor:'#c8c5c0', borderDash:[5,4], pointRadius:0, tension:.3},
+        {label:'Real (avance actual)', data:[0, avance, null], borderColor:'#e8622a', backgroundColor:'#e8622a', pointRadius:[0,5,0], tension:.3}
+      ]
+    },
+    options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top', labels:{boxWidth:10,font:{size:10}}}}, scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%'}}}}
+  });
 }
 
 function renderFaseSidebar(fases, resumen){

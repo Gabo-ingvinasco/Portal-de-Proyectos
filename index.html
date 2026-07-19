@@ -88,10 +88,45 @@
       <div id="view-timeline" class="view" style="display:none">
         <button class="back-btn" onclick="goToProjectList()">← Volver a mis proyectos</button>
         <div id="project-header" class="project-header"></div>
-        <div id="drive-scan-note" class="load-note" style="display:none"></div>
-        <div class="proj-layout">
-          <div class="proj-fase-sidebar" id="proj-fase-sidebar"></div>
-          <div class="fase-detail-wrap" id="fase-detail-wrap"></div>
+
+        <div class="proj-subtabs">
+          <button class="proj-subtab active" id="subtab-documental" onclick="switchProjSubtab('documental')">📁 Control documental</button>
+          <button class="proj-subtab" id="subtab-fases" onclick="switchProjSubtab('fases')">🧭 Seguimiento a Fases del Proyecto</button>
+          <button class="proj-subtab" id="subtab-resumen" onclick="switchProjSubtab('resumen')">📊 Resumen general de proyecto</button>
+        </div>
+
+        <!-- Sub-vista: Control documental (agrupado por carpeta base) -->
+        <div id="subview-documental" class="proj-subview">
+          <div id="drive-scan-note" class="load-note" style="display:none"></div>
+          <div class="proj-layout">
+            <div class="proj-fase-sidebar" id="proj-carpeta-sidebar"></div>
+            <div class="fase-detail-wrap" id="carpeta-detail-wrap"></div>
+          </div>
+        </div>
+
+        <!-- Sub-vista: Seguimiento a Fases del Proyecto -->
+        <div id="subview-fases" class="proj-subview" style="display:none">
+          <div class="proj-layout">
+            <div class="proj-fase-sidebar" id="proj-fase-sidebar"></div>
+            <div class="fase-detail-wrap" id="fase-detail-wrap"></div>
+          </div>
+        </div>
+
+        <!-- Sub-vista: Resumen general de proyecto -->
+        <div id="subview-resumen" class="proj-subview" style="display:none">
+          <div id="resumen-proyecto-note" class="load-note" style="display:none"></div>
+          <div id="resumen-proyecto-kpis" class="kpi-strip"></div>
+          <div class="grid2">
+            <div class="panel">
+              <div class="panel-head"><div class="panel-title">Curva S — Programado vs Real</div></div>
+              <div id="resumen-curva-nota" class="fase-empty" style="display:none"></div>
+              <div style="height:220px;position:relative"><canvas id="resumenCurvaSChart"></canvas></div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><div class="panel-title">Datos del proyecto</div></div>
+              <div id="resumen-proyecto-detalle"></div>
+            </div>
+          </div>
         </div>
       </div>
 
