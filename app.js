@@ -1535,8 +1535,8 @@ function renderCarpetaDetail(carpeta){
       <div class="fase-item-status">
         ${estadoArchivoPill_(it.archivoCargado, it.archivoUrl)}
         ${estadoCalidadPill_(it.vistoBueno)}
-        ${revisionControlsHtml_(it, puedeDarVistoBueno)}
       </div>
+      <div class="fase-item-review">${revisionControlsHtml_(it, puedeDarVistoBueno)}</div>
     </div>`;
   }
   let itemsHtml, tituloPanel;
@@ -1558,10 +1558,11 @@ function renderCarpetaDetail(carpeta){
       grupos[g].push(it);
     });
     ordenGrupos.sort((a,b) => a.localeCompare(b, 'es', {numeric:true}));
-    itemsHtml = items.length ? ordenGrupos.map(g => `
-      <div class="grupo-subheader">${escapeHtml_(g)}</div>
-      ${grupos[g].map(renderItem).join('')}
-    `).join('') : '<div class="fase-empty">Sin ítems clasificados en esta carpeta.</div>';
+    itemsHtml = items.length ? ordenGrupos.map(g => {
+      const avanceGrupo=progresoChecklist_(grupos[g]);
+      return `<div class="grupo-subheader"><span>${escapeHtml_(g)}</span><span class="grupo-progress">Avance ${avanceGrupo.porcentaje}%${avanceGrupo.noAplica?' · '+avanceGrupo.noAplica+' N/A':''}</span></div>
+      ${grupos[g].map(renderItem).join('')}`;
+    }).join('') : '<div class="fase-empty">Sin ítems clasificados en esta carpeta.</div>';
   }
   const progreso = progresoChecklist_(items);
   wrap.innerHTML = `
@@ -1779,8 +1780,8 @@ function renderFaseDetail(fase){
       <div class="fase-item-status">
         ${estadoArchivoPill_(it.archivoCargado, it.archivoUrl)}
         ${estadoCalidadPill_(it.vistoBueno)}
-        ${revisionControlsHtml_(it, puedeDarVistoBueno)}
       </div>
+      <div class="fase-item-review">${revisionControlsHtml_(it, puedeDarVistoBueno)}</div>
     </div>`;
   }).join('') : '<div class="fase-empty">Sin ítems clasificados en esta fase.</div>';
   wrap.innerHTML = `
