@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<link rel="stylesheet" href="style.css?v=20260720-kpi2">
+<link rel="stylesheet" href="style.css?v=20260720-kpi3">
 </head>
 <body>
 
@@ -111,6 +111,10 @@
         <!-- Sub-vista: Control documental (agrupado por carpeta base) -->
         <div id="subview-documental" class="proj-subview">
           <div id="drive-scan-note" class="load-note" style="display:none"></div>
+          <div id="drive-scan-toolbar" class="drive-scan-toolbar" style="display:none">
+            <span id="drive-scan-meta" class="drive-scan-meta"></span>
+            <button id="drive-scan-refresh" class="drive-scan-refresh" type="button" onclick="refreshDocumentScan()">⟳ Actualizar documentos</button>
+          </div>
           <div class="proj-layout">
             <div class="proj-fase-sidebar" id="proj-carpeta-sidebar"></div>
             <div class="fase-detail-wrap" id="carpeta-detail-wrap"></div>
@@ -523,6 +527,6 @@
   </div>
 </div>
 
-<script src="app.js?v=20260720-kpi2"></script>
+<script src="app.js?v=20260720-kpi3"></script>
 </body>
 </html>

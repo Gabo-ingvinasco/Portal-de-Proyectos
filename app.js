@@ -521,8 +521,8 @@ function buildFinanceBar(){
   if(el)el.innerHTML=`
     <div class="finance-bar-lbl">Desempeño<br>financiero</div>
     <div class="finance-item"><div class="fn">${fmtMM(tv)}</div><div class="fl">Valor total (COP)</div></div>
-    <div class="finance-item"><div class="fn">${fmtMM(tf)}</div><div class="fl">Pendiente facturar</div><div class="fd neg">▼ Gestión requerida</div></div>
-    <div class="finance-item"><div class="fn">${fmtMM(tc)}</div><div class="fl">Pendiente cobrar</div><div class="fd neg">▼ Cartera activa</div></div>
+    <div class="finance-item"><div class="fn">${fmtMM(tf)}</div><div class="fl">Pendiente facturar</div><div class="fd ${tf>0?'neg':'ok'}">${tf>0?'▼ Gestión requerida':'✓ Al día'}</div></div>
+    <div class="finance-item"><div class="fn">${fmtMM(tc)}</div><div class="fl">Pendiente cobrar</div><div class="fd ${tc>0?'neg':'ok'}">${tc>0?'▼ Cartera activa':'✓ Al día'}</div></div>
     <div class="finance-item"><div class="fn">${as.toFixed(1)}%</div><div class="fl">Diferencia SN prom.</div></div>
     <div class="finance-item"><div class="fn">${ac.toFixed(1)}%</div><div class="fl">Diferencia CN prom.</div></div>`;
 }
@@ -1374,16 +1374,22 @@ function switchProjSubtab(name){
 
 let _checklistRequestId = 0;
 
-async function loadProjectChecklist(codigo){
+async function loadProjectChecklist(codigo, opciones){
+  opciones = opciones || {};
   const note = document.getElementById('load-note');
   const driveNote = document.getElementById('drive-scan-note');
+  const scanToolbar = document.getElementById('drive-scan-toolbar');
+  const scanMeta = document.getElementById('drive-scan-meta');
+  const scanRefresh = document.getElementById('drive-scan-refresh');
+  const forzar = opciones.forzar === true;
   note.style.display = 'block'; note.className = 'load-note';
-  note.textContent = '⏳ Cargando checklist del proyecto... (puede tardar hasta 1 minuto la primera vez que se revisa la carpeta de Drive de este proyecto)';
+  note.textContent = forzar ? '⏳ Actualizando documentos desde Drive...' : '⏳ Cargando checklist del proyecto... (puede tardar hasta 1 minuto la primera vez que se revisa la carpeta de Drive de este proyecto)';
   driveNote.style.display = 'none';
+  if(scanRefresh) scanRefresh.disabled = true;
   const miRequestId = ++_checklistRequestId; // si se navega a otro proyecto antes de que esto responda, esta respuesta se descarta
   try{
     const s = getSession();
-    const data = await apiPost_('checklist_proyecto', {codigo});
+    const data = await apiPost_(forzar ? 'actualizar_control_documental' : 'checklist_proyecto', {codigo});
     // Si mientras esperábamos la respuesta el usuario ya cambió de proyecto
     // (o de vista), o esta respuesta ya no es la más reciente, se ignora
     // por completo para no pisar lo que se está viendo ahora.
@@ -1393,6 +1399,15 @@ async function loadProjectChecklist(codigo){
     window._fasesData = data.fases;
     window._resumenData = data.resumen;
     window._carpetasData = agruparPorCarpeta_(data.fases);
+    if(scanToolbar && scanMeta && scanRefresh){
+      const puedeActualizar = ['Calidad','Gerente','Admin'].includes(s.rol);
+      const escaneo = data.driveScan || {};
+      const fecha = escaneo.fecha ? new Date(escaneo.fecha).toLocaleString('es-CO', {dateStyle:'medium',timeStyle:'short'}) : 'sin fecha disponible';
+      scanMeta.textContent = `Último escaneo: ${fecha} · ${escaneo.carpetasRevisadas || 0} carpetas · profundidad ${escaneo.profundidadMaxima || 5}${escaneo.desdeCache ? ' · resultado en caché' : ' · actualizado desde Drive'}`;
+      scanToolbar.style.display = 'flex';
+      scanRefresh.style.display = puedeActualizar ? 'inline-flex' : 'none';
+      scanRefresh.disabled = false;
+    }
     if(data.driveScanError){
       driveNote.style.display = 'block';
       driveNote.textContent = '⚠ ' + data.driveScanError + ' El estado "Archivo cargado" puede salir como "sin verificar" para algunos ítems.';
@@ -1408,7 +1423,14 @@ async function loadProjectChecklist(codigo){
     document.getElementById('fase-detail-wrap').innerHTML = '';
     document.getElementById('proj-carpeta-sidebar').innerHTML = '';
     document.getElementById('carpeta-detail-wrap').innerHTML = '';
+  }finally{
+    if(scanRefresh) scanRefresh.disabled = false;
   }
+}
+
+async function refreshDocumentScan(){
+  if(!currentProject || !currentProject.codigo) return;
+  await loadProjectChecklist(currentProject.codigo, {forzar:true});
 }
 
 /* ═══ CONTROL DOCUMENTAL — agrupado por carpeta base (no por fase) ═══
@@ -1569,7 +1591,7 @@ function renderCarpetaDetail(carpeta){
       </div>
       <div class="resp">${escapeHtml_(it.responsable)}</div>
       <div class="fase-item-status">
-        ${estadoArchivoPill_(it.archivoCargado, it.archivoUrl)}
+        ${estadoArchivoPill_(it)}
         ${estadoCalidadPill_(it.vistoBueno)}
       </div>
       <div class="fase-item-review">${revisionControlsHtml_(it, puedeDarVistoBueno)}</div>
@@ -1781,13 +1803,27 @@ function selectFase(idx){
   renderFaseDetail(FASE_ORDER[idx]);
 }
 
-function estadoArchivoPill_(archivoCargado, archivoUrl){
-  const url = safeDriveUrl_(archivoUrl);
-  const contenido = archivoCargado === true ? '📎 Archivo cargado' : '📎 Sin archivo';
-  if(url) return `<a class="status-pill ${archivoCargado === true ? 'ok' : 'no'}" href="${escapeHtml_(url)}" target="_blank" rel="noopener noreferrer" title="Abrir carpeta en Drive">${contenido} ↗</a>`;
-  if(archivoCargado === true) return '<span class="status-pill ok">📎 Archivo cargado</span>';
-  if(archivoCargado === false) return '<span class="status-pill no">📎 Sin archivo</span>';
-  return '<span class="status-pill unknown">📎 Sin verificar</span>';
+function estadoArchivoPill_(it){
+  const estado = it && it.estadoDrive ? it.estadoDrive : (it && it.archivoCargado === true ? 'archivo_directo' : it && it.archivoCargado === false ? 'carpeta_vacia' : 'sin_verificar');
+  const url = safeDriveUrl_(it && it.archivoUrl);
+  const configuracion = {
+    archivo_directo:       {clase:'ok',      texto:'📎 Archivo encontrado'},
+    archivo_en_subcarpeta: {clase:'nested',  texto:'📂 Documento en subcarpeta'},
+    carpeta_vacia:         {clase:'no',      texto:'○ Carpeta vacía'},
+    carpeta_no_encontrada: {clase:'unknown', texto:'? Carpeta no encontrada'},
+    sin_carpeta:            {clase:'unknown', texto:'? Sin carpeta configurada'},
+    sin_acceso_o_error:     {clase:'error',   texto:'⚠ Sin acceso o error de Drive'},
+    sin_verificar:          {clase:'unknown', texto:'📎 Sin verificar'}
+  };
+  const cfg = configuracion[estado] || configuracion.sin_verificar;
+  const detalles = [];
+  if(it && it.rutaDrive) detalles.push(it.rutaDrive);
+  if(it && Number.isFinite(Number(it.cantidadArchivos))) detalles.push(`${Number(it.cantidadArchivos)} archivo(s) encontrado(s)`);
+  if(it && it.tipoCoincidenciaDrive) detalles.push(`Coincidencia ${it.tipoCoincidenciaDrive}`);
+  const titulo = detalles.length ? detalles.join(' · ') : cfg.texto;
+  const contenido = `${cfg.texto}${url ? ' ↗' : ''}`;
+  if(url) return `<a class="status-pill ${cfg.clase}" href="${escapeHtml_(url)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml_(titulo)}">${contenido}</a>`;
+  return `<span class="status-pill ${cfg.clase}" title="${escapeHtml_(titulo)}">${contenido}</span>`;
 }
 
 function estadoCalidadPill_(vistoBueno){
@@ -1814,7 +1850,7 @@ function renderFaseDetail(fase){
       </div>
       <div class="resp">${escapeHtml_(it.responsable)}</div>
       <div class="fase-item-status">
-        ${estadoArchivoPill_(it.archivoCargado, it.archivoUrl)}
+        ${estadoArchivoPill_(it)}
         ${estadoCalidadPill_(it.vistoBueno)}
       </div>
       <div class="fase-item-review">${revisionControlsHtml_(it, puedeDarVistoBueno)}</div>

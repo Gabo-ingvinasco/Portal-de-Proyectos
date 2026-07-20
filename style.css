@@ -14,8 +14,15 @@ tbody tr:hover td{background:#fafaf8;cursor:pointer}
 .kpi-ico.ini{background:#eeeafc}.kpi-ico.cerr{background:#f0f0ee}.kpi-ico.gar{background:#e6f1fb}.kpi-ico.obs{background:#fce8e8}
 .kpi-num{font-family:'Montserrat',sans-serif;font-weight:700;font-size:20px;color:#1a1a1a;line-height:1}
 .kpi-lbl{font-size:9px;color:#6b6b66;margin-top:2px;line-height:1.3}
-.finance-bar{background:#d8d7d7;border-radius:10px;padding:13px 20px;display:grid;grid-template-columns:auto 1fr 1fr 1fr 1fr 1fr;gap:0;margin-bottom:16px;align-items:center}
-.finance-bar-lbl{font-family:'Montserrat',sans-serif;font-size:9px;letter-spacing:1.5px;font-weight:600;color:rgba(26,26,26,.55);text-transform:uppercase;padding-right:18px;border-right:1px solid rgba(26,26,26,.15)}
+.finance-bar{display:grid;grid-template-columns:112px repeat(5,minmax(145px,1fr));align-items:stretch;min-height:72px;margin-bottom:16px;padding:11px 0;background:#d8d7d7;border:1px solid #cfcdca;border-radius:10px;box-shadow:inset 0 1px 0 rgba(255,255,255,.35);overflow-x:auto}
+.finance-bar-lbl{display:flex;align-items:center;padding:0 18px;font-family:'Montserrat',sans-serif;font-size:8px;line-height:1.35;letter-spacing:1.7px;font-weight:600;color:#66625e;text-transform:uppercase}
+.finance-item{display:flex;flex-direction:column;justify-content:center;min-width:0;padding:1px 18px;border-left:1px solid #bdbbb8}
+.finance-item .fn{overflow:hidden;font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;line-height:1.15;letter-spacing:-.35px;color:#111;white-space:nowrap;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.finance-item .fl{margin-top:4px;font-family:'Inter',sans-serif;font-size:8.5px;font-weight:400;line-height:1.2;color:#77736e;white-space:nowrap}
+.finance-item .fd{margin-top:3px;font-family:'Inter',sans-serif;font-size:8.5px;font-weight:600;line-height:1.1;white-space:nowrap}
+.finance-item .fd.neg{color:#e8622a}
+.finance-item .fd.ok{color:#1a8a52}
+@media (max-width:1050px){.finance-bar{grid-template-columns:100px repeat(5,minmax(135px,1fr))}.finance-item{padding-left:14px;padding-right:14px}.finance-item .fn{font-size:13px}}
 .grid12{display:grid;grid-template-columns:1fr 1.5fr;gap:12px;margin-bottom:12px;align-items:stretch}
 .fc-detail-panel{max-height:420px;overflow-y:auto}
 .grid-donut{display:grid;grid-template-columns:1.6fr 1fr;gap:12px;margin-bottom:12px}
@@ -333,6 +340,11 @@ tr.fc-row-venc td{background:#fdf5f4}
 .content{flex:1;padding:24px 28px 40px}
 .load-note{font-size:11px;color:#a0620a;background:#fff8f5;border:1px solid #f0c8b8;border-radius:8px;padding:9px 14px;margin-bottom:16px}
 .load-note.error{color:#c0392b;background:#fbf1ef;border-color:#f0c8c4}
+.drive-scan-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:12px;padding:9px 12px;background:#fff;border:1px solid #dedbd6;border-radius:8px}
+.drive-scan-meta{font-size:9px;line-height:1.4;color:#77736d}
+.drive-scan-refresh{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;border:1px solid #d4d0ca;border-radius:6px;padding:6px 10px;background:#fff;color:#474545;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:600;cursor:pointer}
+.drive-scan-refresh:hover{border-color:#e8622a;color:#e8622a}
+.drive-scan-refresh:disabled{opacity:.55;cursor:wait}
 .view{display:block}
 
 /* ═══ LISTADO DE PROYECTOS ═══ */
@@ -399,8 +411,10 @@ tr.fc-row-venc td{background:#fdf5f4}
 .fase-item-review:empty{display:none}
 .status-pill{display:flex;align-items:center;gap:5px;font-size:10px;font-weight:600;padding:4px 9px;border-radius:6px;white-space:nowrap}
 .status-pill.ok{background:#e5f7ef;color:#1a8a52}
+.status-pill.nested{background:#e8f3fb;color:#236b91}
 .status-pill.no{background:#fbf1ef;color:#c0392b}
 .status-pill.unknown{background:#f0efec;color:#a09c96}
+.status-pill.error{background:#fbf1ef;color:#a72d22}
 .status-pill[onclick]:hover{filter:brightness(0.93)}
 .status-pill.pend{background:#fef3dc;color:#a0620a}
 .status-pill.rechazado{background:#fbf1ef;color:#c0392b}
