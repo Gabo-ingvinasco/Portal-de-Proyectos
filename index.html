@@ -153,6 +153,25 @@
               <div class="presupuesto-caps" id="presupuesto-caps"></div>
             </div>
           </div>
+          <div class="panel execution-indicators-panel">
+            <div class="panel-head">
+              <div class="panel-title">Indicadores de ejecución de obras</div>
+              <span class="indicator-planning-badge">Medición proyectada</span>
+            </div>
+            <div class="indicator-planning-note">Estos indicadores quedan definidos en la interfaz mientras se determina la fórmula, periodicidad, meta y fuente técnica que alimentará cada medición.</div>
+            <div class="tbl-wrap indicator-table-wrap">
+              <table class="project-indicators-table">
+                <thead><tr><th>Indicador</th><th>Fuente de información proyectada</th><th>Medición actual</th><th>Estado</th></tr></thead>
+                <tbody>
+                  <tr><td>Desviación de costos</td><td>Liquidaciones parciales + presupuesto + cuadro contable del proyecto + balance del proyecto + informes mensuales de gestión</td><td>Por definir</td><td><span class="indicator-status planned">Proyectado</span></td></tr>
+                  <tr><td>Desviación de cronograma</td><td>Cronograma oficial de obra + informes semanales + Curva S + informes mensuales de gestión</td><td>Por definir</td><td><span class="indicator-status planned">Proyectado</span></td></tr>
+                  <tr><td>Cumplimiento documental SIG</td><td>Auditorías documentales + Drive del proyecto</td><td>Por definir</td><td><span class="indicator-status planned">Proyectado</span></td></tr>
+                  <tr><td>Cumplimiento de entrega sin pendientes críticos (Punch list)</td><td>Actas de entrega y punch list + fechas de entrega</td><td>Por definir</td><td><span class="indicator-status planned">Proyectado</span></td></tr>
+                  <tr><td>Cumplimiento en presentación de avance de obra</td><td>Informes de avance + cortes de obra + solicitudes de facturación</td><td>Por definir</td><td><span class="indicator-status planned">Proyectado</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -315,7 +334,7 @@
         <button class="back-btn" onclick="goToProjectList()">← Volver a mis proyectos</button>
         <div class="kpi-strip" id="kpi-strip"></div>
         <div class="finance-bar" id="finance-bar"></div>
-        <div class="grid3">
+        <div class="kpi-main-grid">
           <div class="panel">
             <div class="panel-head"><div class="panel-title">Distribución por estado</div></div>
             <div class="donut-wrap">
@@ -330,12 +349,22 @@
             </div>
           </div>
           <div class="panel">
-            <div class="panel-head"><div class="panel-title">Salud general del portafolio</div></div>
+            <div class="panel-head"><div class="panel-title">Top riesgos del portafolio</div></div>
+            <div id="kpi-risk-list"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Salud general</div></div>
             <div id="health-list"></div>
+          </div>
+        </div>
+        <div class="kpi-bottom-grid">
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Atención gerencial — acciones requeridas</div></div>
+            <div id="kpi-action-list"></div>
           </div>
           <div class="panel">
             <div class="panel-head"><div class="panel-title">Proyectos por sector</div></div>
-            <div style="height:150px;position:relative"><canvas id="sectorChart"></canvas></div>
+            <div style="height:170px;position:relative"><canvas id="sectorChart"></canvas></div>
           </div>
         </div>
       </div>

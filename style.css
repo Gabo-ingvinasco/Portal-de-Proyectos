@@ -20,6 +20,12 @@ tbody tr:hover td{background:#fafaf8;cursor:pointer}
 .fc-detail-panel{max-height:420px;overflow-y:auto}
 .grid-donut{display:grid;grid-template-columns:1.6fr 1fr;gap:12px;margin-bottom:12px}
 .grid-donut-right{display:flex;flex-direction:column;gap:12px}
+.kpi-main-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:12px;align-items:stretch}
+.kpi-main-grid>.panel{min-height:300px}
+.kpi-bottom-grid{display:grid;grid-template-columns:1.45fr 1fr;gap:12px;margin-bottom:12px;align-items:stretch}
+.kpi-bottom-grid>.panel{min-height:195px}
+#kpi-risk-list .risk-row{padding:7px 0}
+#kpi-action-list .action-row{padding:7px 0}
 .panel{background:#fff;border:1px solid #d4d3cf;border-radius:10px;padding:14px 16px;overflow:hidden}
 .panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .panel-title{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#6b6b66}
@@ -127,6 +133,16 @@ tr.fc-row-venc td{background:#fdf5f4}
 .cap-bar-fill{height:100%;border-radius:3px;transition:width .3s}
 .cap-pct{font-size:10px;font-weight:600;width:40px;text-align:right}
 .presupuesto-caps{display:flex;flex-direction:column;gap:6px}
+.execution-indicators-panel{margin-top:14px}
+.indicator-planning-badge{padding:3px 8px;border-radius:10px;background:#fff3e9;color:#a0620a;font-size:8px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.indicator-planning-note{margin-bottom:10px;padding:8px 10px;border-radius:6px;background:#fff8f2;color:#8a5a20;font-size:10px;line-height:1.45}
+.indicator-table-wrap{border:1px solid #eeece9;border-radius:8px;overflow-x:auto}
+.project-indicators-table td:first-child{font-weight:600;color:#1a1a1a;min-width:210px}
+.project-indicators-table td:nth-child(2){min-width:420px;line-height:1.45}
+.project-indicators-table td:nth-child(3){white-space:nowrap;color:#8a867f}
+.indicator-status{display:inline-flex;padding:3px 8px;border-radius:10px;font-size:8px;font-weight:700;white-space:nowrap}
+.indicator-status.planned{background:#eeeafc;color:#4a3aa7}
+@media (max-width:1100px){.kpi-main-grid{grid-template-columns:1fr 1fr}.kpi-main-grid>.panel:last-child{grid-column:1 / -1}.kpi-bottom-grid{grid-template-columns:1fr}}
 .cap-row{display:flex;gap:10px;align-items:flex-start;padding:5px 0}
 .cap-icon{width:24px;height:24px;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px}
 .cap-info{flex:1}

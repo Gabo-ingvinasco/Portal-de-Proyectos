@@ -443,7 +443,7 @@ function applyFilters(){
 
 function rebuildCurrentFinancialView(){
   // Vuelve a dibujar solo la vista financiera que esté activa en este momento
-  if(currentView === 'kpis'){ buildKPIs(); buildFinanceBar(); buildDonut(); buildHealth(); buildSector(); }
+  if(currentView === 'kpis'){ buildKPIs(); buildFinanceBar(); buildDonut(); buildRisks('kpi-risk-list'); buildHealth(); buildActions('kpi-action-list'); buildSector(); }
   else if(currentView === 'resumen'){ buildRisks(); buildActions(); }
   else if(currentView === 'alertas'){ buildAlertas(); }
   else if(currentView === 'directores'){ buildDirectores(); closeDrawer(); }
@@ -519,7 +519,7 @@ function buildHealth(){
     {lbl:"Financiero",pct:Math.round(Math.max(0,100-promedio('difSNpct')))},
     {lbl:"Facturación",pct:Math.round(total?Math.max(0,100-fp.reduce((s,p)=>s+(p.pxFacturar||0),0)/total*100):0)},
     {lbl:"Cartera",pct:Math.round(total?Math.max(0,100-fp.reduce((s,p)=>s+(p.pxCobrar||0),0)/total*100):0)},
-    {lbl:"Liquidación",pct:Math.round(promedio('avLiq'))}
+    {lbl:"Documentación",pct:Math.round(fp.length?fp.filter(p=>!p.obs||p.obs.length<=5).length/fp.length*100:0)}
   ];
   const el=document.getElementById('health-list');
   if(el)el.innerHTML=items.map(h=>`<div class="health-row"><div class="health-lbl">${h.lbl}</div><div class="hbar-bg"><div class="hbar-fill" style="width:${h.pct}%;background:${hCol(h.pct)}"></div></div><div class="health-pct" style="color:${hCol(h.pct)}">${h.pct}%</div><div class="hdot" style="background:${hCol(h.pct)}"></div></div>`).join('');
@@ -535,7 +535,7 @@ function buildSector(){
   sectorChart=new Chart(canvas,{type:'bar',data:{labels:sorted.map(s=>s[0]),datasets:[{data:sorted.map(s=>s[1]),backgroundColor:colors,borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:"#6b6b66",font:{size:10}},border:{display:false}},y:{grid:{display:false},ticks:{color:"#6b6b66",font:{size:10}},border:{display:false}}}}});
 }
 
-function buildRisks(){
+function buildRisks(targetId='risk-list'){
   const risks=[];
   filteredProjects.forEach(p=>{
     if((p.dias||0)>30) risks.push({proj:`${p.proyecto} — ${p.codigo}`,desc:`Retraso registrado de ${p.dias} días.`,nivel:'alta',score:300+p.dias});
@@ -544,11 +544,11 @@ function buildRisks(){
   });
   risks.sort((a,b)=>b.score-a.score);
   const visibles=risks.slice(0,6);
-  const el=document.getElementById('risk-list');
+  const el=document.getElementById(targetId);
   if(el)el.innerHTML=visibles.length?visibles.map(r=>`<div class="risk-row"><span class="rbadge ${r.nivel}">${r.nivel.toUpperCase()}</span><div><div class="risk-proj">${escapeHtml_(r.proj)}</div><div class="risk-desc">${escapeHtml_(r.desc)}</div></div></div>`).join(''):'<div class="fase-empty">Sin riesgos financieros críticos con los datos actuales.</div>';
 }
 
-function buildActions(){
+function buildActions(targetId='action-list'){
   const actions=[];
   filteredProjects.forEach(p=>{
     if((p.pxCobrar||0)>0) actions.push({proj:p.proyecto,desc:`Gestionar cartera pendiente por ${fmtMM(p.pxCobrar)}`,resp:p.encargado||'Sin asignar',prio:p.pxCobrar>500000000?'alta':'media',score:p.pxCobrar});
@@ -556,7 +556,7 @@ function buildActions(){
   });
   actions.sort((a,b)=>b.score-a.score);
   const visibles=actions.slice(0,6);
-  const el=document.getElementById('action-list');
+  const el=document.getElementById(targetId);
   if(el)el.innerHTML=visibles.length?visibles.map(a=>`<div class="action-row"><div class="aproj">${escapeHtml_(a.proj)}</div><div class="adesc">${escapeHtml_(a.desc)}</div><div class="aresp">${escapeHtml_(a.resp)}</div><span class="pbadge ${a.prio}">${a.prio.toUpperCase()}</span></div>`).join(''):'<div class="fase-empty">Sin acciones financieras pendientes.</div>';
 }
 
@@ -1014,7 +1014,7 @@ async function goToKPIs(){
   try{
     await loadFinancialProjects_('proyectos_financieros');
     document.getElementById('topbar-sub').textContent += financialMetaLabel_();
-    buildKPIs(); buildFinanceBar(); buildDonut(); buildHealth(); buildSector();
+    buildKPIs(); buildFinanceBar(); buildDonut(); buildRisks('kpi-risk-list'); buildHealth(); buildActions('kpi-action-list'); buildSector();
   }catch(err){ alert('No se pudo cargar los indicadores: '+err.message); }
 }
 
