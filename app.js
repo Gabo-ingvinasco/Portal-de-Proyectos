@@ -71,8 +71,9 @@ const FC_MILESTONE_SPECS=[
   {tipo:'Corte',label:'Corte 2',pctIdx:29,valorProyIdx:35,fechaPresentaIdx:36,fechaProyIdx:37,fechaRealIdx:38,valorRealIdx:39,estadoIdx:40},
   {tipo:'Corte',label:'Corte 3',pctIdx:42,valorProyIdx:48,fechaPresentaIdx:49,fechaProyIdx:50,fechaRealIdx:51,valorRealIdx:52,estadoIdx:53},
   {tipo:'Corte',label:'Corte 4',pctIdx:55,valorProyIdx:61,fechaPresentaIdx:62,fechaProyIdx:63,fechaRealIdx:64,valorRealIdx:null,estadoIdx:65},
-  {tipo:'Retegarantía',label:null,pctIdx:73,valorProyIdx:74,fechaProyIdx:75,fechaRealIdx:76,valorRealIdx:null,fechaPresentaIdx:null,estadoIdx:77},
-  {tipo:'Liquidación',label:null,pctIdx:79,valorProyIdx:80,valorRealIdx:81,fechaPresentaIdx:82,fechaProyIdx:83,fechaRealIdx:83,estadoIdx:84},
+  {tipo:'Corte',label:'Corte 5',pctIdx:67,valorProyIdx:73,fechaPresentaIdx:74,fechaProyIdx:75,fechaRealIdx:76,valorRealIdx:null,estadoIdx:77},
+  {tipo:'Retegarantía',label:null,pctIdx:85,valorProyIdx:86,fechaProyIdx:87,fechaRealIdx:88,valorRealIdx:null,fechaPresentaIdx:null,estadoIdx:89},
+  {tipo:'Liquidación',label:null,pctIdx:91,valorProyIdx:92,valorRealIdx:93,fechaPresentaIdx:94,fechaProyIdx:95,fechaRealIdx:95,estadoIdx:96},
 ];
 function extractHito(row,spec){
   const pct=parsePctCO(row[spec.pctIdx]);
@@ -653,6 +654,17 @@ function handleSessionError_(note, message){
   }
 }
 
+/* FASE 2 — Nunca insertar directamente en HTML valores de Sheets/Drive. */
+function escapeHtml_(value){
+  return String(value == null ? '' : value).replace(/[&<>'"]/g, c => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;'
+  })[c]);
+}
+function safeDriveUrl_(value){
+  const url = String(value || '').trim();
+  return /^https:\/\/drive\.google\.com\/(?:drive\/(?:u\/\d+\/)?folders|folders)\/[A-Za-z0-9_-]+(?:[/?#].*)?$/i.test(url) ? url : '';
+}
+
 function saveSession(token, nombre, rol){
   sessionStorage.setItem('mn_token', token);
   sessionStorage.setItem('mn_nombre', nombre);
@@ -717,7 +729,10 @@ function hideAllViews(){
 
 function enterApp(){
   const s = getSession();
-  document.getElementById('user-info').innerHTML = '<strong>' + s.nombre + '</strong><br>' + (s.rol || '');
+  const userInfo = document.getElementById('user-info');
+  const strong = document.createElement('strong');
+  strong.textContent = s.nombre || '';
+  userInfo.replaceChildren(strong, document.createElement('br'), document.createTextNode(s.rol || ''));
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
   if(!FASE_0_CONTENCION){
@@ -935,6 +950,8 @@ async function crearProyecto(){
     estado: document.getElementById('np-estado').value,
     director: document.getElementById('np-director').value.trim(),
     residente: document.getElementById('np-residente').value.trim(),
+    residente2: document.getElementById('np-residente-2').value.trim(),
+    residente3: document.getElementById('np-residente-3').value.trim(),
     gerente: document.getElementById('np-gerente').value.trim(),
     carpetaDrive: document.getElementById('np-drive').value.trim()
   };
@@ -952,7 +969,7 @@ async function crearProyecto(){
     const data = await res.json();
     if(!data.ok) throw new Error(data.error || 'Error desconocido');
     okEl.textContent = '✓ Proyecto creado' + (data.checklist && data.checklist.filas_creadas ? ' con ' + data.checklist.filas_creadas + ' ítems de checklist.' : '.');
-    ['np-codigo','np-nombre','np-cliente','np-director','np-residente','np-gerente','np-drive'].forEach(id => document.getElementById(id).value = '');
+    ['np-codigo','np-nombre','np-cliente','np-director','np-residente','np-residente-2','np-residente-3','np-gerente','np-drive'].forEach(id => document.getElementById(id).value = '');
     setTimeout(goToProjectList, 1500);
   }catch(e){
     errEl.textContent = '⚠ ' + e.message;
@@ -1032,7 +1049,14 @@ function renderProjectStatusTabs(){
   const estados = Object.keys(counts).sort();
   const tabs = [{key:'todos', label:'Todos', n: allMyProjects.length}]
     .concat(estados.map(e => ({key:e, label:e, n:counts[e]})));
-  wrap.innerHTML = tabs.map(t => `<button class="status-tab ${currentProjectStatusFilter===t.key?'active':''}" onclick="filterProjectsByStatus('${t.key.replace(/'/g,"\\'")}')">${t.label} (${t.n})</button>`).join('');
+  wrap.replaceChildren();
+  tabs.forEach(t => {
+    const button = document.createElement('button');
+    button.className = 'status-tab' + (currentProjectStatusFilter === t.key ? ' active' : '');
+    button.textContent = t.label + ' (' + t.n + ')';
+    button.addEventListener('click', () => filterProjectsByStatus(t.key));
+    wrap.appendChild(button);
+  });
 }
 
 function filterProjectsByStatus(estado){
@@ -1048,19 +1072,23 @@ function renderProjects(proyectos){
     grid.innerHTML = '<div class="projects-empty">No tienes proyectos asignados todavía. Si crees que es un error, contacta a quien administra el portal.</div>';
     return;
   }
-  grid.innerHTML = proyectos.map(p => {
+  grid.innerHTML = proyectos.map((p, index) => {
     const roles = [];
     if(p.director) roles.push('Director: ' + p.director);
     if(p.residente) roles.push('Residente: ' + p.residente);
     if(p.gerente) roles.push('Gerente: ' + p.gerente);
     return `
-    <div class="project-card" onclick='openProject(${JSON.stringify(p)})'>
-      <div class="pc-codigo">${p.codigo}${p.estado ? ' · ' + p.estado : ''}</div>
-      <div class="pc-nombre">${p.nombre}</div>
-      <div class="pc-cliente">${p.cliente || ''}</div>
-      <div class="pc-roles">${roles.map(r=>`<span class="pc-role-tag">${r}</span>`).join('')}</div>
+    <div class="project-card" data-project-index="${index}">
+      <div class="pc-codigo">${escapeHtml_(p.codigo)}${p.estado ? ' · ' + escapeHtml_(p.estado) : ''}</div>
+      <div class="pc-nombre">${escapeHtml_(p.nombre)}</div>
+      <div class="pc-cliente">${escapeHtml_(p.cliente || '')}</div>
+      <div class="pc-roles">${roles.map(r=>`<span class="pc-role-tag">${escapeHtml_(r)}</span>`).join('')}</div>
     </div>`;
   }).join('');
+  grid.querySelectorAll('[data-project-index]').forEach(card => {
+    const p = proyectos[Number(card.dataset.projectIndex)];
+    card.addEventListener('click', () => openProject(p));
+  });
 }
 
 let currentProjSubtab = 'documental';
@@ -1079,12 +1107,13 @@ function openProject(p){
   setActiveNav('nav-mis-proyectos');
   document.getElementById('topbar-title').textContent = p.codigo;
   document.getElementById('topbar-sub').textContent = p.nombre;
+  const driveUrl = safeDriveUrl_(p.carpetaDrive);
   document.getElementById('project-header').innerHTML = `
     <div>
-      <div class="ph-codigo">${p.codigo}${p.cliente ? ' · ' + p.cliente : ''}</div>
-      <div class="ph-nombre">${p.nombre}</div>
+      <div class="ph-codigo">${escapeHtml_(p.codigo)}${p.cliente ? ' · ' + escapeHtml_(p.cliente) : ''}</div>
+      <div class="ph-nombre">${escapeHtml_(p.nombre)}</div>
     </div>
-    ${p.carpetaDrive ? `<a class="ph-drive" href="${p.carpetaDrive}" target="_blank" rel="noopener">📁 Abrir carpeta en Drive</a>` : ''}
+    ${driveUrl ? `<a class="ph-drive" href="${escapeHtml_(driveUrl)}" target="_blank" rel="noopener noreferrer">📁 Abrir carpeta en Drive</a>` : ''}
   `;
   switchProjSubtab('documental');
   loadProjectChecklist(p.codigo);
@@ -1217,8 +1246,8 @@ function renderCarpetaSidebar(carpetas){
     let gruposHtml = '';
     if(esActiva){
       const grupos = gruposDeCarpeta_(items);
-      gruposHtml = grupos.map(g => `
-        <div class="pf-grupo-node ${currentGrupoFiltro===g?'active':''}" onclick="event.stopPropagation();selectGrupo('${g.replace(/'/g,"\\'")}')">${g}</div>
+      gruposHtml = grupos.map((g, grupoIndex) => `
+        <div class="pf-grupo-node ${currentGrupoFiltro===g?'active':''}" data-grupo-index="${grupoIndex}">${escapeHtml_(g)}</div>
       `).join('');
       if(grupos.length){
         gruposHtml = `<div class="pf-grupo-list">
@@ -1229,6 +1258,13 @@ function renderCarpetaSidebar(carpetas){
     }
     return nodeHtml + gruposHtml;
   }).join('');
+  const gruposActivos = gruposDeCarpeta_((carpetas && carpetas[CARPETA_ORDER[currentCarpetaIndex]]) || []);
+  wrap.querySelectorAll('[data-grupo-index]').forEach(node => {
+    node.addEventListener('click', event => {
+      event.stopPropagation();
+      selectGrupo(gruposActivos[Number(node.dataset.grupoIndex)]);
+    });
+  });
 }
 
 function selectCarpeta(idx){
@@ -1265,10 +1301,10 @@ function renderCarpetaDetail(carpeta){
     return `
     <div class="fase-item">
       <div class="body">
-        <div class="sub">${it.subcarpeta}</div>
-        <div class="doc">${it.documento || ''}</div>
+        <div class="sub">${escapeHtml_(it.subcarpeta)}</div>
+        <div class="doc">${escapeHtml_(it.documento || '')}</div>
       </div>
-      <div class="resp">${it.responsable}</div>
+      <div class="resp">${escapeHtml_(it.responsable)}</div>
       <div class="fase-item-status">
         ${estadoArchivoPill_(it.archivoCargado, it.archivoUrl)}
         ${estadoCalidadPill_(it.vistoBueno)}
@@ -1296,14 +1332,14 @@ function renderCarpetaDetail(carpeta){
     });
     ordenGrupos.sort((a,b) => a.localeCompare(b, 'es', {numeric:true}));
     itemsHtml = items.length ? ordenGrupos.map(g => `
-      <div class="grupo-subheader">${g}</div>
+      <div class="grupo-subheader">${escapeHtml_(g)}</div>
       ${grupos[g].map(renderItem).join('')}
     `).join('') : '<div class="fase-empty">Sin ítems clasificados en esta carpeta.</div>';
   }
   const total = items.length, hechos = items.filter(it=>it.check).length;
   wrap.innerHTML = `
     <div class="fase-detail-head">
-      <div class="fase-detail-title">${tituloPanel}</div>
+      <div class="fase-detail-title">${escapeHtml_(tituloPanel)}</div>
       <div class="fase-detail-count">${hechos}/${total} completos</div>
     </div>
     ${itemsHtml}`;
@@ -1470,9 +1506,11 @@ function selectFase(idx){
 }
 
 function estadoArchivoPill_(archivoCargado, archivoUrl){
-  const openAttr = archivoUrl ? ` onclick="window.open('${archivoUrl}','_blank')" style="cursor:pointer" title="Abrir carpeta en Drive"` : '';
-  if(archivoCargado === true) return `<span class="status-pill ok"${openAttr}>📎 Archivo cargado${archivoUrl?' ↗':''}</span>`;
-  if(archivoCargado === false) return `<span class="status-pill no"${openAttr}>📎 Sin archivo${archivoUrl?' ↗':''}</span>`;
+  const url = safeDriveUrl_(archivoUrl);
+  const contenido = archivoCargado === true ? '📎 Archivo cargado' : '📎 Sin archivo';
+  if(url) return `<a class="status-pill ${archivoCargado === true ? 'ok' : 'no'}" href="${escapeHtml_(url)}" target="_blank" rel="noopener noreferrer" title="Abrir carpeta en Drive">${contenido} ↗</a>`;
+  if(archivoCargado === true) return '<span class="status-pill ok">📎 Archivo cargado</span>';
+  if(archivoCargado === false) return '<span class="status-pill no">📎 Sin archivo</span>';
   return '<span class="status-pill unknown">📎 Sin verificar</span>';
 }
 
@@ -1497,11 +1535,11 @@ function renderFaseDetail(fase){
     return `
     <div class="fase-item">
       <div class="body">
-        <div class="carpeta">${it.carpetaBase}</div>
-        <div class="sub">${it.subcarpeta}</div>
-        <div class="doc">${it.documento || ''}</div>
+        <div class="carpeta">${escapeHtml_(it.carpetaBase)}</div>
+        <div class="sub">${escapeHtml_(it.subcarpeta)}</div>
+        <div class="doc">${escapeHtml_(it.documento || '')}</div>
       </div>
-      <div class="resp">${it.responsable}</div>
+      <div class="resp">${escapeHtml_(it.responsable)}</div>
       <div class="fase-item-status">
         ${estadoArchivoPill_(it.archivoCargado, it.archivoUrl)}
         ${estadoCalidadPill_(it.vistoBueno)}
