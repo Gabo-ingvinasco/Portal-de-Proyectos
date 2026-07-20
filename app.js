@@ -1,29 +1,21 @@
 ﻿/* ═══ CONFIGURA ESTO: pega aquí la URL de tu Apps Script desplegado ═══ */
-const API_URL = 'https://script.google.com/macros/s/AKfycbx8kXvteNf-TsqnG4jWM_4jbkJWN6uIXsnyrxIPB_2GzhmWFNVHeeQRpIG-Nwl-Bb_k/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzZ-IkmKPIICIWI7tt_Iy2Qvw95GC9RNWdv1HX3F7-ov9dXiFrCej_yrRBc3K7wvZHI4A/exec';
 const GOOGLE_CLIENT_ID = '31258029935-n8eimmvs8duntfgf5o8741ecd9bh3qtk.apps.googleusercontent.com';
 const WORKSPACE_DOMAIN = 'minimaarquitectos.com';
 
 /* FASE 0 — CONTENCIÓN
    Los módulos que dependían de información financiera pública permanecen
    deshabilitados hasta que esos datos se sirvan desde un endpoint autenticado. */
-const FASE_0_CONTENCION = true;
-const MODULOS_CONTENIDOS = [
-  'nav-todos-proyectos',
-  'nav-kpis',
-  'nav-resumen',
-  'nav-directores',
-  'nav-alertas',
-  'nav-flujo-caja',
-  'nav-comparativo'
-];
+const FASE_0_CONTENCION = false;
 
 
-/* FASE 0: los datos financieros y del portafolio fueron retirados del frontend público. */
-const PROJECTS = [];
+/* FASE 4: los datos financieros existen solo en memoria después de que un
+   endpoint POST autenticado devuelve el subconjunto autorizado. */
+let financialProjects = [];
 
 const fmtMM=v=>{if(v===null||v===undefined||isNaN(v)||v===0)return"—";return"$"+Math.round(v).toLocaleString('es-CO');};
 
-let filteredProjects = PROJECTS;
+let filteredProjects = [];
 
 const PROJ_DETAIL = {};
 
@@ -97,11 +89,22 @@ function extractHito(row,spec){
 }
 async function loadFlujoCajaLive(){
   const note=document.getElementById('fc-note');
+  const [flujoData, proyectosData] = await Promise.all([
+    apiPost_('flujo_caja'),
+    apiPost_('proyectos_financieros')
+  ]);
+  if(!flujoData.ok) throw new Error(flujoData.error || 'No se pudo cargar el flujo de caja.');
+  if(!proyectosData.ok) throw new Error(proyectosData.error || 'No se pudo cargar los proyectos financieros.');
   FLUJO_CAJA.length=0;
-  if(note){
-    note.style.display='block';
-    note.textContent='Módulo temporalmente deshabilitado durante el fortalecimiento de seguridad.';
-  }
+  FLUJO_CAJA.push(...(flujoData.flujo || []));
+  financialProjects = proyectosData.proyectos || [];
+  dropdownFilteredAll = financialProjects.slice();
+  filteredProjects = dropdownFilteredAll.slice();
+  financialMeta = flujoData;
+  resetFinancialFilters_();
+  populateFilters();
+  computeFilteredProjects();
+  if(note){ note.style.display='none'; note.textContent=''; }
 }
 const TIPO_COLOR_FC={Anticipo:'#2e7dd1',Corte:'#1a8a52','Liquidación':'#e8622a','Retegarantía':'#a82c00',Vencido:'#c0392b'};
 function mondayOf(d){const dt=new Date(d);const day=(dt.getDay()+6)%7;dt.setHours(0,0,0,0);dt.setDate(dt.getDate()-day);return dt;}
@@ -148,7 +151,7 @@ function renderResumen4Semanas(){
   const ingRows=rows.filter(h=>h.semanaDate&&h.semanaDate>=w.start&&h.semanaDate<=w.end);
   const presRows=rows.filter(h=>h.semanaPresentaDate&&h.semanaPresentaDate>=w.start&&h.semanaPresentaDate<=w.end);
   const rowHtml=list=>list.length?list.map(h=>`<div class="fc-r4-row" style="border-bottom:1px solid #f5f3f0;padding:5px 0">
-      <span><strong style="color:#1a1a1a">${h.proyecto}</strong> — ${h.label||h.tipo} <span class="ht ht-${h.tipo}" style="margin-left:4px">${h.tipo}</span></span>
+      <span><strong style="color:#1a1a1a">${escapeHtml_(h.proyecto)}</strong> — ${escapeHtml_(h.label||h.tipo)} <span class="ht ht-${safeHitoTipo_(h.tipo)}" style="margin-left:4px">${escapeHtml_(h.tipo)}</span></span>
       <span class="fc-r4-val" style="font-size:11px">${fmtMM(h.valor)}</span></div>`).join(''):
     '<div class="fc-r4-detail-empty">Nada programado esta semana.</div>';
   document.getElementById('fc-resumen4-detail').innerHTML=`
@@ -198,13 +201,13 @@ function renderVencidos(vencidosList,today0){
     const dias=[diasIng,diasPres].filter(d=>d!==null);
     const diasMax=dias.length?Math.max(...dias):null;
     return`<tr class="fc-row-venc">
-      <td class="td-primary">${h.proyecto}</td><td>${h.encargado||''}</td>
-      <td><span class="ht ht-${h.tipo}">${h.label||h.tipo}</span></td>
+      <td class="td-primary">${escapeHtml_(h.proyecto)}</td><td>${escapeHtml_(h.encargado||'')}</td>
+      <td><span class="ht ht-${safeHitoTipo_(h.tipo)}">${escapeHtml_(h.label||h.tipo)}</span></td>
       <td class="td-money" style="text-align:right">${fmtMM(h.valor)}</td>
       <td>${ingresoIcon(h)} ${h.semanaDate?fcShort(h.semanaDate)+(h.semanaDate<today0?' ⚠':''):'—'}</td>
       <td>${presentadoIcon(h,today0)} ${h.semanaPresentaDate?fcShort(h.semanaPresentaDate)+(h.semanaPresentaDate<today0?' ⚠':''):'—'}</td>
       <td style="text-align:right;color:#c0392b;font-weight:600">${diasMax!==null?diasMax+' días':'—'}</td>
-      <td><span class="hb ${h.estado==='Confirmado'?'hb-cob':'hb-pend'}">${h.estado}</span></td></tr>`;
+      <td><span class="hb ${h.estado==='Confirmado'?'hb-cob':'hb-pend'}">${escapeHtml_(h.estado)}</span></td></tr>`;
   }).join(''):
     '<tr><td colspan="8" style="text-align:center;color:#aaa;padding:20px">No hay pagos vencidos con los filtros actuales</td></tr>';
 
@@ -233,7 +236,7 @@ function buildFlujoCaja(){
   const weeks=[...Array(12)].map((_,i)=>({start:addDays(today0,i*7),end:addDays(today0,i*7+6)}));
   const rows=[];
   FLUJO_CAJA.forEach(fc=>{
-    const p=PROJECTS.find(x=>x.codigo===fc.codigo);
+    const p=financialProjects.find(x=>x.codigo===fc.codigo);
     if(!p||!codigosVisibles.has(fc.codigo))return;
     fc.hitos.forEach(h=>{
       rows.push({...h,codigo:fc.codigo,proyecto:p.proyecto,encargado:p.encargado,
@@ -292,20 +295,20 @@ function buildFlujoCaja(){
     const hbCls=h.estado==='Confirmado'?'hb-cob':'hb-pend';
     return`<tr>
       <td>${h.semanaDate?fcShort(h.semanaDate):'<em style="color:#bbb">Sin fecha</em>'}</td>
-      <td class="td-primary">${h.proyecto}</td><td>${h.encargado||''}</td>
-      <td><span class="ht ht-${h.tipo}">${h.label||h.tipo}</span></td>
+      <td class="td-primary">${escapeHtml_(h.proyecto)}</td><td>${escapeHtml_(h.encargado||'')}</td>
+      <td><span class="ht ht-${safeHitoTipo_(h.tipo)}">${escapeHtml_(h.label||h.tipo)}</span></td>
       <td class="td-money" style="text-align:right">${fmtMM(h.valor)}</td>
-      <td><span class="hb ${hbCls}">${h.estado}</span></td>
+      <td><span class="hb ${hbCls}">${escapeHtml_(h.estado)}</span></td>
       <td style="text-align:center">${presentadoIcon(h,today0)}</td></tr>`;}).join(''):
     '<tr><td colspan="7" style="text-align:center;color:#aaa;padding:20px">No hay hitos pendientes con los filtros actuales (los vencidos se muestran en el cuadro de arriba)</td></tr>';
 
   document.getElementById('fc-proy-tbody').innerHTML=FLUJO_CAJA.filter(fc=>codigosVisibles.has(fc.codigo)).map(fc=>{
-    const p=PROJECTS.find(x=>x.codigo===fc.codigo);if(!p)return'';
+    const p=financialProjects.find(x=>x.codigo===fc.codigo);if(!p)return'';
     const programado=fc.hitos.filter(h=>h.tipo!=='Retegarantía').reduce((s,h)=>s+h.valor,0);
     const sinProgramar=Math.max(0,(p.valor||0)-programado);
     const cls=EB[p.estado]||"eb-cerr";
-    return`<tr><td class="td-code">${p.codigo}</td><td class="td-primary">${p.proyecto}</td><td>${p.encargado}</td>
-      <td><span class="estado-badge ${cls}">${p.estado}</span></td>
+    return`<tr><td class="td-code">${escapeHtml_(p.codigo)}</td><td class="td-primary">${escapeHtml_(p.proyecto)}</td><td>${escapeHtml_(p.encargado)}</td>
+      <td><span class="estado-badge ${cls}">${escapeHtml_(p.estado)}</span></td>
       <td class="td-money" style="text-align:right">${fmtMM(p.valor)}</td>
       <td class="td-money" style="text-align:right">${fmtMM(programado)}</td>
       <td style="text-align:right;color:${sinProgramar>0?'#a0620a':'#aaa'}">${sinProgramar>0?fmtMM(sinProgramar):'—'}</td></tr>`;
@@ -318,8 +321,13 @@ async function refreshFlujoCaja(){
   const fcNote=document.getElementById('fc-note');
   if(btn){btn.disabled=true;btn.textContent='⟳ Actualizando...';}
   if(fcNote){fcNote.style.display='block';fcNote.textContent='⏳ Cargando datos en vivo desde el Google Sheet...';}
-  await loadFlujoCajaLive();
-  buildFlujoCaja();
+  try{
+    await loadFlujoCajaLive();
+    document.getElementById('topbar-sub').textContent = 'Control de hitos de cobro — próximas 12 semanas' + financialMetaLabel_();
+    buildFlujoCaja();
+  }catch(err){
+    if(fcNote){fcNote.style.display='block';fcNote.textContent='⚠ '+err.message;}
+  }
   if(btn){btn.disabled=false;btn.textContent='⟳ Actualizar datos';}
   if(timeEl){
     const now=new Date();
@@ -337,24 +345,48 @@ const fmtPct=v=>v?v.toFixed(1)+"%":"—";
 const hCol=v=>v>=85?"#1a8a52":v>=60?"#c08a00":"#c0392b";
 let donutChart,sectorChart,compMesChart,compDirCountChart;
 
-/* Recalcula filteredProjects según el rol de la sesión activa.
-   Gerente/Admin: todos los proyectos. Director: solo los suyos (por 'encargado').
-   Residente/otros: por ahora ninguno — el PROJECTS estático de este dashboard no
-   tiene un campo de "residente" separado (solo 'encargado', que históricamente
-   apunta al Director/responsable), así que no hay forma de filtrar por Residente
-   todavía. Si se necesita, hay que agregar esa columna al PROJECTS. */
-let dropdownFilteredAll = PROJECTS; // PROJECTS filtrado solo por los desplegables (Año/Mes/Encargado/Estado/Sector), sin restricción de rol — esto alimenta KPI's
+let dropdownFilteredAll = [];
+let financialMeta = null;
 const MESES_NOM=['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+function resetFinancialFilters_(){
+  ['fil-anio','fil-mes','fil-enc','fil-sector'].forEach(id => {
+    const select = document.getElementById(id);
+    while(select && select.options.length > 1) select.remove(1);
+  });
+}
+
+async function loadFinancialProjects_(action){
+  const data = await apiPost_(action);
+  if(!data.ok) throw new Error(data.error || 'No se pudo cargar la información financiera.');
+  financialProjects = data.proyectos || [];
+  dropdownFilteredAll = financialProjects.slice();
+  filteredProjects = dropdownFilteredAll.slice();
+  financialMeta = {
+    fechaCorte:data.fechaCorte,
+    fechaActualizacion:data.fechaActualizacion,
+    fuente:data.fuente,
+    tipoDato:data.tipoDato
+  };
+  resetFinancialFilters_();
+  populateFilters();
+  return data;
+}
+
+function financialMetaLabel_(){
+  if(!financialMeta) return '';
+  return ` · Corte ${financialMeta.fechaCorte || '—'} · ${financialMeta.tipoDato || 'real'}`;
+}
 
 function populateFilters(){
   const fa=document.getElementById('fil-anio');
-  [...new Set(PROJECTS.map(p=>p.anio).filter(a=>a))].sort().forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;fa.appendChild(o);});
+  [...new Set(financialProjects.map(p=>p.anio).filter(a=>a))].sort().forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;fa.appendChild(o);});
   const fm=document.getElementById('fil-mes');
-  [...new Set(PROJECTS.map(p=>p.mes).filter(m=>m))].sort((a,b)=>a-b).forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=MESES_NOM[m];fm.appendChild(o);});
+  [...new Set(financialProjects.map(p=>p.mes).filter(m=>m))].sort((a,b)=>a-b).forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=MESES_NOM[m];fm.appendChild(o);});
   const fe=document.getElementById('fil-enc');
-  [...new Set(PROJECTS.map(p=>p.encargado))].sort().forEach(e=>{const o=document.createElement('option');o.textContent=e;fe.appendChild(o);});
+  [...new Set(financialProjects.map(p=>p.encargado).filter(Boolean))].sort().forEach(e=>{const o=document.createElement('option');o.textContent=e;fe.appendChild(o);});
   const fs=document.getElementById('fil-sector');
-  [...new Set(PROJECTS.map(p=>p.sector).filter(s=>s))].sort().forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;fs.appendChild(o);});
+  [...new Set(financialProjects.map(p=>p.sector).filter(s=>s))].sort().forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;fs.appendChild(o);});
 }
 
 function applyFilters(){
@@ -363,7 +395,7 @@ function applyFilters(){
   const en=document.getElementById('fil-enc').value;
   const es=document.getElementById('fil-estado').value;
   const sc=document.getElementById('fil-sector').value;
-  dropdownFilteredAll = PROJECTS.filter(p=>{
+  dropdownFilteredAll = financialProjects.filter(p=>{
     if(an!=='todos'&&p.anio!=an)return false;
     if(mn!=='todos'&&p.mes!=mn)return false;
     if(en!=='todos'&&p.encargado!==en)return false;
@@ -386,11 +418,8 @@ function rebuildCurrentFinancialView(){
 }
 
 function computeFilteredProjects(){
-  const s = getSession();
-  const base = dropdownFilteredAll;
-  if(s.rol === 'Gerente' || s.rol === 'Admin'){ filteredProjects = base; }
-  else if(s.rol === 'Director'){ filteredProjects = base.filter(p => p.encargado === s.nombre); }
-  else { filteredProjects = []; }
+  // El backend ya devolvió exclusivamente los proyectos autorizados.
+  filteredProjects = dropdownFilteredAll.slice();
 }
 
 function buildKPIs(){
@@ -448,7 +477,16 @@ function buildDonut(){
 }
 
 function buildHealth(){
-  const items=[{lbl:"Cronograma",pct:70},{lbl:"Financiero",pct:72},{lbl:"Facturación",pct:65},{lbl:"Cartera",pct:55},{lbl:"Documentación",pct:60}];
+  const fp=dropdownFilteredAll;
+  const total=fp.reduce((s,p)=>s+(p.valor||0),0);
+  const promedio=(campo,def=0)=>fp.length?fp.reduce((s,p)=>s+(Number(p[campo])||0),0)/fp.length:def;
+  const items=[
+    {lbl:"Cronograma",pct:Math.round(promedio('avObra'))},
+    {lbl:"Financiero",pct:Math.round(Math.max(0,100-promedio('difSNpct')))},
+    {lbl:"Facturación",pct:Math.round(total?Math.max(0,100-fp.reduce((s,p)=>s+(p.pxFacturar||0),0)/total*100):0)},
+    {lbl:"Cartera",pct:Math.round(total?Math.max(0,100-fp.reduce((s,p)=>s+(p.pxCobrar||0),0)/total*100):0)},
+    {lbl:"Liquidación",pct:Math.round(promedio('avLiq'))}
+  ];
   const el=document.getElementById('health-list');
   if(el)el.innerHTML=items.map(h=>`<div class="health-row"><div class="health-lbl">${h.lbl}</div><div class="hbar-bg"><div class="hbar-fill" style="width:${h.pct}%;background:${hCol(h.pct)}"></div></div><div class="health-pct" style="color:${hCol(h.pct)}">${h.pct}%</div><div class="hdot" style="background:${hCol(h.pct)}"></div></div>`).join('');
 }
@@ -463,26 +501,37 @@ function buildSector(){
   sectorChart=new Chart(canvas,{type:'bar',data:{labels:sorted.map(s=>s[0]),datasets:[{data:sorted.map(s=>s[1]),backgroundColor:colors,borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:"#6b6b66",font:{size:10}},border:{display:false}},y:{grid:{display:false},ticks:{color:"#6b6b66",font:{size:10}},border:{display:false}}}}});
 }
 
-/* NOTA: estos dos usan una lista de ejemplo fija (no calculada desde PROJECTS
-   todavía) — igual que en el dashboard original. Si quieres que reflejen datos
-   reales y respeten el filtro de proyectos del Director, hay que reescribirlos
-   para derivarse de PROJECTS/filteredProjects en vez de un arreglo fijo. */
 function buildRisks(){
-  const risks=[{proj:"IAE — C-26-009",desc:"Retraso 48 días. Cronograma crítico.",nivel:"alta"},{proj:"Intercontinental",desc:"Cartera pendiente masiva. Anomalía contable.",nivel:"alta"},{proj:"Av Chile — C-26-007",desc:"Diferencia SN 44.3% — revisar margen real.",nivel:"media"},{proj:"Reparaciones P11",desc:"Sin documentación contractual básica.",nivel:"media"},{proj:"SOCA — C-26-017",desc:"Sin actas, cronograma, informes ni preliq.",nivel:"media"}];
+  const risks=[];
+  filteredProjects.forEach(p=>{
+    if((p.dias||0)>30) risks.push({proj:`${p.proyecto} — ${p.codigo}`,desc:`Retraso registrado de ${p.dias} días.`,nivel:'alta',score:300+p.dias});
+    if((p.difSNpct||0)>30) risks.push({proj:`${p.proyecto} — ${p.codigo}`,desc:`Diferencia SN de ${fmtPct(p.difSNpct)}.`,nivel:p.difSNpct>40?'alta':'media',score:200+p.difSNpct});
+    if((p.pxCobrar||0)>0) risks.push({proj:`${p.proyecto} — ${p.codigo}`,desc:`Pendiente por cobrar: ${fmtMM(p.pxCobrar)}.`,nivel:p.pxCobrar>500000000?'alta':'media',score:100+Math.min(p.pxCobrar/10000000,99)});
+  });
+  risks.sort((a,b)=>b.score-a.score);
+  const visibles=risks.slice(0,6);
   const el=document.getElementById('risk-list');
-  if(el)el.innerHTML=risks.map(r=>`<div class="risk-row"><span class="rbadge ${r.nivel}">${r.nivel.toUpperCase()}</span><div><div class="risk-proj">${r.proj}</div><div class="risk-desc">${r.desc}</div></div></div>`).join('');
+  if(el)el.innerHTML=visibles.length?visibles.map(r=>`<div class="risk-row"><span class="rbadge ${r.nivel}">${r.nivel.toUpperCase()}</span><div><div class="risk-proj">${escapeHtml_(r.proj)}</div><div class="risk-desc">${escapeHtml_(r.desc)}</div></div></div>`).join(''):'<div class="fase-empty">Sin riesgos financieros críticos con los datos actuales.</div>';
 }
 
 function buildActions(){
-  const actions=[{proj:"IAE",desc:"Implementar plan de choque en actividades críticas",resp:"Jeison Cera",prio:"alta"},{proj:"Intercontinental",desc:"Gestionar recaudo y verificar valor contable",resp:"Luis Mantilla",prio:"alta"},{proj:"Reparaciones P11",desc:"Completar documentación básica faltante",resp:"Jeison Cera",prio:"media"},{proj:"SOCA",desc:"Cargar actas, informes y preliquidación",resp:"Andres R.",prio:"media"},{proj:"Av Chile",desc:"Cerrar acta de entrega pendiente",resp:"Alejandro P.",prio:"baja"}];
+  const actions=[];
+  filteredProjects.forEach(p=>{
+    if((p.pxCobrar||0)>0) actions.push({proj:p.proyecto,desc:`Gestionar cartera pendiente por ${fmtMM(p.pxCobrar)}`,resp:p.encargado||'Sin asignar',prio:p.pxCobrar>500000000?'alta':'media',score:p.pxCobrar});
+    else if((p.pxFacturar||0)>0) actions.push({proj:p.proyecto,desc:`Gestionar facturación pendiente por ${fmtMM(p.pxFacturar)}`,resp:p.encargado||'Sin asignar',prio:'media',score:p.pxFacturar});
+  });
+  actions.sort((a,b)=>b.score-a.score);
+  const visibles=actions.slice(0,6);
   const el=document.getElementById('action-list');
-  if(el)el.innerHTML=actions.map(a=>`<div class="action-row"><div class="aproj">${a.proj}</div><div class="adesc">${a.desc}</div><div class="aresp">${a.resp}</div><span class="pbadge ${a.prio}">${a.prio.toUpperCase()}</span></div>`).join('');
+  if(el)el.innerHTML=visibles.length?visibles.map(a=>`<div class="action-row"><div class="aproj">${escapeHtml_(a.proj)}</div><div class="adesc">${escapeHtml_(a.desc)}</div><div class="aresp">${escapeHtml_(a.resp)}</div><span class="pbadge ${a.prio}">${a.prio.toUpperCase()}</span></div>`).join(''):'<div class="fase-empty">Sin acciones financieras pendientes.</div>';
 }
 
 function buildDirectores(){
   const dirs={};
   filteredProjects.forEach(p=>{if(!dirs[p.encargado])dirs[p.encargado]={name:p.encargado,cargo:p.cargo,proyectos:[],totalValor:0,totalCobrar:0};dirs[p.encargado].proyectos.push(p);dirs[p.encargado].totalValor+=p.valor||0;dirs[p.encargado].totalCobrar+=p.pxCobrar||0;});
-  document.getElementById('dir-grid').innerHTML=Object.values(dirs).map(d=>{
+  const directorList=Object.values(dirs);
+  const grid=document.getElementById('dir-grid');
+  grid.innerHTML=directorList.map((d,index)=>{
     const ejec=d.proyectos.filter(p=>p.estado==="En Ejecución").length;
     const liq=d.proyectos.filter(p=>p.estado==="En Liquidación").length;
     const avProm=d.proyectos.length?Math.round(d.proyectos.reduce((a,p)=>a+(p.avObra||0),0)/d.proyectos.length):0;
@@ -493,8 +542,8 @@ function buildDirectores(){
     const avgCCV=ccvArr.length?ccvArr.reduce((s,p)=>s+(p.difCNpct||0),0)/ccvArr.length:null;
     const avgSCV=scvArr.length?scvArr.reduce((s,p)=>s+(p.difSNpct||0),0)/scvArr.length:null;
     const fmtDif=(v,n)=>v==null?`<span style="color:#aaa">—</span>`:`<span style="color:${v>=0?'#1a8a52':'#c0392b'}">${v>=0?'+':''}${v.toFixed(1)}%</span><span style="font-size:9px;color:#aaa;margin-left:3px">(${n} proy.)</span>`;
-    return`<div class="dir-card" data-dir="${d.name}" onclick="openDrawer('${d.name}')">
-      <div class="dir-head"><div class="dir-av">${initials}</div><div><div class="dir-name">${d.name}</div><div class="dir-cargo">${d.cargo}</div></div></div>
+    return`<div class="dir-card" data-director-index="${index}">
+      <div class="dir-head"><div class="dir-av">${escapeHtml_(initials)}</div><div><div class="dir-name">${escapeHtml_(d.name)}</div><div class="dir-cargo">${escapeHtml_(d.cargo)}</div></div></div>
       <div class="dir-kpis">
         <div class="dir-kpi"><div class="dir-kpi-n">${d.proyectos.length}</div><div class="dir-kpi-l">Proyectos</div></div>
         <div class="dir-kpi"><div class="dir-kpi-n">${ejec}</div><div class="dir-kpi-l">En ejec.</div></div>
@@ -510,25 +559,32 @@ function buildDirectores(){
       </div>
       <div class="dir-av-row"><div class="dir-av-lbl">Avance prom.</div><div class="dir-av-bg"><div class="dir-av-fill" style="width:${avProm}%;background:${avC}"></div></div><div class="dir-pct" style="color:${avC}">${avProm}%</div></div>
     </div>`;}).join('');
+  grid.querySelectorAll('[data-director-index]').forEach(card=>{
+    const director=directorList[Number(card.dataset.directorIndex)];
+    card.addEventListener('click',()=>openDrawer(director.name));
+  });
 }
 
 function openDrawer(dirName){
   document.querySelectorAll('.dir-card').forEach(c=>c.classList.remove('selected'));
-  const card=[...document.querySelectorAll('.dir-card')].find(c=>c.dataset.dir===dirName);
+  const card=[...document.querySelectorAll('.dir-card')].find(c=>{
+    const index=Number(c.dataset.directorIndex);
+    return Object.keys(c.dataset).includes('directorIndex') && index>=0 && c.querySelector('.dir-name')?.textContent===dirName;
+  });
   if(card)card.classList.add('selected');
   const projs=filteredProjects.filter(p=>p.encargado===dirName);
   const EC_local={"Finalizado":"#5a8a5a","En Ejecución":"#1a8a52","En Liquidación":"#c08a00","Garantias":"#1a5fa5","Por Iniciar":"#4a3aa7","Cerrado":"#6b6b66"};
   const rows=projs.map(p=>{
     const ccvC=p.difCNpct>0?'#1a8a52':p.difCNpct<0?'#c0392b':'#aaa';
     const scvC=p.difSNpct>0?'#1a8a52':p.difSNpct<0?'#c0392b':'#aaa';
-    const est=`<span style="background:${EC_local[p.estado]||'#888'};color:#fff;padding:2px 7px;border-radius:10px;font-size:9px;font-weight:600">${p.estado}</span>`;
+    const est=`<span style="background:${EC_local[p.estado]||'#888'};color:#fff;padding:2px 7px;border-radius:10px;font-size:9px;font-weight:600">${escapeHtml_(p.estado)}</span>`;
     const dCCV=p.difCNpct!=null&&p.difCNpct!==0?`<span style="color:${ccvC}">${p.difCNpct>0?'+':''}${p.difCNpct.toFixed(1)}%</span>`:'<span style="color:#aaa">—</span>';
     const dSCV=p.difSNpct!=null&&p.difSNpct!==0?`<span style="color:${scvC}">${p.difSNpct>0?'+':''}${p.difSNpct.toFixed(1)}%</span>`:'<span style="color:#aaa">—</span>';
     const fac=p.pxFacturar>0?`<span style="color:#c08a00">${fmtMM(p.pxFacturar)}</span>`:'<span style="color:#aaa">—</span>';
     const cob=p.pxCobrar>0?`<span style="color:#c0392b">${fmtMM(p.pxCobrar)}</span>`:'<span style="color:#aaa">—</span>';
     return `<tr>
-      <td style="font-weight:600;color:#666">${p.codigo}</td>
-      <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis" title="${p.proyecto}">${p.proyecto}</td>
+      <td style="font-weight:600;color:#666">${escapeHtml_(p.codigo)}</td>
+      <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis" title="${escapeHtml_(p.proyecto)}">${escapeHtml_(p.proyecto)}</td>
       <td>${est}</td>
       <td style="text-align:right">${fmtMM(p.valor)}</td>
       <td style="text-align:right">${dCCV}</td>
@@ -575,11 +631,11 @@ function buildAlertas(){
     } else note.style.display='none';
   }
   const withObs=base.filter(p=>p.obs&&p.obs.length>5);
-  document.getElementById('obs-list').innerHTML=withObs.length?withObs.map(p=>`<div class="obs-row"><span class="obs-code">${p.codigo}</span><span class="obs-txt"><strong style="color:#1a1a1a">${p.proyecto}</strong> — ${p.obs}</span></div>`).join(''):'<div style="font-size:11px;color:#6b6b66;padding:8px 0">Sin observaciones críticas.</div>';
+  document.getElementById('obs-list').innerHTML=withObs.length?withObs.map(p=>`<div class="obs-row"><span class="obs-code">${escapeHtml_(p.codigo)}</span><span class="obs-txt"><strong style="color:#1a1a1a">${escapeHtml_(p.proyecto)}</strong> — ${escapeHtml_(p.obs)}</span></div>`).join(''):'<div style="font-size:11px;color:#6b6b66;padding:8px 0">Sin observaciones críticas.</div>';
   const delayed=base.filter(p=>p.dias>10).sort((a,b)=>b.dias-a.dias);
-  document.getElementById('delay-list').innerHTML=delayed.length?delayed.map(p=>`<div class="risk-row"><span class="rbadge ${p.dias>50?'alta':'media'}">${p.dias}d</span><div><div class="risk-proj">${p.proyecto}</div><div class="risk-desc">${p.encargado} — ${p.estado}</div></div></div>`).join(''):'<div style="font-size:11px;color:#6b6b66;padding:8px 0">Sin retrasos significativos.</div>';
+  document.getElementById('delay-list').innerHTML=delayed.length?delayed.map(p=>`<div class="risk-row"><span class="rbadge ${p.dias>50?'alta':'media'}">${p.dias}d</span><div><div class="risk-proj">${escapeHtml_(p.proyecto)}</div><div class="risk-desc">${escapeHtml_(p.encargado)} — ${escapeHtml_(p.estado)}</div></div></div>`).join(''):'<div style="font-size:11px;color:#6b6b66;padding:8px 0">Sin retrasos significativos.</div>';
   const highSN=base.filter(p=>p.difSNpct>30&&p.difSNpct<200).sort((a,b)=>b.difSNpct-a.difSNpct);
-  document.getElementById('margin-list').innerHTML=highSN.length?highSN.map(p=>`<div class="risk-row"><span class="rbadge alta">${fmtPct(p.difSNpct)}</span><div><div class="risk-proj">${p.proyecto}</div><div class="risk-desc">${p.encargado} — ${p.estado}</div></div></div>`).join(''):'<div style="font-size:11px;color:#6b6b66;padding:8px 0">Sin diferencias críticas.</div>';
+  document.getElementById('margin-list').innerHTML=highSN.length?highSN.map(p=>`<div class="risk-row"><span class="rbadge alta">${fmtPct(p.difSNpct)}</span><div><div class="risk-proj">${escapeHtml_(p.proyecto)}</div><div class="risk-desc">${escapeHtml_(p.encargado)} — ${escapeHtml_(p.estado)}</div></div></div>`).join(''):'<div style="font-size:11px;color:#6b6b66;padding:8px 0">Sin diferencias críticas.</div>';
 }
 
 function buildComparativo(){
@@ -661,6 +717,9 @@ function escapeHtml_(value){
   return String(value == null ? '' : value).replace(/[&<>'"]/g, c => ({
     '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;'
   })[c]);
+}
+function safeHitoTipo_(value){
+  return ['Anticipo','Corte','Liquidación','Retegarantía'].includes(value) ? value : 'Corte';
 }
 function safeDriveUrl_(value){
   const url = String(value || '').trim();
@@ -768,25 +827,23 @@ function enterApp(){
   userInfo.replaceChildren(strong, document.createElement('br'), document.createTextNode(s.rol || ''));
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
-  if(!FASE_0_CONTENCION){
-    populateFilters();
-    computeFilteredProjects();
-  }
   const esGerencia = s.rol === 'Gerente' || s.rol === 'Admin';
-  if(FASE_0_CONTENCION){
-    MODULOS_CONTENIDOS.forEach(id => {
-      const modulo = document.getElementById(id);
-      if(modulo) modulo.style.display = 'none';
-    });
-  }
+  const puedeVerFinanzas = s.rol === 'Director' || esGerencia;
+  ['nav-todos-proyectos','nav-kpis','nav-resumen','nav-alertas','nav-flujo-caja'].forEach(id => {
+    const modulo = document.getElementById(id);
+    if(modulo) modulo.style.display = puedeVerFinanzas ? 'flex' : 'none';
+  });
+  ['nav-directores','nav-comparativo'].forEach(id => {
+    const modulo = document.getElementById(id);
+    if(modulo) modulo.style.display = esGerencia ? 'flex' : 'none';
+  });
+  document.getElementById('subtab-resumen').style.display = puedeVerFinanzas ? 'inline-block' : 'none';
   document.getElementById('nav-nuevo-proyecto').style.display = esGerencia ? 'flex' : 'none';
   goToProjectList();
 }
 
 function moduloEnContencion_(nombre){
-  if(!FASE_0_CONTENCION) return false;
-  alert(nombre + ' está temporalmente deshabilitado mientras se implementa el acceso seguro a los datos.');
-  return true;
+  return false;
 }
 
 function refreshCurrentView(){
@@ -831,7 +888,7 @@ function goToFlujoCaja(){
   refreshFlujoCaja();
 }
 
-function goToTodosProyectos(){
+async function goToTodosProyectos(){
   if(moduloEnContencion_('Todos los Proyectos')) return;
   const s = getSession();
   if(!(s.rol === 'Director' || s.rol === 'Gerente' || s.rol === 'Admin')) return;
@@ -843,8 +900,12 @@ function goToTodosProyectos(){
   document.getElementById('topbar-sub').textContent = s.rol === 'Director' ? 'Todo tu portafolio, activo e histórico' : 'Portafolio completo de Mínima Arquitectos';
   document.getElementById('refresh-btn').style.display = 'none';
   setActiveNav('nav-todos-proyectos');
-  buildEstadoFiltersTodos();
-  buildTodosProyectosTabla(null);
+  try{
+    await loadFinancialProjects_('proyectos_financieros');
+    document.getElementById('topbar-sub').textContent += financialMetaLabel_();
+    buildEstadoFiltersTodos();
+    buildTodosProyectosTabla(null);
+  }catch(err){ alert('No se pudo cargar el portafolio financiero: '+err.message); }
 }
 
 function buildEstadoFiltersTodos(){
@@ -871,10 +932,10 @@ function buildTodosProyectosTabla(estadoFiltro){
     const avC = p.avObra>=75 ? '#1a8a52' : p.avObra>=40 ? '#c08a00' : '#c0392b';
     const snC = p.difSNpct>35 ? 'td-neg' : p.difSNpct>25 ? 'td-warn' : 'td-ok';
     return `<tr>
-      <td class="td-code">${p.codigo}</td>
-      <td class="td-primary" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.proyecto}</td>
-      <td>${p.cliente}</td><td><span class="estado-badge ${cls}">${p.estado}</span></td>
-      <td>${p.encargado}</td><td>${p.ciudad||'—'}</td>
+      <td class="td-code">${escapeHtml_(p.codigo)}</td>
+      <td class="td-primary" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml_(p.proyecto)}</td>
+      <td>${escapeHtml_(p.cliente)}</td><td><span class="estado-badge ${cls}">${escapeHtml_(p.estado)}</span></td>
+      <td>${escapeHtml_(p.encargado)}</td><td>${escapeHtml_(p.ciudad||'—')}</td>
       <td class="td-money" style="text-align:right">${fmtMM(p.valor)}</td>
       <td class="td-money" style="text-align:right;color:${p.pxCobrar>500000000?'#c0392b':'inherit'}">${fmtMM(p.pxCobrar)}</td>
       <td class="${snC}" style="text-align:right">${fmtPct(p.difSNpct)}</td>
@@ -883,7 +944,7 @@ function buildTodosProyectosTabla(estadoFiltro){
   }).join('') || '<tr><td colspan="10" style="text-align:center;color:#aaa;padding:20px">Sin proyectos con este filtro.</td></tr>';
 }
 
-function goToKPIs(){
+async function goToKPIs(){
   if(moduloEnContencion_("KPI's")) return;
   currentView = 'kpis';
   hideAllViews();
@@ -893,10 +954,14 @@ function goToKPIs(){
   document.getElementById('topbar-sub').textContent = 'Indicadores generales de todo el portafolio';
   document.getElementById('refresh-btn').style.display = 'none';
   setActiveNav('nav-kpis');
-  buildKPIs(); buildFinanceBar(); buildDonut(); buildHealth(); buildSector();
+  try{
+    await loadFinancialProjects_('proyectos_financieros');
+    document.getElementById('topbar-sub').textContent += financialMetaLabel_();
+    buildKPIs(); buildFinanceBar(); buildDonut(); buildHealth(); buildSector();
+  }catch(err){ alert('No se pudo cargar los indicadores: '+err.message); }
 }
 
-function goToResumen(){
+async function goToResumen(){
   if(moduloEnContencion_('Resumen Ejecutivo')) return;
   const s = getSession();
   if(!(s.rol === 'Director' || s.rol === 'Gerente' || s.rol === 'Admin')) return;
@@ -908,10 +973,14 @@ function goToResumen(){
   document.getElementById('topbar-sub').textContent = s.rol === 'Director' ? 'Tus proyectos asignados' : 'Portafolio completo';
   document.getElementById('refresh-btn').style.display = 'none';
   setActiveNav('nav-resumen');
-  buildRisks(); buildActions();
+  try{
+    await loadFinancialProjects_('resumen_ejecutivo');
+    document.getElementById('topbar-sub').textContent += financialMetaLabel_();
+    buildRisks(); buildActions();
+  }catch(err){ alert('No se pudo cargar el resumen ejecutivo: '+err.message); }
 }
 
-function goToAlertas(){
+async function goToAlertas(){
   if(moduloEnContencion_('Alertas')) return;
   currentView = 'alertas';
   hideAllViews();
@@ -921,10 +990,14 @@ function goToAlertas(){
   document.getElementById('topbar-sub').textContent = 'Observaciones y riesgos de tus proyectos asignados';
   document.getElementById('refresh-btn').style.display = 'none';
   setActiveNav('nav-alertas');
-  buildAlertas();
+  try{
+    await loadFinancialProjects_('resumen_ejecutivo');
+    document.getElementById('topbar-sub').textContent += financialMetaLabel_();
+    buildAlertas();
+  }catch(err){ alert('No se pudo cargar las alertas: '+err.message); }
 }
 
-function goToDirectores(){
+async function goToDirectores(){
   if(moduloEnContencion_('Directores')) return;
   const s = getSession();
   if(!(s.rol === 'Gerente' || s.rol === 'Admin')) return;
@@ -936,10 +1009,14 @@ function goToDirectores(){
   document.getElementById('topbar-sub').textContent = 'Desempeño por director';
   document.getElementById('refresh-btn').style.display = 'none';
   setActiveNav('nav-directores');
-  buildDirectores();
+  try{
+    await loadFinancialProjects_('directores');
+    document.getElementById('topbar-sub').textContent += financialMetaLabel_();
+    buildDirectores();
+  }catch(err){ alert('No se pudo cargar el panel de directores: '+err.message); }
 }
 
-function goToComparativo(){
+async function goToComparativo(){
   if(moduloEnContencion_('Comparativo Anual')) return;
   const s = getSession();
   if(!(s.rol === 'Gerente' || s.rol === 'Admin')) return;
@@ -951,7 +1028,11 @@ function goToComparativo(){
   document.getElementById('topbar-sub').textContent = '2025 vs 2026';
   document.getElementById('refresh-btn').style.display = 'none';
   setActiveNav('nav-comparativo');
-  buildComparativo();
+  try{
+    await loadFinancialProjects_('comparativo');
+    document.getElementById('topbar-sub').textContent += financialMetaLabel_();
+    buildComparativo();
+  }catch(err){ alert('No se pudo cargar el comparativo: '+err.message); }
 }
 
 function goToNewProject(){
@@ -1149,14 +1230,12 @@ function openProject(p){
   `;
   switchProjSubtab('documental');
   loadProjectChecklist(p.codigo);
-  renderResumenGeneral(p.codigo);
+  if(['Director','Gerente','Admin'].includes(getSession().rol)) renderResumenGeneral(p.codigo);
 }
 
 function switchProjSubtab(name){
-  if(name === 'resumen' && FASE_0_CONTENCION){
-    moduloEnContencion_('Resumen general de proyecto');
-    name = 'documental';
-  }
+  const s = getSession();
+  if(name === 'resumen' && !(s.rol === 'Director' || s.rol === 'Gerente' || s.rol === 'Admin')) name = 'documental';
   currentProjSubtab = name;
   ['documental','fases','resumen'].forEach(n => {
     document.getElementById('subview-' + n).style.display = (n === name) ? 'block' : 'none';
@@ -1381,13 +1460,25 @@ function renderCarpetaDetail(carpeta){
    Si el proyecto no existe ahí todavía (por ejemplo, se creó solo en el
    Portal y no en ese Sheet), se avisa en vez de inventar datos. ═══ */
 let curvaSChart;
-function renderResumenGeneral(codigo){
+async function renderResumenGeneral(codigo){
   const note = document.getElementById('resumen-proyecto-note');
   const headerEl = document.getElementById('ficha-header');
   const kpisEl = document.getElementById('ficha-kpis');
   const healthEl = document.getElementById('ficha-health');
   const curvaNota = document.getElementById('resumen-curva-nota');
-  const p = PROJECTS.find(x => x.codigo === codigo);
+  let p = financialProjects.find(x => x.codigo === codigo);
+  if(!p){
+    try{
+      await loadFinancialProjects_('resumen_ejecutivo');
+      p = financialProjects.find(x => x.codigo === codigo);
+    }catch(err){
+      note.style.display = 'block';
+      note.className = 'load-note error';
+      note.textContent = '⚠ No se pudo consultar el resumen financiero: ' + err.message;
+      headerEl.style.display = 'none';
+      return;
+    }
+  }
   if(!p){
     note.style.display = 'block';
     note.className = 'load-note error';
@@ -1406,14 +1497,14 @@ function renderResumenGeneral(codigo){
   const salud = Math.round(((p.avObra||0)*0.4) + ((p.avLiq||0)*0.3) + 60*0.3);
   headerEl.innerHTML = `
     <div>
-      <div class="ficha-codigo">${p.codigo}</div>
-      <div class="ficha-nombre">${p.proyecto}</div>
+      <div class="ficha-codigo">${escapeHtml_(p.codigo)}</div>
+      <div class="ficha-nombre">${escapeHtml_(p.proyecto)}</div>
       <div class="ficha-meta">
-        <div class="ficha-meta-item">Cliente: <span>${p.cliente||'—'}</span></div>
-        <div class="ficha-meta-item">Director: <span>${p.encargado||'—'}</span></div>
-        <div class="ficha-meta-item">Ciudad: <span>${p.ciudad||'—'}</span></div>
-        <div class="ficha-meta-item">Sector: <span>${p.sector||'—'}</span></div>
-        <div class="ficha-meta-item">Estado: <span><span class="estado-badge ${cls}" style="font-size:10px">${p.estado}</span></span></div>
+        <div class="ficha-meta-item">Cliente: <span>${escapeHtml_(p.cliente||'—')}</span></div>
+        <div class="ficha-meta-item">Director: <span>${escapeHtml_(p.encargado||'—')}</span></div>
+        <div class="ficha-meta-item">Ciudad: <span>${escapeHtml_(p.ciudad||'—')}</span></div>
+        <div class="ficha-meta-item">Sector: <span>${escapeHtml_(p.sector||'—')}</span></div>
+        <div class="ficha-meta-item">Estado: <span><span class="estado-badge ${cls}" style="font-size:10px">${escapeHtml_(p.estado)}</span></span></div>
       </div>
     </div>
     <div class="ficha-salud">
