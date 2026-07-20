@@ -1,142 +1,35 @@
-/* ═══ CONFIGURA ESTO: pega aquí la URL de tu Apps Script desplegado ═══ */
-const API_URL = 'https://script.google.com/macros/s/AKfycbyHzxwSt0hDeRtNb8wxC_Skp7S5SsPe8TDwt5UwqDkEN3k7vfzm502dEUy6e-tFxy3h1w/exec';
+﻿/* ═══ CONFIGURA ESTO: pega aquí la URL de tu Apps Script desplegado ═══ */
+const API_URL = 'https://script.google.com/macros/s/AKfycbwPs-MtZCQnXTNBmkDoC5schrbrVtnxktu_3FilhpiaBHaiTtGavvdzK8-TDLlYMHdqqQ/exec';
 
-
-/* ═══ FUSIÓN: datos y lógica de Flujo de Caja (del dashboard de Control de Proyectos) ═══
-   PROJECTS es un snapshot estático (igual que en el dashboard original) — todavía no
-   está conectado en vivo al Sheet de Proyectos. filteredProjects existe porque la
-   lógica original soportaba filtros de Año/Mes/Encargado/Sector; por ahora, sin esos
-   filtros en el portal, se usa el listado completo. ─── */
-const PROJECTS=[
-  {codigo:"C-25-001",cliente:"TERRANUM DESARROLLO S.A.S.",proyecto:"Terranum Connecta 80 Fase I",estado:"Finalizado",sector:"Corporativo",ciudad:"Bogotá",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2025,mes:3,valor:853302118,liqSN:704370171,difCNpct:13.9,difSN:148931947,difSNpct:17.45,vContable:853302118,vPagado:828829130,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:-6,obs:""},
-  {codigo:"C-25-002",cliente:"STF GROUP S.A.",proyecto:"ELA Mall Plaza NQS",estado:"Finalizado",sector:"Retail",ciudad:"Bogotá",encargado:"Camila Duran",cargo:"Directora de Proyectos",anio:2025,mes:3,valor:282086973,liqSN:214594440,difCNpct:23.78,difSN:67492532,difSNpct:23.93,vContable:284272231,vPagado:276153015,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:11,obs:""},
-  {codigo:"C-25-003",cliente:"MARROQUINERA S.A.S.",proyecto:"Mario Hernandez Outlet Americas",estado:"Finalizado",sector:"Retail",ciudad:"Bogotá",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2025,mes:7,valor:622685912,liqSN:539648050,difCNpct:8.46,difSN:83037862,difSNpct:13.34,vContable:654582318,vPagado:617750760,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:74,obs:""},
-  {codigo:"C-25-004",cliente:"PLENTIA CAPITAL S.A.S",proyecto:"Dollarcity y Kokoriko Melgar",estado:"Finalizado",sector:"Retail",ciudad:"Melgar",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2025,mes:11,valor:2885310099,liqSN:2354313273,difCNpct:16.1,difSN:530996826,difSNpct:18.4,vContable:2890298794,vPagado:2818159360,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:87,obs:""},
-  {codigo:"C-25-005",cliente:"MAPFRE SEGUROS GENERALES DE COLOMBIA S.A",proyecto:"MAPFRE Auditorio CISMAP",estado:"Finalizado",sector:"Corporativo",ciudad:"Bogotá",encargado:"Camila Duran",cargo:"Directora de Proyectos",anio:2025,mes:5,valor:413631659,liqSN:325699504,difCNpct:14.18,difSN:87932155,difSNpct:21.26,vContable:413631659,vPagado:399763958,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
-  {codigo:"C-25-006",cliente:"COLTABACO SAS",proyecto:"Oficinas Coltabaco Medellín",estado:"Finalizado",sector:"Corporativo",ciudad:"Medellín",encargado:"Pablo Alfonso",cargo:"Director de Proyectos",anio:2025,mes:6,valor:1158277148,liqSN:994113100,difCNpct:11.36,difSN:164164048,difSNpct:14.17,vContable:1126598761,vPagado:1073657509,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:16,obs:""},
-  {codigo:"C-25-008",cliente:"SURAMERICANA COMERCIAL SAS",proyecto:"Dollarcity CC Centro Chía",estado:"Finalizado",sector:"Retail",ciudad:"Chia",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2025,mes:6,valor:462456448,liqSN:328573576,difCNpct:24.09,difSN:133882872,difSNpct:28.95,vContable:462456448,vPagado:452735113,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:1,obs:""},
-  {codigo:"C-25-009",cliente:"MONTECITO SAS",proyecto:"Diseño Isla Morada",estado:"Finalizado",sector:"Diseño",ciudad:"Sopo Cundinamarca",encargado:"Sofia Granados",cargo:"Directora Creativa",anio:2025,mes:6,valor:49313600,liqSN:29588160,difCNpct:20,difSN:19725440,difSNpct:40,vContable:49313600,vPagado:35538944,pxCobrar:9862720,pxFacturar:0,avObra:100,avLiq:100,dias:12,obs:""},
-  {codigo:"C-25-010",cliente:"PAULA MORENO",proyecto:"Apto Paula Moreno",estado:"Finalizado",sector:"Vivienda",ciudad:"Bogotá",encargado:"Pablo Alfonso",cargo:"Director de Proyectos",anio:2025,mes:7,valor:285273513,liqSN:236375378,difCNpct:8.01,difSN:48898135,difSNpct:17.14,vContable:276494997,vPagado:276494997,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
-  {codigo:"C-25-011",cliente:"MAPFRE SEGUROS GENERALES DE COLOMBIA S.A",proyecto:"Diseño Fachada MAPFRE",estado:"Finalizado",sector:"Diseño",ciudad:"Bogotá",encargado:"Ricardo Ariza",cargo:"Director Ejecutivo Diseño",anio:2025,mes:7,valor:11755200,liqSN:7053120,difCNpct:20,difSN:4702080,difSNpct:40,vContable:13988688,vPagado:1331761,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
-  {codigo:"C-25-012",cliente:"CENTRO DE SISTEMAS DE ANTIOQUIA S.A.S.",proyecto:"HQ La Playa Medellín",estado:"Finalizado",sector:"Corporativo",ciudad:"Medellín",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2025,mes:7,valor:2688116673,liqSN:2077685962,difCNpct:21.65,difSN:610430711,difSNpct:22.71,vContable:2688116673,vPagado:2637496826,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
-  {codigo:"C-25-013",cliente:"C3 CONSTRUCCIONES Y CONTRATOS SAS",proyecto:"Rediseño Edificio Vatia",estado:"Finalizado",sector:"Diseño",ciudad:"Cali",encargado:"Ricardo Ariza",cargo:"Director Ejecutivo Diseño",anio:2025,mes:7,valor:20964230,liqSN:12578538,difCNpct:20,difSN:8385692,difSNpct:40,vContable:20964230,vPagado:7348686,pxCobrar:12578537,pxFacturar:12578538,avObra:100,avLiq:100,dias:0,obs:""},
-  {codigo:"C-25-014",cliente:"BANCOLOMBIA SA",proyecto:"Bancolombia Carrera 8",estado:"Finalizado",sector:"Bancario",ciudad:"Bogotá",encargado:"Gabriel Vinasco",cargo:"Director de Facilities",anio:2025,mes:7,valor:357552489,liqSN:284680858,difCNpct:16.18,difSN:72871631,difSNpct:20.38,vContable:357552489,vPagado:347380278,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
-  {codigo:"C-25-015",cliente:"INVERSIONES VALENCIA ASOCIADOS SAS",proyecto:"Café SOCA CC Multiplaza Bogotá",estado:"Finalizado",sector:"Retail",ciudad:"Bogotá",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2025,mes:7,valor:321055308,liqSN:272897012,difCNpct:15,difSN:48158296,difSNpct:15,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
-  {codigo:"C-25-016",cliente:"PRODUCTORA Y COMERCIALIZADORA DE ALIMENTOS S.A.S",proyecto:"MIMOS",estado:"Finalizado",sector:"Retail",ciudad:"Bucaramanga",encargado:"Otro",cargo:"Otro",anio:2025,mes:7,valor:50995138,liqSN:43345867,difCNpct:15,difSN:7649271,difSNpct:15,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
-  {codigo:"C-25-017",cliente:"AUTOFINANCIERA COLOMBIA S.A.",proyecto:"Diseño Arq. y Técnico Autofinanciera",estado:"Finalizado",sector:"Diseño",ciudad:"Bogotá",encargado:"Ricardo Ariza",cargo:"Director Ejecutivo Diseño",anio:2025,mes:7,valor:20518575,liqSN:17440789,difCNpct:15,difSN:3077786,difSNpct:15,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
-  {codigo:"C-25-018",cliente:"INVERSIONES JMH SAS",proyecto:"Regus Santafé Drywall y Pintura",estado:"Finalizado",sector:"Corporativo",ciudad:"Bogotá",encargado:"Harold Gonzales",cargo:"Director de Proyectos",anio:2025,mes:7,valor:611601984,liqSN:519861686,difCNpct:15,difSN:91740298,difSNpct:15,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
-  {codigo:"C-25-019",cliente:"CBRE COLOMBIA SAS",proyecto:"GSK Adecuaciones Internas Oficinas",estado:"Finalizado",sector:"Corporativo",ciudad:"Bogotá",encargado:"Pablo Alfonso",cargo:"Director de Proyectos",anio:2025,mes:7,valor:437875784,liqSN:372194416,difCNpct:15,difSN:65681368,difSNpct:15,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
-  {codigo:"C-25-023",cliente:"REGUS COLOMBIA LIMITADA",proyecto:"Regus Calle 90 Urban Plaza",estado:"Finalizado",sector:"Corporativo",ciudad:"Bogotá",encargado:"Gabriel Vinasco",cargo:"Director de Facilities",anio:2025,mes:8,valor:149059293,liqSN:126700399,difCNpct:15,difSN:22358894,difSNpct:15,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
-  {codigo:"C-25-024",cliente:"MAPFRE SEGUROS GENERALES DE COLOMBIA S.A",proyecto:"Adecuaciones Eléctricas Auditorio CISMAP",estado:"Finalizado",sector:"Corporativo",ciudad:"Bogotá",encargado:"Gabriel Vinasco",cargo:"Director de Facilities",anio:2025,mes:8,valor:10393063,liqSN:8834104,difCNpct:15,difSN:1558959,difSNpct:15,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
-  {codigo:"C-25-025",cliente:"TERRANUM DESARROLLO S.A.S.",proyecto:"Terranum Connecta 80 Fase III",estado:"Finalizado",sector:"Corporativo",ciudad:"Bogotá",encargado:"Giovanny Velasquez",cargo:"Coordinador de Proyectos",anio:2025,mes:8,valor:430312650,liqSN:365765752,difCNpct:15,difSN:64546898,difSNpct:15,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
-  {codigo:"C-25-026",cliente:"SURAMERICANA COMERCIAL SAS",proyecto:"Tienda Dollarcity Melgar",estado:"Finalizado",sector:"Retail",ciudad:"Melgar",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2025,mes:8,valor:510808056,liqSN:434186848,difCNpct:15,difSN:76621208,difSNpct:15,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
-  {codigo:"C-25-027",cliente:"COLEGIO MAYOR DE NUESTRA SEÑORA DEL ROSARIO",proyecto:"U. Rosario - Los Ángeles",estado:"En Liquidación",sector:"Obra Civil",ciudad:"Bogotá",encargado:"Harold Gonzales",cargo:"Director de Proyectos",anio:2026,mes:5,valor:1064013371,liqSN:737697500,difCNpct:20.69,difSN:326315871,difSNpct:30.67,vContable:1030897725,vPagado:879248508,pxCobrar:117981868,pxFacturar:0,avObra:100,avLiq:100,dias:95,obs:""},
-  {codigo:"C-25-028",cliente:"REGUS COLOMBIA LIMITADA",proyecto:"Adecuaciones Edificio QBO",estado:"Finalizado",sector:"Facilities",ciudad:"Bogotá",encargado:"Gabriel Vinasco",cargo:"Director de Facilities",anio:2026,mes:5,valor:8889300,liqSN:7555905,difCNpct:15,difSN:1333395,difSNpct:15,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
-  {codigo:"C-25-029",cliente:"REGUS COLOMBIA LIMITADA",proyecto:"Adecuaciones Oficinas Conecta 80",estado:"Finalizado",sector:"Facilities",ciudad:"Bogotá",encargado:"Gabriel Vinasco",cargo:"Director de Facilities",anio:2026,mes:5,valor:26230080,liqSN:22295568,difCNpct:15,difSN:3934512,difSNpct:15,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
-  {codigo:"C-25-030",cliente:"SURAMERICANA COMERCIAL S.A.S.",proyecto:"Tienda Dollarcity Nomad Salitre",estado:"Finalizado",sector:"Retail",ciudad:"Bogotá",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2026,mes:5,valor:652610311,liqSN:554718764,difCNpct:15,difSN:97891547,difSNpct:15,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
-  {codigo:"C-25-031",cliente:"INVERSIONES VALENCIA ASOCIADOS S.A.S.",proyecto:"Café SOCA Héroes",estado:"Finalizado",sector:"Retail",ciudad:"Bogotá",encargado:"Harold Gonzales",cargo:"Director de Proyectos",anio:2026,mes:5,valor:358227930,liqSN:304493740,difCNpct:15,difSN:53734190,difSNpct:15,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
-  {codigo:"C-25-032",cliente:"OFICINAS MULTIPLIKA - FACILITIES",proyecto:"PEI",estado:"En Ejecución",sector:"Facilities",ciudad:"Bogotá",encargado:"Juan Gabriel Pachon",cargo:"Coordinador de Facilities",anio:2026,mes:5,valor:41412000,liqSN:35200200,difCNpct:15,difSN:6211800,difSNpct:15,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
-  {codigo:"C-25-033",cliente:"MAPFRE SEGUROS GENERALES DE COLOMBIA S.A",proyecto:"MAPFRE Fachada Morato",estado:"En Liquidación",sector:"Otros",ciudad:"Bogotá",encargado:"Giovanny Velasquez",cargo:"Coordinador de Proyectos",anio:2026,mes:3,valor:1648760133,liqSN:1188732751,difCNpct:25.42,difSN:460027382,difSNpct:27.9,vContable:1752846977,vPagado:1182204605,pxCobrar:513687298,pxFacturar:245263186,avObra:0,avLiq:0,dias:88,obs:""},
-  {codigo:"C-25-035",cliente:"CARLOS NIETO",proyecto:"Carlos Nieto - Cr 19",estado:"En Liquidación",sector:"Retail",ciudad:"Bogotá",encargado:"Alejandro Pacheco",cargo:"Director de Proyectos",anio:2026,mes:4,valor:822522648,liqSN:698914882,difCNpct:10.68,difSN:123607766,difSNpct:15.03,vContable:980580718,vPagado:774758368,pxCobrar:177253184,pxFacturar:98058070,avObra:0,avLiq:0,dias:54,obs:""},
-  {codigo:"C-25-036",cliente:"REGUS COLOMBIA LIMITADA",proyecto:"Regus Urban Plaza Fase 3 Calle 90",estado:"Finalizado",sector:"Corporativo",ciudad:"Bogotá",encargado:"Gabriel Vinasco",cargo:"Director de Facilities",anio:2026,mes:4,valor:0,liqSN:0,difCNpct:0,difSN:0,difSNpct:0,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
-  {codigo:"C-25-037",cliente:"TERRANUM DESARROLLO S.A.S.",proyecto:"Acabados BTS 3 Piso 3 Connecta Calle 26",estado:"Finalizado",sector:"Corporativo",ciudad:"Bogotá",encargado:"Giovanny Velasquez",cargo:"Coordinador de Proyectos",anio:2026,mes:4,valor:0,liqSN:0,difCNpct:0,difSN:0,difSNpct:0,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
-  {codigo:"C-26-004",cliente:"Marroquineria SAS",proyecto:"Mario Hernandez - Bulevar Niza",estado:"En Liquidación",sector:"Retail",ciudad:"Bogotá",encargado:"Giovanny Velasquez",cargo:"Coordinador de Proyectos",anio:2026,mes:4,valor:666961943,liqSN:452106993,difCNpct:47.52,difSN:214854950,difSNpct:32.21,vContable:662305497,vPagado:450000000,pxCobrar:193331329,pxFacturar:61020944,avObra:100,avLiq:100,dias:2,obs:""},
-  {codigo:"C-26-005",cliente:"Frisby S.A BIC",proyecto:"Frisby Terminal de Carga",estado:"En Liquidación",sector:"Hospitality",ciudad:"Bogotá",encargado:"Andres Rodriguez",cargo:"Director de Obras",anio:2026,mes:3,valor:59380860,liqSN:41739581,difCNpct:42.27,difSN:17641279,difSNpct:29.71,vContable:59380860,vPagado:28833353,pxCobrar:29690430,pxFacturar:29690430,avObra:100,avLiq:95,dias:-2,obs:""},
-  {codigo:"C-26-006",cliente:"Hoteles Estelar S.A",proyecto:"Intercontinental - Fase 1",estado:"En Ejecución",sector:"Hospitality",ciudad:"Cali",encargado:"Luis Mantilla",cargo:"Director Senior Proyectos",anio:2026,mes:7,valor:1776819100,liqSN:1439223471,difCNpct:23.46,difSN:337595629,difSNpct:19,vContable:10920592080,vPagado:953911380,pxCobrar:9962633377,pxFacturar:10729370729,avObra:40,avLiq:20,dias:29,obs:""},
-  {codigo:"C-26-007",cliente:"Marroquineria SAS",proyecto:"Mario Hernandez - Av Chile",estado:"Garantias",sector:"Retail",ciudad:"Bogotá",encargado:"Alejandro Pacheco",cargo:"Director de Proyectos",anio:2026,mes:5,valor:813215525,liqSN:469430759,difCNpct:73.23,difSN:313880136,difSNpct:38.6,vContable:838955150,vPagado:457000000,pxCobrar:361527768,pxFacturar:196184897,avObra:95,avLiq:70,dias:-7,obs:""},
-  {codigo:"C-26-008",cliente:"Frisby S.A BIC",proyecto:"Frisby Pitalito",estado:"En Liquidación",sector:"Retail",ciudad:"Huila",encargado:"Andres Rodriguez",cargo:"Director de Obras",anio:2026,mes:4,valor:48726725,liqSN:39608896,difCNpct:23.02,difSN:9117829,difSNpct:18.71,vContable:48726725,vPagado:23682826,pxCobrar:24363364,pxFacturar:24363362,avObra:100,avLiq:95,dias:1,obs:""},
-  {codigo:"C-26-009",cliente:"Grupo Ethus",proyecto:"IAE",estado:"En Ejecución",sector:"Corporativo",ciudad:"Bogotá",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2026,mes:8,valor:4804104491,liqSN:3113878985,difCNpct:54.28,difSN:1638612173,difSNpct:34.11,vContable:4675657089,vPagado:1976330468,pxCobrar:2617580959,pxFacturar:1807922292,avObra:50,avLiq:50,dias:48,obs:""},
-  {codigo:"C-26-011",cliente:"Grupo Ethus",proyecto:"Terraza Piso 17",estado:"Cerrado",sector:"Corporativo",ciudad:"Medellin",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2026,mes:8,valor:270088406,liqSN:218771609,difCNpct:23.46,difSN:51316797,difSNpct:19,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
-  {codigo:"C-26-013",cliente:"Grupo Ethus",proyecto:"Apartamento Bosheto",estado:"En Liquidación",sector:"Vivienda",ciudad:"Medellin",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2026,mes:5,valor:90670281,liqSN:67113619,difCNpct:35.1,difSN:18089404,difSNpct:19.95,vContable:90670281,vPagado:24427817,pxCobrar:64443789,pxFacturar:0,avObra:91,avLiq:70,dias:17,obs:""},
-  {codigo:"C-26-012",cliente:"",proyecto:"Diseño Miniso Zona T",estado:"En Ejecución",sector:"Diseño",ciudad:"Bogota",encargado:"Ricardo Ariza",cargo:"Director Ejecutivo Diseño",anio:null,mes:null,valor:72279648,liqSN:0,difCNpct:0,difSN:0,difSNpct:0,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
-  {codigo:"C-26-014",cliente:"Conconcreto",proyecto:"Sala de Ventas Moderno",estado:"En Liquidación",sector:"Vivienda",ciudad:"Bogotá",encargado:"Alejandro Pacheco",cargo:"Director de Proyectos",anio:2026,mes:4,valor:107887129,liqSN:66439073,difCNpct:62.39,difSN:38590642,difSNpct:35.77,vContable:107887129,vPagado:28655986,pxCobrar:74374237,pxFacturar:0,avObra:100,avLiq:100,dias:-6,obs:""},
-  {codigo:"C-26-016",cliente:"Hoteles Estelar S.A",proyecto:"Salones Hotel Inter",estado:"En Ejecución",sector:"Hospitality",ciudad:"Cali",encargado:"Luis Mantilla",cargo:"Director Senior Proyectos",anio:2026,mes:4,valor:383554989,liqSN:249310743,difCNpct:53.85,difSN:72875448,difSNpct:19,vContable:383554989,vPagado:190057923,pxCobrar:193497066,pxFacturar:383554989,avObra:30,avLiq:20,dias:-66,obs:""},
-  {codigo:"C-26-017",cliente:"Inversiones Valencia Asociados S.A.S.",proyecto:"Centro de experiencia SOCA",estado:"En Liquidación",sector:"Retail",ciudad:"Bogotá",encargado:"Andres Rodriguez",cargo:"Director de Obras",anio:2026,mes:4,valor:30531551,liqSN:24730556,difCNpct:23.46,difSN:5800995,difSNpct:19,vContable:30531551,vPagado:10000000,pxCobrar:19923799,pxFacturar:6106310,avObra:90,avLiq:0,dias:-44,obs:""},
-  {codigo:"C-26-019",cliente:"Grupo Ethus",proyecto:"Reparaciones locativas - Interaseo piso 11",estado:"En Liquidación",sector:"Corporativo",ciudad:"Bogotá",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2026,mes:4,valor:71281334,liqSN:57737881,difCNpct:23.46,difSN:13543453,difSNpct:19,vContable:71281334,vPagado:0,pxCobrar:69168152,pxFacturar:0,avObra:85,avLiq:0,dias:0,obs:""},
-  {codigo:"C-26-020",cliente:"Aruma",proyecto:"Tienda Aruma Salitre",estado:"En Liquidación",sector:"Retail",ciudad:"Bogotá",encargado:"Andres Rodriguez",cargo:"Director de Obras",anio:2026,mes:6,valor:291201376,liqSN:235873115,difCNpct:23.46,difSN:55328261,difSNpct:19,vContable:291201381,vPagado:145600690,pxCobrar:145600691,pxFacturar:0,avObra:100,avLiq:90,dias:0,obs:""},
-  {codigo:"C-26-021",cliente:"Mall Plaza",proyecto:"Paisajismo Mall plaza",estado:"En Ejecución",sector:"Hospitality",ciudad:"Cali",encargado:"Andres Rodriguez",cargo:"Director de Obras",anio:2026,mes:6,valor:218786945,liqSN:177217425,difCNpct:23.46,difSN:41569520,difSNpct:19,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
-  {codigo:"C-26-022",cliente:"Aruma",proyecto:"Acometida - Aruma Salitre",estado:"En Liquidación",sector:"Retail",ciudad:"Bogotá",encargado:"Andres Rodriguez",cargo:"Director de Obras",anio:2026,mes:6,valor:16357836,liqSN:13249847,difCNpct:23.46,difSN:3107989,difSNpct:19,vContable:16357836,vPagado:8178918,pxCobrar:8178918,pxFacturar:16357836,avObra:0,avLiq:5,dias:0,obs:""},
-  {codigo:"C-26-023",cliente:"Andrea Cuervo",proyecto:"Apartamento 302",estado:"En Ejecución",sector:"Vivienda",ciudad:"Bogotá",encargado:"Giovanny Velasquez",cargo:"Coordinador de Proyectos",anio:2026,mes:6,valor:160120045,liqSN:0,difCNpct:0,difSN:160120045,difSNpct:100,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:20,avLiq:0,dias:0,obs:""},
-  {codigo:"C-26-024",cliente:"Terranum",proyecto:"Terranum Cortezza",estado:"En Ejecución",sector:"Corporativo",ciudad:"Medellin",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2026,mes:6,valor:729945412,liqSN:474464518,difCNpct:53.85,difSN:138689628,difSNpct:19,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
-  {codigo:"C-26-025",cliente:"Zephire",proyecto:"Zephire",estado:"En Ejecución",sector:"Retail",ciudad:"Medellin",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2026,mes:6,valor:195751173,liqSN:127238262,difCNpct:53.85,difSN:39150235,difSNpct:20,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:-19,obs:""},
-  {codigo:"C-26-026",cliente:"Sodimac",proyecto:"Pet Center",estado:"En Ejecución",sector:"Retail",ciudad:"Pereira",encargado:"Andres Rodriguez",cargo:"Director de Obras",anio:2026,mes:6,valor:1148231739,liqSN:803762217,difCNpct:42.86,difSN:183717078,difSNpct:16,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
-  {codigo:"C-26-027",cliente:"Cinepolis",proyecto:"Adecuaciones Baños Cinepolis Plaza Claro",estado:"Por Iniciar",sector:"Otros",ciudad:"Bogotá",encargado:"Andres Rodriguez",cargo:"Director de Obras",anio:2026,mes:6,valor:0,liqSN:0,difCNpct:0,difSN:0,difSNpct:0,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
-  {codigo:"C-25-038",cliente:"Colegio Mayor de Nuestra Señora del Rosario",proyecto:"Laboratorios Quinta Mutis",estado:"En Ejecución",sector:"Obra Civil",ciudad:"Bogotá",encargado:"Giovanny Velasquez",cargo:"Coordinador de Proyectos",anio:2026,mes:7,valor:5252844579,liqSN:4088317501,difCNpct:28.48,difSN:480560804,difSNpct:9.15,vContable:4088317501,vPagado:0,pxCobrar:4088317501,pxFacturar:4088317501,avObra:55,avLiq:50,dias:0,obs:""},
-  {codigo:"C-25-039",cliente:"COLTABACO SAS",proyecto:"Oficinas Coltabaco Bogota Edificio Naos",estado:"Finalizado",sector:"Corporativo",ciudad:"Bogotá",encargado:"Jeison Cera",cargo:"Director de Obras",anio:null,mes:null,valor:0,liqSN:0,difCNpct:0,difSN:0,difSNpct:0,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
-  {codigo:"C-25-040",cliente:"GRUPO ETHUS",proyecto:"Edemsa Piso 16",estado:"Garantias",sector:"Corporativo",ciudad:"Medellin",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2026,mes:2,valor:2407596525,liqSN:1734299760,difCNpct:38.82,difSN:637579294,difSNpct:26.48,vContable:2139571912,vPagado:1402406701,pxCobrar:939710386,pxFacturar:271293330,avObra:0,avLiq:0,dias:-3,obs:""},
-  {codigo:"C-25-041",cliente:"ELÉCTRICAS DE MEDELLÍN - INGENIERÍA Y SERVICIOS S.A.S. - EDEMSA",proyecto:"Diseño Oficinas Edemsa Medellin (grupo Ethuss)",estado:"En Liquidación",sector:"Diseño",ciudad:"Medellin",encargado:"Ricardo Ariza",cargo:"Director Ejecutivo Diseño",anio:2025,mes:11,valor:0,liqSN:0,difCNpct:0,difSN:0,difSNpct:0,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:29,obs:""},
-  {codigo:"C-25-042",cliente:"BRICKS S.A.S.",proyecto:"Diseño Oficina 812 Edifico Citibank (grupo Ethuss)",estado:"En Liquidación",sector:"Diseño",ciudad:"Bogotá",encargado:"Ricardo Ariza",cargo:"Director Ejecutivo Diseño",anio:null,mes:null,valor:0,liqSN:0,difCNpct:0,difSN:0,difSNpct:0,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
-  {codigo:"C-25-043",cliente:"MARROQUINERA S.A.S.",proyecto:"Carros de Personalizacion Mario Hernandez",estado:"En Liquidación",sector:"Otros",ciudad:"Bogotá",encargado:"Jeison Cera",cargo:"Director de Obras",anio:null,mes:null,valor:0,liqSN:0,difCNpct:0,difSN:0,difSNpct:0,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
-  {codigo:"C-25-044",cliente:"MAPFRE SEGUROS GENERALES DE COLOMBIA S.A",proyecto:"Construccion Fachada Edificio 93",estado:"Finalizado",sector:"Otros",ciudad:"Bogotá",encargado:"Giovanny Velasquez",cargo:"Coordinador de Proyectos",anio:null,mes:null,valor:0,liqSN:0,difCNpct:0,difSN:0,difSNpct:0,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:100,avLiq:100,dias:0,obs:""},
-  {codigo:"C-25-045",cliente:"REGUS COLOMBIA LIMITADA",proyecto:"Diseños Tecnicos Oficinas Nubank Piso 4 - Spaces 80/10",estado:"En Liquidación",sector:"Diseño",ciudad:"Bogotá",encargado:"Ricardo Ariza",cargo:"Director Ejecutivo Diseño",anio:null,mes:null,valor:0,liqSN:0,difCNpct:0,difSN:0,difSNpct:0,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
-  {codigo:"C-25-046",cliente:"REGUS COLOMBIA LTDA",proyecto:"Nubank Space 8011",estado:"En Liquidación",sector:"Corporativo",ciudad:"Bogotá",encargado:"Andres Rodriguez",cargo:"Director de Obras",anio:2026,mes:4,valor:2117089121,liqSN:1672500406,difCNpct:26.58,difSN:444588715,difSNpct:21,vContable:2117089031,vPagado:2114495031,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:54,obs:""},
-  {codigo:"C-25-048",cliente:"GRUPO ETHUS",proyecto:"We Group",estado:"Garantias",sector:"Corporativo",ciudad:"Bogotá",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2026,mes:3,valor:703499282,liqSN:622693841,difCNpct:12.98,difSN:80805441,difSNpct:11.49,vContable:688182995,vPagado:536704250,pxCobrar:131947632,pxFacturar:0,avObra:0,avLiq:0,dias:8,obs:""},
-  {codigo:"C-26-010",cliente:"GRUPO ETHUS",proyecto:"Interaseo Piso 15",estado:"Cerrado",sector:"Corporativo",ciudad:"Medellin",encargado:"Jeison Cera",cargo:"Director de Obras",anio:2026,mes:8,valor:22772316,liqSN:9498095,difCNpct:139.76,difSN:6651679,difSNpct:29.21,vContable:13949867,vPagado:0,pxCobrar:13949867,pxFacturar:13949867,avObra:0,avLiq:0,dias:0,obs:""},
-  {codigo:"C-26-028",cliente:"GRUPO ETHUS",proyecto:"Diseño Terraza Piso 17",estado:"En Ejecución",sector:"Corporativo",ciudad:"",encargado:"Sin asignar",cargo:"",anio:null,mes:null,valor:0,liqSN:0,difCNpct:0,difSN:0,difSNpct:0,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
-  {codigo:"C-26-029",cliente:"GRUPO ETHUS",proyecto:"Diseño Piso 2",estado:"En Ejecución",sector:"Corporativo",ciudad:"",encargado:"Sin asignar",cargo:"",anio:null,mes:null,valor:0,liqSN:0,difCNpct:0,difSN:0,difSNpct:0,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
-  {codigo:"C-26-030",cliente:"GRUPO ETHUS",proyecto:"Diseños Arquitectonicos y Tecnicos Piso 15 - Interaseo",estado:"En Ejecución",sector:"Corporativo",ciudad:"",encargado:"Sin asignar",cargo:"",anio:null,mes:null,valor:0,liqSN:0,difCNpct:0,difSN:0,difSNpct:0,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""},
-  {codigo:"C-26-031",cliente:"ANDREA CUERVO",proyecto:"Apto 302 - Calle 85 (mobiliario)",estado:"En Ejecución",sector:"Vivienda",ciudad:"",encargado:"Sin asignar",cargo:"",anio:null,mes:null,valor:0,liqSN:0,difCNpct:0,difSN:0,difSNpct:0,vContable:0,vPagado:0,pxCobrar:0,pxFacturar:0,avObra:0,avLiq:0,dias:0,obs:""}
+/* FASE 0 — CONTENCIÓN
+   Los módulos que dependían de información financiera pública permanecen
+   deshabilitados hasta que esos datos se sirvan desde un endpoint autenticado. */
+const FASE_0_CONTENCION = true;
+const MODULOS_CONTENIDOS = [
+  'nav-todos-proyectos',
+  'nav-kpis',
+  'nav-resumen',
+  'nav-directores',
+  'nav-alertas',
+  'nav-flujo-caja',
+  'nav-comparativo'
 ];
+
+
+/* FASE 0: los datos financieros y del portafolio fueron retirados del frontend público. */
+const PROJECTS = [];
 
 const fmtMM=v=>{if(v===null||v===undefined||isNaN(v)||v===0)return"—";return"$"+Math.round(v).toLocaleString('es-CO');};
 
 let filteredProjects = PROJECTS;
 
-const PROJ_DETAIL={
-  /* ── C-25-001: Terranum Connecta 80 Fase I ── datos reales Google Sheets */
-  "C-25-001":{
-    curvaS:[
-      {s:"Sem 1",prog:5,real:1},{s:"Sem 2",prog:21,real:16},
-      {s:"Sem 3",prog:46,real:42},{s:"Sem 4",prog:67,real:65},
-      {s:"Sem 5",prog:83,real:80},{s:"Sem 6",prog:100,real:98},
-      {s:"Sem 7",prog:100,real:100}
-    ],
-    capitulos:null
-  },
-  /* ── C-26-009: Oficinas IAE ── datos extraídos del informe PDF */
-  "C-26-009":{
-    curvaS:[
-      {s:"Mar W1",prog:2,real:2},{s:"Mar W2",prog:5,real:4},{s:"Mar W3",prog:9,real:8},
-      {s:"Abr W1",prog:14,real:13},{s:"Abr W2",prog:20,real:18},{s:"Abr W3",prog:27,real:25},
-      {s:"Abr W4",prog:33,real:31},{s:"May W1",prog:39,real:37},{s:"May W2",prog:44,real:42},
-      {s:"May W3",prog:50,real:48},{s:"May W4",prog:55,real:53},{s:"Jun W1",prog:60,real:57},
-      {s:"Jun W2",prog:64,real:61},{s:"Jun W3",prog:67,real:63},{s:"Jun W4",prog:70,real:66}
-    ],
-    capitulos:[
-      {cap:"Preliminares",prog:100,real:100},{cap:"Muros y Cielorasos",prog:100,real:95},
-      {cap:"Voz y Datos",prog:68,real:61},{cap:"Audio y Video",prog:88,real:100},
-      {cap:"Seguridad y Control",prog:68,real:50},{cap:"Mecánicas",prog:63,real:65},
-      {cap:"Pisos y Enchapes",prog:100,real:93},{cap:"Pintura",prog:46,real:21},
-      {cap:"Cielorasos Especiales",prog:78,real:58},{cap:"Sistemas Acústicos",prog:62,real:55},
-      {cap:"Iluminación",prog:74,real:59},{cap:"Carpintería Alum.",prog:94,real:78}
-    ]
-  }
-};
+const PROJ_DETAIL = {};
 
-const CAPS = [
-  {n:"CAP 01",nom:"Preliminares",ico:"🏗️",color:"#6b6b66",pct:0,monto:20000},
-  {n:"CAP 02",nom:"Demoliciones",ico:"⚠️",color:"#c0392b",pct:0,monto:56000},
-  {n:"CAP 03",nom:"Obra Civil",ico:"⭕",color:"#4a8fc0",pct:0,monto:131000},
-  {n:"CAP 04",nom:"Muros",ico:"🧱",color:"#c08a00",pct:0,monto:131000},
-  {n:"CAP 05",nom:"Cielos Rasos",ico:"📐",color:"#4a3aa7",pct:0,monto:162000},
-  {n:"CAP 06",nom:"Pisos/Enchapes",ico:"▦",color:"#1a8a52",pct:0,monto:283000},
-  {n:"CAP 07",nom:"Pintura",ico:"🎨",color:"#4a8fc0",pct:0,monto:81000},
-  {n:"CAP 08",nom:"Carpintería",ico:"🪵",color:"#6b6b66",pct:0,monto:283000},
-  {n:"CAP 09",nom:"Eléctrica",ico:"⚡",color:"#c08a00",pct:0,monto:131000},
-  {n:"CAP 10",nom:"Iluminación",ico:"💡",color:"#c0392b",pct:0,monto:91000},
-  {n:"CAP 11",nom:"HVAC",ico:"🌡️",color:"#1a8a52",pct:0,monto:81000},
-  {n:"CAP 12",nom:"Hidro",ico:"💧",color:"#4a8fc0",pct:0,monto:35000},
-  {n:"CAP 13",nom:"RCI",ico:"🚨",color:"#c0392b",pct:0,monto:56000},
-  {n:"CAP 14",nom:"Diseño",ico:"✦",color:"#4a3aa7",pct:0,monto:111000},
-  {n:"CAP 15",nom:"Varios",ico:"◆",color:"#e8622a",pct:0,monto:28000},
-];
+const CAPS = [];
 
 
 
 let FLUJO_CAJA=[];
-const FLUJO_SHEET_ID='1CbTHrQqdji7HayP2XuVz_x-aJE4o4CGKq0zI1immtfM';
-const FLUJO_SHEET_GID='327388996';
-const FLUJO_CSV_URL=`https://docs.google.com/spreadsheets/d/${FLUJO_SHEET_ID}/gviz/tq?tqx=out:csv&gid=${FLUJO_SHEET_GID}`;
 
 function parseSheetCSV(text){
   const rows=[];let row=[];let field='';let inQ=false;
@@ -201,23 +94,10 @@ function extractHito(row,spec){
 }
 async function loadFlujoCajaLive(){
   const note=document.getElementById('fc-note');
-  try{
-    const res=await fetch(FLUJO_CSV_URL,{credentials:'omit'});
-    if(!res.ok)throw new Error('HTTP '+res.status);
-    const text=await res.text();
-    const rows=parseSheetCSV(text);
-    const dataRows=rows.slice(1).filter(r=>r[1]&&r[1].trim());
-    const result=dataRows.map(row=>{
-      const codigo=row[1].trim();
-      const hitos=FC_MILESTONE_SPECS.map(spec=>extractHito(row,spec)).filter(Boolean);
-      return{codigo,hitos};
-    });
-    FLUJO_CAJA.length=0;
-    FLUJO_CAJA.push(...result);
-    if(note)note.style.display='none';
-  }catch(err){
-    console.error('No se pudo cargar el Flujo de Caja en vivo desde el Google Sheet:',err);
-    if(note){note.style.display='block';note.textContent='⚠ No se pudo conectar con el Google Sheet en vivo (revisa tu conexión o que el archivo siga compartido como "Cualquiera con el enlace"). El cuadro de flujo de caja puede estar incompleto.';}
+  FLUJO_CAJA.length=0;
+  if(note){
+    note.style.display='block';
+    note.textContent='Módulo temporalmente deshabilitado durante el fortalecimiento de seguridad.';
   }
 }
 const TIPO_COLOR_FC={Anticipo:'#2e7dd1',Corte:'#1a8a52','Liquidación':'#e8622a','Retegarantía':'#a82c00',Vencido:'#c0392b'};
@@ -840,17 +720,25 @@ function enterApp(){
   document.getElementById('user-info').innerHTML = '<strong>' + s.nombre + '</strong><br>' + (s.rol || '');
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
-  populateFilters();
-  computeFilteredProjects();
+  if(!FASE_0_CONTENCION){
+    populateFilters();
+    computeFilteredProjects();
+  }
   const esGerencia = s.rol === 'Gerente' || s.rol === 'Admin';
-  const puedeVerFinanciero = s.rol === 'Director' || esGerencia;
-  document.getElementById('nav-flujo-caja').style.display = puedeVerFinanciero ? 'flex' : 'none';
-  document.getElementById('nav-resumen').style.display = puedeVerFinanciero ? 'flex' : 'none';
-  document.getElementById('nav-todos-proyectos').style.display = puedeVerFinanciero ? 'flex' : 'none';
-  document.getElementById('nav-directores').style.display = esGerencia ? 'flex' : 'none';
-  document.getElementById('nav-comparativo').style.display = esGerencia ? 'flex' : 'none';
+  if(FASE_0_CONTENCION){
+    MODULOS_CONTENIDOS.forEach(id => {
+      const modulo = document.getElementById(id);
+      if(modulo) modulo.style.display = 'none';
+    });
+  }
   document.getElementById('nav-nuevo-proyecto').style.display = esGerencia ? 'flex' : 'none';
   goToProjectList();
+}
+
+function moduloEnContencion_(nombre){
+  if(!FASE_0_CONTENCION) return false;
+  alert(nombre + ' está temporalmente deshabilitado mientras se implementa el acceso seguro a los datos.');
+  return true;
 }
 
 function refreshCurrentView(){
@@ -881,6 +769,7 @@ function goToProjectList(){
 }
 
 function goToFlujoCaja(){
+  if(moduloEnContencion_('Flujo de Caja')) return;
   const s = getSession();
   if(!(s.rol === 'Director' || s.rol === 'Gerente' || s.rol === 'Admin')) return; // respaldo; el nav ya está oculto
   currentView = 'flujocaja';
@@ -895,6 +784,7 @@ function goToFlujoCaja(){
 }
 
 function goToTodosProyectos(){
+  if(moduloEnContencion_('Todos los Proyectos')) return;
   const s = getSession();
   if(!(s.rol === 'Director' || s.rol === 'Gerente' || s.rol === 'Admin')) return;
   currentView = 'todos-proyectos';
@@ -946,6 +836,7 @@ function buildTodosProyectosTabla(estadoFiltro){
 }
 
 function goToKPIs(){
+  if(moduloEnContencion_("KPI's")) return;
   currentView = 'kpis';
   hideAllViews();
   showFilters(true);
@@ -958,6 +849,7 @@ function goToKPIs(){
 }
 
 function goToResumen(){
+  if(moduloEnContencion_('Resumen Ejecutivo')) return;
   const s = getSession();
   if(!(s.rol === 'Director' || s.rol === 'Gerente' || s.rol === 'Admin')) return;
   currentView = 'resumen';
@@ -972,6 +864,7 @@ function goToResumen(){
 }
 
 function goToAlertas(){
+  if(moduloEnContencion_('Alertas')) return;
   currentView = 'alertas';
   hideAllViews();
   showFilters(true);
@@ -984,6 +877,7 @@ function goToAlertas(){
 }
 
 function goToDirectores(){
+  if(moduloEnContencion_('Directores')) return;
   const s = getSession();
   if(!(s.rol === 'Gerente' || s.rol === 'Admin')) return;
   currentView = 'directores';
@@ -998,6 +892,7 @@ function goToDirectores(){
 }
 
 function goToComparativo(){
+  if(moduloEnContencion_('Comparativo Anual')) return;
   const s = getSession();
   if(!(s.rol === 'Gerente' || s.rol === 'Admin')) return;
   currentView = 'comparativo';
@@ -1197,6 +1092,10 @@ function openProject(p){
 }
 
 function switchProjSubtab(name){
+  if(name === 'resumen' && FASE_0_CONTENCION){
+    moduloEnContencion_('Resumen general de proyecto');
+    name = 'documental';
+  }
   currentProjSubtab = name;
   ['documental','fases','resumen'].forEach(n => {
     document.getElementById('subview-' + n).style.display = (n === name) ? 'block' : 'none';

@@ -34,13 +34,14 @@
       <div class="nav-section">Portafolio</div>
       <div class="nav-item active" id="nav-mis-proyectos" onclick="goToProjectList()">📁 Mis proyectos</div>
       <div class="nav-item" id="nav-todos-proyectos" style="display:none" onclick="goToTodosProyectos()">📋 Todos los Proyectos</div>
-      <div class="nav-item" id="nav-kpis" onclick="goToKPIs()">📊 KPI's</div>
+      <div class="nav-item" id="nav-kpis" style="display:none" onclick="goToKPIs()">📊 KPI's</div>
       <div class="nav-item" id="nav-resumen" style="display:none" onclick="goToResumen()">📈 Resumen Ejecutivo</div>
       <div class="nav-item" id="nav-directores" style="display:none" onclick="goToDirectores()">👥 Directores</div>
       <div class="nav-item" id="nav-nuevo-proyecto" style="display:none" onclick="goToNewProject()">➕ Nuevo proyecto</div>
 
       <div class="nav-section">Análisis</div>
-      <div class="nav-item" id="nav-alertas" onclick="goToAlertas()">⚠️ Alertas</div>
+      <div class="nav-item" id="nav-alertas" style="display:none" onclick="goToAlertas()">⚠️ Alertas</div>
+      <div class="nav-containment-note">Módulos de análisis temporalmente deshabilitados por fortalecimiento de seguridad.</div>
       <div class="nav-item" id="nav-flujo-caja" style="display:none" onclick="goToFlujoCaja()">💰 Flujo de Caja</div>
       <div class="nav-item" id="nav-comparativo" style="display:none" onclick="goToComparativo()">📆 Comparativo Anual</div>
     </div>
@@ -94,7 +95,7 @@
         <div class="proj-subtabs">
           <button class="proj-subtab active" id="subtab-documental" onclick="switchProjSubtab('documental')">📁 Control documental</button>
           <button class="proj-subtab" id="subtab-fases" onclick="switchProjSubtab('fases')">🧭 Seguimiento a Fases del Proyecto</button>
-          <button class="proj-subtab" id="subtab-resumen" onclick="switchProjSubtab('resumen')">📊 Resumen general de proyecto</button>
+          <button class="proj-subtab" id="subtab-resumen" style="display:none" onclick="switchProjSubtab('resumen')">📊 Resumen general de proyecto</button>
         </div>
 
         <!-- Sub-vista: Control documental (agrupado por carpeta base) -->
