@@ -359,14 +359,20 @@
       <div id="view-alertas" class="view" style="display:none">
         <button class="back-btn" onclick="goToProjectList()">← Volver a mis proyectos</button>
         <div id="alertas-scope-note" class="load-note" style="display:none"></div>
-        <div class="obs-panel">
+        <div class="obs-panel checklist-comments-panel">
+          <div class="obs-header">
+            <span class="obs-header-txt">💬 Comentarios de Calidad y Gerencia</span>
+          </div>
+          <div id="checklist-comments-list"></div>
+        </div>
+        <div class="obs-panel" id="financial-alerts-observations">
           <div class="obs-header">
             <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
             <span class="obs-header-txt">Proyectos con observaciones documentales críticas</span>
           </div>
           <div id="obs-list"></div>
         </div>
-        <div class="grid2">
+        <div class="grid2" id="financial-alerts-grid">
           <div class="panel">
             <div class="panel-head"><div class="panel-title">Proyectos con retraso en entrega</div></div>
             <div id="delay-list"></div>

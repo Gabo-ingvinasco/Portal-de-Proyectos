@@ -191,6 +191,19 @@ tr.fc-row-venc td{background:#fdf5f4}
 .obs-header svg{color:#e8622a;flex-shrink:0}
 .obs-header-txt{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#e8622a}
 .obs-row{display:flex;gap:8px;padding:4px 0;font-size:11px}
+.checklist-comments-panel{margin-bottom:12px}
+.checklist-comment-alert{padding:11px 14px;border-bottom:1px solid #eeece9;background:#fff}
+.checklist-comment-alert:last-child{border-bottom:0}
+.checklist-comment-head{display:flex;align-items:center;gap:8px;font-size:11px;color:#1a1a1a}
+.checklist-comment-head strong{flex:1}
+.checklist-comment-doc{margin-top:3px;font-size:9px;color:#8a867f}
+.checklist-comment-text{margin-top:6px;padding:8px 10px;border-left:3px solid #e8622a;background:#faf8f5;border-radius:4px;font-size:11px;line-height:1.5;color:#403d39}
+.checklist-comment-meta{margin-top:5px;font-size:8px;color:#9a968f}
+.comment-state{padding:2px 6px;border-radius:9px;font-size:8px;font-weight:600;background:#f0efec;color:#6b6b66}
+.comment-state.aprobado{background:#e5f7ef;color:#1a8a52}
+.comment-state.incompleto{background:#fff4d6;color:#9a6500}
+.comment-state.rechazado{background:#fbf1ef;color:#c0392b}
+.comment-state.no-aplica{background:#eceff1;color:#59636a}
 .obs-code{color:#e8622a;font-weight:600;width:80px;flex-shrink:0}
 .obs-txt{color:#6b6b66}
 .cmp-wrap{display:flex;gap:12px;margin-bottom:12px}
@@ -350,7 +363,7 @@ tr.fc-row-venc td{background:#fdf5f4}
 .fase-item .doc{font-size:11px;color:#6b6b66;margin-top:3px;line-height:1.4}
 .fase-item .resp{font-size:10px;color:#a0620a;background:#fff3e9;border-radius:5px;padding:2px 8px;white-space:nowrap;flex-shrink:0;margin-top:1px}
 .fase-empty{padding:24px 20px;text-align:center;color:#aaa;font-size:12px}
-.fase-item-status{display:flex;flex-direction:column;gap:6px;flex-shrink:0;width:150px}
+.fase-item-status{display:flex;flex-direction:column;gap:6px;flex-shrink:0;width:285px}
 .status-pill{display:flex;align-items:center;gap:5px;font-size:10px;font-weight:600;padding:4px 9px;border-radius:6px;white-space:nowrap}
 .status-pill.ok{background:#e5f7ef;color:#1a8a52}
 .status-pill.no{background:#fbf1ef;color:#c0392b}
@@ -358,11 +371,24 @@ tr.fc-row-venc td{background:#fdf5f4}
 .status-pill[onclick]:hover{filter:brightness(0.93)}
 .status-pill.pend{background:#fef3dc;color:#a0620a}
 .status-pill.rechazado{background:#fbf1ef;color:#c0392b}
-.calidad-actions{display:flex;gap:4px;margin-top:2px}
+.status-pill.incompleto{background:#fff4d6;color:#9a6500}
+.status-pill.no-aplica{background:#eceff1;color:#59636a}
+.revision-box{display:flex;flex-direction:column;gap:6px;margin-top:2px}
+.calidad-actions{display:flex;flex-wrap:wrap;gap:4px}
 .calidad-btn{border:1px solid #d4d3cf;background:#fff;border-radius:5px;padding:3px 7px;font-size:10px;cursor:pointer;color:#6b6b66;font-family:'Inter',sans-serif}
 .calidad-btn:hover{border-color:#e8622a;color:#e8622a}
 .calidad-btn.aprobar:hover{border-color:#1a8a52;color:#1a8a52}
+.calidad-btn.incompleto:hover{border-color:#c08a00;color:#9a6500}
 .calidad-btn.rechazar:hover{border-color:#c0392b;color:#c0392b}
+.calidad-btn.no-aplica:hover{border-color:#59636a;color:#59636a}
+.calidad-btn.active{font-weight:700;box-shadow:inset 0 0 0 1px currentColor}
+.revision-comment-input{width:100%;min-height:54px;resize:vertical;border:1px solid #d4d3cf;border-radius:6px;padding:7px 8px;font-family:'Inter',sans-serif;font-size:10px;line-height:1.4;color:#333;outline:none}
+.revision-comment-input:focus{border-color:#e8622a;box-shadow:0 0 0 2px rgba(232,98,42,.1)}
+.revision-comment-save{align-self:flex-end;border:0;border-radius:5px;padding:5px 9px;background:#474545;color:#fff;font-family:'Inter',sans-serif;font-size:9px;cursor:pointer}
+.revision-comment-save:hover{background:#292828}
+.revision-comment-save:disabled,.calidad-btn:disabled{opacity:.55;cursor:wait}
+.revision-last-comment{display:flex;flex-direction:column;gap:2px;padding:7px 8px;border-left:3px solid #e8622a;background:#faf8f5;border-radius:4px;font-size:9px;line-height:1.4;color:#595650}
+.revision-last-comment strong{font-size:8px;text-transform:uppercase;letter-spacing:.4px;color:#a0620a}
 
 /* ═══ CREAR PROYECTO ═══ */
 .new-project-card{background:#fff;border:1px solid #d4d3cf;border-radius:12px;padding:24px 26px;max-width:720px}

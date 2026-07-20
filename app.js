@@ -348,6 +348,7 @@ let donutChart,sectorChart,compMesChart,compDirCountChart;
 
 let dropdownFilteredAll = [];
 let financialMeta = null;
+let checklistAlerts = [];
 const MESES_NOM=['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
 function resetFinancialFilters_(){
@@ -656,9 +657,27 @@ function closeDrawer(){
    sale vacío por la misma limitación de datos explicada en computeFilteredProjects. */
 function buildAlertas(){
   const base=filteredProjects;
+  const rol=getSession().rol;
+  const mostrarFinanzas=['Director','Gerente','Admin'].includes(rol);
+  ['financial-alerts-observations','financial-alerts-grid'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.style.display=mostrarFinanzas?(id==='financial-alerts-grid'?'grid':'block'):'none';
+  });
+  const commentsEl=document.getElementById('checklist-comments-list');
+  if(commentsEl){
+    commentsEl.innerHTML=checklistAlerts.length?checklistAlerts.map(c=>{
+      const fecha=formatSidebarDate_(c.fecha,true);
+      const estadoClase=['Aprobado','Incompleto','Rechazado','No Aplica'].includes(c.estado)?c.estado.toLowerCase().replace(/\s+/g,'-'):'pendiente';
+      return `<div class="checklist-comment-alert">
+        <div class="checklist-comment-head"><span class="obs-code">${escapeHtml_(c.codigo)}</span><strong>${escapeHtml_(c.proyecto||c.subcarpeta||'Documento')}</strong><span class="comment-state ${estadoClase}">${escapeHtml_(c.estado||'Pendiente')}</span></div>
+        <div class="checklist-comment-doc">${escapeHtml_(c.subcarpeta||c.documento||'')}</div>
+        <div class="checklist-comment-text">${escapeHtml_(c.comentario)}</div>
+        <div class="checklist-comment-meta">${escapeHtml_(c.autor)} · ${escapeHtml_(c.rol)} · ${escapeHtml_(fecha)}</div>
+      </div>`;
+    }).join(''):'<div class="fase-empty">Todavía no hay comentarios de revisión.</div>';
+  }
   const note=document.getElementById('alertas-scope-note');
   if(note){
-    if(base.length===0){
+    if(mostrarFinanzas&&base.length===0){
       note.style.display='block';
       note.textContent='⚠ No se encontraron proyectos asociados a tu usuario en la base de datos financiera todavía. Habla con tu Gerente para que se agregue tu nombre como responsable en el proyecto correspondiente.';
     } else note.style.display='none';
@@ -864,10 +883,11 @@ function enterApp(){
   const esGerencia = s.rol === 'Gerente' || s.rol === 'Admin';
   const esGerenteEquipo = s.rol === 'Gerente';
   const puedeVerFinanzas = s.rol === 'Director' || esGerencia;
-  ['nav-todos-proyectos','nav-kpis','nav-resumen','nav-alertas','nav-flujo-caja'].forEach(id => {
+  ['nav-todos-proyectos','nav-kpis','nav-resumen','nav-flujo-caja'].forEach(id => {
     const modulo = document.getElementById(id);
     if(modulo) modulo.style.display = puedeVerFinanzas ? 'flex' : 'none';
   });
+  document.getElementById('nav-alertas').style.display = 'flex';
   ['nav-directores','nav-residentes','nav-contratistas'].forEach(id => {
     const modulo = document.getElementById(id);
     if(modulo) modulo.style.display = esGerenteEquipo ? 'flex' : 'none';
@@ -1021,15 +1041,25 @@ async function goToAlertas(){
   if(moduloEnContencion_('Alertas')) return;
   currentView = 'alertas';
   hideAllViews();
-  showFilters(true);
+  const s=getSession();
+  const puedeVerFinanzas=['Director','Gerente','Admin'].includes(s.rol);
+  showFilters(puedeVerFinanzas);
   document.getElementById('view-alertas').style.display = 'block';
   document.getElementById('topbar-title').textContent = 'ALERTAS';
   document.getElementById('topbar-sub').textContent = 'Observaciones y riesgos de tus proyectos asignados';
   document.getElementById('refresh-btn').style.display = 'none';
   setActiveNav('nav-alertas');
   try{
-    await loadFinancialProjects_('resumen_ejecutivo');
-    document.getElementById('topbar-sub').textContent += financialMetaLabel_();
+    const commentsData=await apiPost_('alertas_checklist');
+    if(!commentsData.ok) throw new Error(commentsData.error||'No se pudieron cargar los comentarios.');
+    checklistAlerts=commentsData.comentarios||[];
+    if(puedeVerFinanzas){
+      await loadFinancialProjects_('resumen_ejecutivo');
+      document.getElementById('topbar-sub').textContent += financialMetaLabel_();
+    }else{
+      financialProjects=[]; dropdownFilteredAll=[]; filteredProjects=[];
+      updateSidebarDataStatus_(document.lastModified,commentsData.fechaExtraccion);
+    }
     buildAlertas();
   }catch(err){ alert('No se pudo cargar las alertas: '+err.message); }
 }
@@ -1390,10 +1420,10 @@ function renderCarpetaSidebar(carpetas){
   wrap.innerHTML = CARPETA_ORDER.map((carpeta, idx) => {
     const esHSE = carpeta === '3. HSE';
     const items = carpetas[carpeta] || [];
-    const total = items.length;
-    const hechos = items.filter(it => it.check).length;
-    const pct = total ? Math.round(100 * hechos / total) : 0;
-    const done = total > 0 && hechos === total;
+    const progreso = progresoChecklist_(items);
+    const total = progreso.total;
+    const pct = progreso.porcentaje;
+    const done = progreso.aplicables > 0 && pct === 100;
     if(esHSE){
       return `
         <div class="pf-node disabled" title="Pendiente de desarrollo">
@@ -1411,7 +1441,7 @@ function renderCarpetaSidebar(carpetas){
         <div class="pf-circle">${done ? '✓' : idx+1}</div>
         <div class="pf-info">
           <div class="pf-label">${CARPETA_LABELS[carpeta]}</div>
-          <div class="pf-pct">${hechos}/${total} completos (${pct}%)</div>
+          <div class="pf-pct">Avance ${pct}%${progreso.noAplica?' · '+progreso.noAplica+' N/A':''}</div>
         </div>
       </div>`;
     // Si esta carpeta está activa, despliega debajo la lista de subcarpetas
@@ -1453,6 +1483,35 @@ function selectGrupo(grupo){
   renderCarpetaDetail(CARPETA_ORDER[currentCarpetaIndex]);
 }
 
+function progresoChecklist_(items){
+  const aplicables=(items||[]).filter(it=>it.porcentaje!==null);
+  const puntos=aplicables.reduce((s,it)=>s+(Number(it.porcentaje)||0),0);
+  return {
+    total:(items||[]).length,
+    aplicables:aplicables.length,
+    noAplica:(items||[]).length-aplicables.length,
+    completos:aplicables.filter(it=>it.porcentaje===100).length,
+    porcentaje:aplicables.length?Math.round(puntos/aplicables.length):100
+  };
+}
+
+function revisionControlsHtml_(it, puedeEditar){
+  const comentarioActual=it.comentario?`<div class="revision-last-comment"><strong>${escapeHtml_(it.comentadoPor||'Revisión')}</strong><span>${escapeHtml_(it.comentario)}</span></div>`:'';
+  if(!puedeEditar) return comentarioActual;
+  const active=estado=>it.vistoBueno===estado?' active':'';
+  return `<div class="revision-box">
+    <div class="calidad-actions">
+      <button class="calidad-btn aprobar${active('Aprobado')}" onclick="marcarVistoBueno(this,${it.rowIndex},'Aprobado')">Aprobar</button>
+      <button class="calidad-btn incompleto${active('Incompleto')}" onclick="marcarVistoBueno(this,${it.rowIndex},'Incompleto')">Incompleto 50%</button>
+      <button class="calidad-btn rechazar${active('Rechazado')}" onclick="marcarVistoBueno(this,${it.rowIndex},'Rechazado')">Rechazar</button>
+      <button class="calidad-btn no-aplica${active('No Aplica')}" onclick="marcarVistoBueno(this,${it.rowIndex},'No Aplica')">No Aplica</button>
+    </div>
+    <textarea class="revision-comment-input" maxlength="1000" placeholder="Agregar comentario de Calidad o Gerencia..."></textarea>
+    <button class="revision-comment-save" onclick="guardarComentarioChecklist(this,${it.rowIndex})">Guardar comentario</button>
+    ${comentarioActual}
+  </div>`;
+}
+
 function renderCarpetaDetail(carpeta){
   const todosLosItems = (window._carpetasData && window._carpetasData[carpeta]) || [];
   const items = currentGrupoFiltro ? todosLosItems.filter(it => (it.grupo || 'General') === currentGrupoFiltro) : todosLosItems;
@@ -1466,11 +1525,6 @@ function renderCarpetaDetail(carpeta){
   const s = getSession();
   const puedeDarVistoBueno = s.rol === 'Calidad' || s.rol === 'Gerente' || s.rol === 'Admin';
   function renderItem(it){
-    const calidadBtns = puedeDarVistoBueno ? `
-      <div class="calidad-actions">
-        <button class="calidad-btn aprobar" onclick="marcarVistoBueno(${it.rowIndex}, 'Aprobado')">Aprobar</button>
-        <button class="calidad-btn rechazar" onclick="marcarVistoBueno(${it.rowIndex}, 'Rechazado')">Rechazar</button>
-      </div>` : '';
     return `
     <div class="fase-item">
       <div class="body">
@@ -1481,7 +1535,7 @@ function renderCarpetaDetail(carpeta){
       <div class="fase-item-status">
         ${estadoArchivoPill_(it.archivoCargado, it.archivoUrl)}
         ${estadoCalidadPill_(it.vistoBueno)}
-        ${calidadBtns}
+        ${revisionControlsHtml_(it, puedeDarVistoBueno)}
       </div>
     </div>`;
   }
@@ -1509,11 +1563,11 @@ function renderCarpetaDetail(carpeta){
       ${grupos[g].map(renderItem).join('')}
     `).join('') : '<div class="fase-empty">Sin ítems clasificados en esta carpeta.</div>';
   }
-  const total = items.length, hechos = items.filter(it=>it.check).length;
+  const progreso = progresoChecklist_(items);
   wrap.innerHTML = `
     <div class="fase-detail-head">
       <div class="fase-detail-title">${escapeHtml_(tituloPanel)}</div>
-      <div class="fase-detail-count">${hechos}/${total} completos</div>
+      <div class="fase-detail-count">Avance ${progreso.porcentaje}%${progreso.noAplica?' · '+progreso.noAplica+' N/A':''}</div>
     </div>
     ${itemsHtml}`;
 }
@@ -1669,16 +1723,16 @@ async function renderResumenGeneral(codigo){
 function renderFaseSidebar(fases, resumen){
   const wrap = document.getElementById('proj-fase-sidebar');
   wrap.innerHTML = FASE_ORDER.map((fase, idx) => {
-    const r = resumen[fase] || {total:0, hechos:0};
-    const pct = r.total ? Math.round(100 * r.hechos / r.total) : 0;
-    const done = r.total > 0 && r.hechos === r.total;
+    const r = resumen[fase] || {total:0, aplicables:0, noAplica:0, porcentaje:0};
+    const pct = Number(r.porcentaje)||0;
+    const done = r.aplicables > 0 && pct === 100;
     const cls = (idx === currentFaseIndex ? 'active' : '') + (done ? ' done' : '');
     return `
       <div class="pf-node ${cls}" onclick="selectFase(${idx})">
         <div class="pf-circle">${done ? '✓' : idx+1}</div>
         <div class="pf-info">
           <div class="pf-label">${fase}</div>
-          <div class="pf-pct">${r.hechos}/${r.total} completos (${pct}%)</div>
+          <div class="pf-pct">Avance ${pct}%${r.noAplica?' · '+r.noAplica+' N/A':''}</div>
         </div>
       </div>`;
   }).join('');
@@ -1701,7 +1755,9 @@ function estadoArchivoPill_(archivoCargado, archivoUrl){
 
 function estadoCalidadPill_(vistoBueno){
   if(vistoBueno === 'Aprobado') return '<span class="status-pill ok">✅ Aprobado</span>';
-  if(vistoBueno === 'Rechazado') return '<span class="status-pill rechazado">✅ Rechazado</span>';
+  if(vistoBueno === 'Incompleto') return '<span class="status-pill incompleto">◐ Incompleto · 50%</span>';
+  if(vistoBueno === 'Rechazado') return '<span class="status-pill rechazado">❌ Rechazado</span>';
+  if(vistoBueno === 'No Aplica') return '<span class="status-pill no-aplica">➖ No Aplica</span>';
   return '<span class="status-pill pend">✅ Pendiente</span>';
 }
 
@@ -1712,11 +1768,6 @@ function renderFaseDetail(fase){
   const s = getSession();
   const puedeDarVistoBueno = s.rol === 'Calidad' || s.rol === 'Gerente' || s.rol === 'Admin';
   const itemsHtml = items.length ? items.map(it => {
-    const calidadBtns = puedeDarVistoBueno ? `
-      <div class="calidad-actions">
-        <button class="calidad-btn aprobar" onclick="marcarVistoBueno(${it.rowIndex}, 'Aprobado')">Aprobar</button>
-        <button class="calidad-btn rechazar" onclick="marcarVistoBueno(${it.rowIndex}, 'Rechazado')">Rechazar</button>
-      </div>` : '';
     return `
     <div class="fase-item">
       <div class="body">
@@ -1728,31 +1779,41 @@ function renderFaseDetail(fase){
       <div class="fase-item-status">
         ${estadoArchivoPill_(it.archivoCargado, it.archivoUrl)}
         ${estadoCalidadPill_(it.vistoBueno)}
-        ${calidadBtns}
+        ${revisionControlsHtml_(it, puedeDarVistoBueno)}
       </div>
     </div>`;
   }).join('') : '<div class="fase-empty">Sin ítems clasificados en esta fase.</div>';
   wrap.innerHTML = `
     <div class="fase-detail-head">
       <div class="fase-detail-title">${fase}</div>
-      <div class="fase-detail-count">${r.hechos}/${r.total} completos</div>
+      <div class="fase-detail-count">Avance ${Number(r.porcentaje)||0}%${r.noAplica?' · '+r.noAplica+' N/A':''}</div>
     </div>
     ${itemsHtml}`;
 }
 
-async function marcarVistoBueno(rowIndex, estado){
-  const s = getSession();
+async function enviarRevisionChecklist_(trigger, rowIndex, estado){
+  const box = trigger && trigger.closest ? trigger.closest('.revision-box') : null;
+  const input = box ? box.querySelector('.revision-comment-input') : null;
+  const comentario = input ? input.value.trim() : '';
+  if(!estado && !comentario){ alert('Escribe un comentario antes de guardarlo.'); return; }
+  const botones = box ? box.querySelectorAll('button') : [];
+  botones.forEach(btn=>btn.disabled=true);
   try{
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'marcar_visto_bueno', token: s.token, codigo: currentProject.codigo, rowIndex, estado })
-    });
-    const data = await res.json();
+    const data = await apiPost_('marcar_visto_bueno', {codigo:currentProject.codigo, rowIndex, estado, comentario});
     if(!data.ok) throw new Error(data.error || 'Error desconocido');
-    loadProjectChecklist(currentProject.codigo);
+    await loadProjectChecklist(currentProject.codigo);
   }catch(e){
     alert('No se pudo actualizar el Visto Bueno: ' + e.message);
+    botones.forEach(btn=>btn.disabled=false);
   }
+}
+
+function marcarVistoBueno(trigger, rowIndex, estado){
+  return enviarRevisionChecklist_(trigger, rowIndex, estado);
+}
+
+function guardarComentarioChecklist(trigger, rowIndex){
+  return enviarRevisionChecklist_(trigger, rowIndex, '');
 }
 
 document.addEventListener('DOMContentLoaded', function(){
