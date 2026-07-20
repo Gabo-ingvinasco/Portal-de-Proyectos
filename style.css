@@ -263,7 +263,10 @@ tr.fc-row-venc td{background:#fdf5f4}
 .nav-item:hover{background:rgba(255,255,255,.04)}
 .nav-item.active{color:#fff;background:rgba(245,157,29,.22);border-left-color:#f59d1d}
 .sidebar-footer{padding:14px 20px;border-top:1px solid rgba(255,255,255,.18)}
-.sidebar-last-update{padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid rgba(255,255,255,.1);font-size:9px;line-height:1.45;color:rgba(255,255,255,.48)}
+.sidebar-data-status{padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid rgba(255,255,255,.12);font-family:'Inter',sans-serif}
+.sidebar-data-title{margin-bottom:7px;font-size:8px;font-weight:600;letter-spacing:1.4px;color:rgba(255,255,255,.38)}
+.sidebar-data-row{display:flex;flex-direction:column;gap:1px;margin-top:5px;font-size:8px;line-height:1.35;color:rgba(255,255,255,.46)}
+.sidebar-data-row strong{font-size:9px;font-weight:500;color:rgba(255,255,255,.82)}
 .sidebar-footer .upd{font-size:11px;color:rgba(255,255,255,.75);line-height:1.5;margin-bottom:10px}
 .logout-btn{width:100%;background:rgba(255,255,255,.08);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.18);border-radius:7px;padding:8px;font-size:11px;cursor:pointer}
 .logout-btn:hover{background:rgba(255,255,255,.15)}

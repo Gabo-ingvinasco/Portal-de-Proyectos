@@ -47,7 +47,11 @@
       <div class="nav-item" id="nav-comparativo" style="display:none" onclick="goToComparativo()">📆 Comparativo Anual</div>
     </div>
     <div class="sidebar-footer">
-      <div class="sidebar-last-update" id="sidebar-last-update">Última actualización: —</div>
+      <div class="sidebar-data-status" aria-label="Estado de actualización de datos">
+        <div class="sidebar-data-title">DATOS DEL PORTAL</div>
+        <div class="sidebar-data-row"><span>Fuente actualizada</span><strong id="sidebar-source-update">—</strong></div>
+        <div class="sidebar-data-row"><span>Datos extraídos</span><strong id="sidebar-data-extraction">Aún no consultados</strong></div>
+      </div>
       <div class="upd" id="user-info">—</div>
       <button class="logout-btn" onclick="doLogout()">Cerrar sesión</button>
     </div>

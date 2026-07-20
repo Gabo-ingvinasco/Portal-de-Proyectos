@@ -101,7 +101,7 @@ async function loadFlujoCajaLive(){
   dropdownFilteredAll = financialProjects.slice();
   filteredProjects = dropdownFilteredAll.slice();
   financialMeta = flujoData;
-  updateSidebarLastUpdate_(flujoData.fechaActualizacion);
+  updateSidebarDataStatus_(flujoData.fechaActualizacion, flujoData.fechaExtraccion);
   resetFinancialFilters_();
   populateFilters();
   computeFilteredProjects();
@@ -366,10 +366,11 @@ async function loadFinancialProjects_(action){
   financialMeta = {
     fechaCorte:data.fechaCorte,
     fechaActualizacion:data.fechaActualizacion,
+    fechaExtraccion:data.fechaExtraccion,
     fuente:data.fuente,
     tipoDato:data.tipoDato
   };
-  updateSidebarLastUpdate_(data.fechaActualizacion);
+  updateSidebarDataStatus_(data.fechaActualizacion, data.fechaExtraccion);
   resetFinancialFilters_();
   populateFilters();
   return data;
@@ -380,17 +381,34 @@ function financialMetaLabel_(){
   return ` · Corte ${financialMeta.fechaCorte || '—'} · ${financialMeta.tipoDato || 'real'}`;
 }
 
-function updateSidebarLastUpdate_(value){
-  const el = document.getElementById('sidebar-last-update');
-  if(!el) return;
-  const date = new Date(value || document.lastModified);
-  if(Number.isNaN(date.getTime())){
-    el.textContent = 'Última actualización: —';
-    return;
-  }
-  el.textContent = 'Última actualización: ' + date.toLocaleDateString('es-CO', {
-    day:'2-digit', month:'short', year:'numeric'
-  });
+function formatSidebarDate_(value, includeTime){
+  const date = new Date(value);
+  if(Number.isNaN(date.getTime())) return '—';
+  const options = {timeZone:'America/Bogota', day:'2-digit', month:'short', year:'numeric'};
+  if(includeTime){ options.hour='2-digit'; options.minute='2-digit'; }
+  return date.toLocaleString('es-CO', options).replace(',', ' ·');
+}
+
+function updateSidebarDataStatus_(sourceUpdated, extractedAt, persist=true){
+  const sourceEl = document.getElementById('sidebar-source-update');
+  const extractionEl = document.getElementById('sidebar-data-extraction');
+  if(sourceEl) sourceEl.textContent = formatSidebarDate_(sourceUpdated, false);
+  if(extractionEl) extractionEl.textContent = extractedAt ? formatSidebarDate_(extractedAt, true) : 'Aún no consultados';
+  if(!persist) return;
+  try{
+    if(sourceUpdated) localStorage.setItem('mn_last_source_update', sourceUpdated);
+    if(extractedAt) localStorage.setItem('mn_last_data_extraction', extractedAt);
+  }catch(e){ /* El portal sigue funcionando si el almacenamiento está bloqueado. */ }
+}
+
+function restoreSidebarDataStatus_(){
+  let sourceUpdated = document.lastModified;
+  let extractedAt = '';
+  try{
+    sourceUpdated = localStorage.getItem('mn_last_source_update') || sourceUpdated;
+    extractedAt = localStorage.getItem('mn_last_data_extraction') || '';
+  }catch(e){ /* Usar la fecha del documento como respaldo. */ }
+  updateSidebarDataStatus_(sourceUpdated, extractedAt, false);
 }
 
 function populateFilters(){
@@ -840,7 +858,7 @@ function enterApp(){
   const strong = document.createElement('strong');
   strong.textContent = s.nombre || '';
   userInfo.replaceChildren(strong, document.createElement('br'), document.createTextNode(s.rol || ''));
-  updateSidebarLastUpdate_(document.lastModified);
+  restoreSidebarDataStatus_();
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
   const esGerencia = s.rol === 'Gerente' || s.rol === 'Admin';
