@@ -233,6 +233,10 @@ tr.fc-row-venc td{background:#fdf5f4}
 .dir-card.selected{border-color:#e8622a !important;box-shadow:0 0 0 2px rgba(232,98,42,.15)}
 .dir-card.selected::before{transform:scaleX(1) !important}
 .role-gate-empty{padding:40px;text-align:center;color:#aaa;font-size:13px;background:#fff;border:1px solid #d4d3cf;border-radius:10px}
+.team-module-card{display:flex;align-items:center;gap:18px;padding:26px;background:#fff;border:1px solid #d4d3cf;border-radius:12px;box-shadow:0 4px 14px rgba(31,28,25,.04)}
+.team-module-icon{display:flex;align-items:center;justify-content:center;width:48px;height:48px;flex:0 0 48px;border-radius:12px;background:#f5eee8;font-size:22px}
+.team-module-title{font-family:'Montserrat',sans-serif;font-size:16px;font-weight:700;color:#1a1a1a}
+.team-module-text{max-width:600px;margin-top:5px;font-size:11px;line-height:1.55;color:#6b6b66}
 
 /* ═══ LOGIN ═══ */
 .login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#474545}

@@ -34,12 +34,16 @@
     </div>
     <div class="sidebar-nav">
       <div class="nav-section">Portafolio</div>
-      <div class="nav-item active" id="nav-mis-proyectos" onclick="goToProjectList()">📁 Mis proyectos</div>
+      <div class="nav-item" id="nav-nuevo-proyecto" style="display:none" onclick="goToNewProject()">➕ Nuevo Proyecto</div>
       <div class="nav-item" id="nav-todos-proyectos" style="display:none" onclick="goToTodosProyectos()">📋 Todos los Proyectos</div>
+      <div class="nav-item active" id="nav-mis-proyectos" onclick="goToProjectList()">📁 Mis Proyectos</div>
+      <div class="nav-item" id="nav-resumen" style="display:none" onclick="goToResumen()">📈 Por Riesgos</div>
       <div class="nav-item" id="nav-kpis" style="display:none" onclick="goToKPIs()">📊 KPI's</div>
-      <div class="nav-item" id="nav-resumen" style="display:none" onclick="goToResumen()">📈 Resumen Ejecutivo</div>
+
+      <div class="nav-section" id="nav-section-equipo" style="display:none">Equipo de Proyecto</div>
       <div class="nav-item" id="nav-directores" style="display:none" onclick="goToDirectores()">👥 Directores</div>
-      <div class="nav-item" id="nav-nuevo-proyecto" style="display:none" onclick="goToNewProject()">➕ Nuevo proyecto</div>
+      <div class="nav-item" id="nav-residentes" style="display:none" onclick="goToResidentes()">👷 Residentes</div>
+      <div class="nav-item" id="nav-contratistas" style="display:none" onclick="goToContratistas()">🛠️ Contratistas</div>
 
       <div class="nav-section">Análisis</div>
       <div class="nav-item" id="nav-alertas" style="display:none" onclick="goToAlertas()">⚠️ Alertas</div>
@@ -414,6 +418,29 @@
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vistas: equipo de proyecto (solo Gerencia) -->
+      <div id="view-residentes" class="view" style="display:none">
+        <button class="back-btn" onclick="goToProjectList()">← Volver a mis proyectos</button>
+        <div class="team-module-card">
+          <div class="team-module-icon">👷</div>
+          <div>
+            <div class="team-module-title">Residentes</div>
+            <div class="team-module-text">Módulo exclusivo de Gerencia, preparado para centralizar residentes, asignaciones y proyectos a cargo.</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-contratistas" class="view" style="display:none">
+        <button class="back-btn" onclick="goToProjectList()">← Volver a mis proyectos</button>
+        <div class="team-module-card">
+          <div class="team-module-icon">🛠️</div>
+          <div>
+            <div class="team-module-title">Contratistas</div>
+            <div class="team-module-text">Módulo exclusivo de Gerencia, preparado para centralizar contratistas y su vinculación con los proyectos.</div>
           </div>
         </div>
       </div>

@@ -847,7 +847,7 @@ async function doLogout(){
   }
 }
 
-const ALL_VIEW_IDS = ['view-projects','view-timeline','view-new-project','view-flujocaja','view-kpis','view-resumen','view-alertas','view-directores','view-comparativo','view-todos-proyectos'];
+const ALL_VIEW_IDS = ['view-projects','view-timeline','view-new-project','view-flujocaja','view-kpis','view-resumen','view-alertas','view-directores','view-residentes','view-contratistas','view-comparativo','view-todos-proyectos'];
 function hideAllViews(){
   ALL_VIEW_IDS.forEach(id => { const el = document.getElementById(id); if(el) el.style.display = 'none'; });
 }
@@ -862,15 +862,18 @@ function enterApp(){
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
   const esGerencia = s.rol === 'Gerente' || s.rol === 'Admin';
+  const esGerenteEquipo = s.rol === 'Gerente';
   const puedeVerFinanzas = s.rol === 'Director' || esGerencia;
   ['nav-todos-proyectos','nav-kpis','nav-resumen','nav-alertas','nav-flujo-caja'].forEach(id => {
     const modulo = document.getElementById(id);
     if(modulo) modulo.style.display = puedeVerFinanzas ? 'flex' : 'none';
   });
-  ['nav-directores','nav-comparativo'].forEach(id => {
+  ['nav-directores','nav-residentes','nav-contratistas'].forEach(id => {
     const modulo = document.getElementById(id);
-    if(modulo) modulo.style.display = esGerencia ? 'flex' : 'none';
+    if(modulo) modulo.style.display = esGerenteEquipo ? 'flex' : 'none';
   });
+  document.getElementById('nav-section-equipo').style.display = esGerenteEquipo ? 'block' : 'none';
+  document.getElementById('nav-comparativo').style.display = esGerencia ? 'flex' : 'none';
   document.getElementById('subtab-resumen').style.display = puedeVerFinanzas ? 'inline-block' : 'none';
   document.getElementById('nav-nuevo-proyecto').style.display = esGerencia ? 'flex' : 'none';
   goToProjectList();
@@ -996,22 +999,22 @@ async function goToKPIs(){
 }
 
 async function goToResumen(){
-  if(moduloEnContencion_('Resumen Ejecutivo')) return;
+  if(moduloEnContencion_('Por Riesgos')) return;
   const s = getSession();
   if(!(s.rol === 'Director' || s.rol === 'Gerente' || s.rol === 'Admin')) return;
   currentView = 'resumen';
   hideAllViews();
   showFilters(true);
   document.getElementById('view-resumen').style.display = 'block';
-  document.getElementById('topbar-title').textContent = 'RESUMEN EJECUTIVO';
-  document.getElementById('topbar-sub').textContent = s.rol === 'Director' ? 'Tus proyectos asignados' : 'Portafolio completo';
+  document.getElementById('topbar-title').textContent = 'POR RIESGOS';
+  document.getElementById('topbar-sub').textContent = s.rol === 'Director' ? 'Riesgos de tus proyectos asignados' : 'Riesgos del portafolio completo';
   document.getElementById('refresh-btn').style.display = 'none';
   setActiveNav('nav-resumen');
   try{
     await loadFinancialProjects_('resumen_ejecutivo');
     document.getElementById('topbar-sub').textContent += financialMetaLabel_();
     buildRisks(); buildActions();
-  }catch(err){ alert('No se pudo cargar el resumen ejecutivo: '+err.message); }
+  }catch(err){ alert('No se pudo cargar el análisis por riesgos: '+err.message); }
 }
 
 async function goToAlertas(){
@@ -1034,7 +1037,7 @@ async function goToAlertas(){
 async function goToDirectores(){
   if(moduloEnContencion_('Directores')) return;
   const s = getSession();
-  if(!(s.rol === 'Gerente' || s.rol === 'Admin')) return;
+  if(s.rol !== 'Gerente') return;
   currentView = 'directores';
   hideAllViews();
   showFilters(true);
@@ -1048,6 +1051,32 @@ async function goToDirectores(){
     document.getElementById('topbar-sub').textContent += financialMetaLabel_();
     buildDirectores();
   }catch(err){ alert('No se pudo cargar el panel de directores: '+err.message); }
+}
+
+function goToResidentes(){
+  const s = getSession();
+  if(s.rol !== 'Gerente') return;
+  currentView = 'residentes';
+  hideAllViews();
+  showFilters(false);
+  document.getElementById('view-residentes').style.display = 'block';
+  document.getElementById('topbar-title').textContent = 'RESIDENTES';
+  document.getElementById('topbar-sub').textContent = 'Equipo residente y asignaciones de proyectos';
+  document.getElementById('refresh-btn').style.display = 'none';
+  setActiveNav('nav-residentes');
+}
+
+function goToContratistas(){
+  const s = getSession();
+  if(s.rol !== 'Gerente') return;
+  currentView = 'contratistas';
+  hideAllViews();
+  showFilters(false);
+  document.getElementById('view-contratistas').style.display = 'block';
+  document.getElementById('topbar-title').textContent = 'CONTRATISTAS';
+  document.getElementById('topbar-sub').textContent = 'Contratistas vinculados a los proyectos';
+  document.getElementById('refresh-btn').style.display = 'none';
+  setActiveNav('nav-contratistas');
 }
 
 async function goToComparativo(){
