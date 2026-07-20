@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=20260720-kpi2">
 </head>
 <body>
 
@@ -367,6 +367,16 @@
             <div style="height:170px;position:relative"><canvas id="sectorChart"></canvas></div>
           </div>
         </div>
+        <div class="panel kpi-project-indicators-panel">
+          <div class="panel-head kpi-indicators-head">
+            <div>
+              <div class="panel-title">Indicadores de ejecución de obras por proyecto</div>
+              <div class="kpi-indicators-sub">Catálogo proyectado mientras se define la metodología de medición.</div>
+            </div>
+            <select class="filter-select" id="kpi-indicator-project" onchange="renderProjectedIndicators_(this.value)"></select>
+          </div>
+          <div id="kpi-project-indicators"></div>
+        </div>
       </div>
 
       <!-- Vista: Resumen Ejecutivo (Director: solo sus proyectos · Gerente: todos) -->
@@ -513,6 +523,6 @@
   </div>
 </div>
 
-<script src="app.js"></script>
+<script src="app.js?v=20260720-kpi2"></script>
 </body>
 </html>

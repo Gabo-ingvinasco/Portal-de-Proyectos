@@ -350,6 +350,13 @@ let dropdownFilteredAll = [];
 let financialMeta = null;
 let checklistAlerts = [];
 const MESES_NOM=['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const PROJECT_EXECUTION_INDICATORS=[
+  {name:'Desviación de costos',source:'Liquidaciones parciales + presupuesto + cuadro contable del proyecto + balance del proyecto + informes mensuales de gestión'},
+  {name:'Desviación de cronograma',source:'Cronograma oficial de obra + informes semanales + Curva S + informes mensuales de gestión'},
+  {name:'Cumplimiento documental SIG',source:'Auditorías documentales + Drive del proyecto'},
+  {name:'Cumplimiento de entrega sin pendientes críticos (Punch list)',source:'Actas de entrega y punch list + fechas de entrega'},
+  {name:'Cumplimiento en presentación de avance de obra',source:'Informes de avance + cortes de obra + solicitudes de facturación'}
+];
 
 function resetFinancialFilters_(){
   ['fil-anio','fil-mes','fil-enc','fil-sector'].forEach(id => {
@@ -443,7 +450,7 @@ function applyFilters(){
 
 function rebuildCurrentFinancialView(){
   // Vuelve a dibujar solo la vista financiera que esté activa en este momento
-  if(currentView === 'kpis'){ buildKPIs(); buildFinanceBar(); buildDonut(); buildRisks('kpi-risk-list'); buildHealth(); buildActions('kpi-action-list'); buildSector(); }
+  if(currentView === 'kpis'){ buildKPIs(); buildFinanceBar(); buildDonut(); buildRisks('kpi-risk-list'); buildHealth(); buildActions('kpi-action-list'); buildSector(); buildProjectedIndicators_(); }
   else if(currentView === 'resumen'){ buildRisks(); buildActions(); }
   else if(currentView === 'alertas'){ buildAlertas(); }
   else if(currentView === 'directores'){ buildDirectores(); closeDrawer(); }
@@ -472,6 +479,35 @@ function buildKPIs(){
   if(el)el.innerHTML=kpis.map((k,i)=>`
     <div class="kpi"><div class="kpi-ico ${k.ic}"><svg width="16" height="16" fill="none" stroke="${k.c}" stroke-width="1.8" viewBox="0 0 24 24">${svgs[i]}</svg></div>
     <div><div class="kpi-num">${k.n}</div><div class="kpi-lbl">${k.l}</div></div></div>`).join('');
+}
+
+function buildProjectedIndicators_(){
+  const select=document.getElementById('kpi-indicator-project');
+  if(!select)return;
+  const anterior=select.value;
+  select.replaceChildren();
+  dropdownFilteredAll.forEach(p=>{
+    const option=document.createElement('option');
+    option.value=p.codigo;
+    option.textContent=`${p.codigo} — ${p.proyecto}`;
+    select.appendChild(option);
+  });
+  if(anterior&&dropdownFilteredAll.some(p=>p.codigo===anterior))select.value=anterior;
+  renderProjectedIndicators_(select.value);
+}
+
+function renderProjectedIndicators_(codigo){
+  const el=document.getElementById('kpi-project-indicators');
+  if(!el)return;
+  const proyecto=dropdownFilteredAll.find(p=>p.codigo===codigo);
+  if(!proyecto){el.innerHTML='<div class="fase-empty">No hay proyectos disponibles con los filtros actuales.</div>';return;}
+  el.innerHTML=`<div class="kpi-indicator-project-name"><strong>${escapeHtml_(proyecto.proyecto)}</strong><span>${escapeHtml_(proyecto.codigo)} · ${escapeHtml_(proyecto.encargado||'Sin asignar')}</span></div>
+    <div class="kpi-indicator-cards">${PROJECT_EXECUTION_INDICATORS.map((indicator,index)=>`<div class="kpi-indicator-card">
+      <div class="kpi-indicator-number">0${index+1}</div>
+      <div class="kpi-indicator-name">${escapeHtml_(indicator.name)}</div>
+      <div class="kpi-indicator-source">${escapeHtml_(indicator.source)}</div>
+      <div class="kpi-indicator-footer"><span>Medición: Por definir</span><span class="indicator-status planned">Proyectado</span></div>
+    </div>`).join('')}</div>`;
 }
 
 function buildFinanceBar(){
@@ -1014,7 +1050,7 @@ async function goToKPIs(){
   try{
     await loadFinancialProjects_('proyectos_financieros');
     document.getElementById('topbar-sub').textContent += financialMetaLabel_();
-    buildKPIs(); buildFinanceBar(); buildDonut(); buildRisks('kpi-risk-list'); buildHealth(); buildActions('kpi-action-list'); buildSector();
+    buildKPIs(); buildFinanceBar(); buildDonut(); buildRisks('kpi-risk-list'); buildHealth(); buildActions('kpi-action-list'); buildSector(); buildProjectedIndicators_();
   }catch(err){ alert('No se pudo cargar los indicadores: '+err.message); }
 }
 

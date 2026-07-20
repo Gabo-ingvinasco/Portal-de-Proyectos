@@ -26,6 +26,19 @@ tbody tr:hover td{background:#fafaf8;cursor:pointer}
 .kpi-bottom-grid>.panel{min-height:195px}
 #kpi-risk-list .risk-row{padding:7px 0}
 #kpi-action-list .action-row{padding:7px 0}
+.kpi-project-indicators-panel{margin-bottom:12px}
+.kpi-indicators-head{gap:16px}
+.kpi-indicators-head .filter-select{min-width:330px;max-width:48%}
+.kpi-indicators-sub{margin-top:4px;font-size:9px;color:#8a867f}
+.kpi-indicator-project-name{display:flex;align-items:baseline;gap:9px;margin-bottom:10px}
+.kpi-indicator-project-name strong{font-family:'Montserrat',sans-serif;font-size:13px;color:#1a1a1a}
+.kpi-indicator-project-name span{font-size:9px;color:#8a867f}
+.kpi-indicator-cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.kpi-indicator-card{display:flex;flex-direction:column;min-height:170px;padding:12px;border:1px solid #e1ded9;border-radius:9px;background:#faf9f7}
+.kpi-indicator-number{font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;letter-spacing:1px;color:#e8622a}
+.kpi-indicator-name{margin-top:7px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;line-height:1.35;color:#1a1a1a}
+.kpi-indicator-source{flex:1;margin-top:7px;font-size:9px;line-height:1.45;color:#77736d}
+.kpi-indicator-footer{display:flex;align-items:center;justify-content:space-between;gap:5px;margin-top:10px;padding-top:8px;border-top:1px solid #e5e2dd;font-size:8px;color:#8a867f}
 .panel{background:#fff;border:1px solid #d4d3cf;border-radius:10px;padding:14px 16px;overflow:hidden}
 .panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .panel-title{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#6b6b66}
@@ -142,7 +155,8 @@ tr.fc-row-venc td{background:#fdf5f4}
 .project-indicators-table td:nth-child(3){white-space:nowrap;color:#8a867f}
 .indicator-status{display:inline-flex;padding:3px 8px;border-radius:10px;font-size:8px;font-weight:700;white-space:nowrap}
 .indicator-status.planned{background:#eeeafc;color:#4a3aa7}
-@media (max-width:1100px){.kpi-main-grid{grid-template-columns:1fr 1fr}.kpi-main-grid>.panel:last-child{grid-column:1 / -1}.kpi-bottom-grid{grid-template-columns:1fr}}
+@media (max-width:1250px){.kpi-indicator-cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:1100px){.kpi-main-grid{grid-template-columns:1fr 1fr}.kpi-main-grid>.panel:last-child{grid-column:1 / -1}.kpi-bottom-grid{grid-template-columns:1fr}.kpi-indicators-head{align-items:flex-start;flex-direction:column}.kpi-indicators-head .filter-select{max-width:100%;width:100%}}
 .cap-row{display:flex;gap:10px;align-items:flex-start;padding:5px 0}
 .cap-icon{width:24px;height:24px;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px}
 .cap-info{flex:1}
