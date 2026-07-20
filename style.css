@@ -247,6 +247,8 @@ tr.fc-row-venc td{background:#fdf5f4}
 .login-btn:hover{background:#d1531f}
 .login-btn:disabled{background:#e8b8a2;cursor:wait}
 .login-error{color:#c0392b;font-size:11px;margin-top:12px;min-height:14px}
+.google-signin-button{min-height:44px;display:flex;align-items:center;justify-content:center}
+.login-progress{color:#6b6b66;font-size:11px;margin-top:10px;min-height:14px}
 
 /* ═══ SHELL ═══ */
 .app{display:flex;min-height:100vh}

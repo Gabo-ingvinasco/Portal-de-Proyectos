@@ -1,5 +1,7 @@
 ﻿/* ═══ CONFIGURA ESTO: pega aquí la URL de tu Apps Script desplegado ═══ */
-const API_URL = 'https://script.google.com/macros/s/AKfycbwPs-MtZCQnXTNBmkDoC5schrbrVtnxktu_3FilhpiaBHaiTtGavvdzK8-TDLlYMHdqqQ/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbx8kXvteNf-TsqnG4jWM_4jbkJWN6uIXsnyrxIPB_2GzhmWFNVHeeQRpIG-Nwl-Bb_k/exec';
+const GOOGLE_CLIENT_ID = '31258029935-n8eimmvs8duntfgf5o8741ecd9bh3qtk.apps.googleusercontent.com';
+const WORKSPACE_DOMAIN = 'minimaarquitectos.com';
 
 /* FASE 0 — CONTENCIÓN
    Los módulos que dependían de información financiera pública permanecen
@@ -665,61 +667,92 @@ function safeDriveUrl_(value){
   return /^https:\/\/drive\.google\.com\/(?:drive\/(?:u\/\d+\/)?folders|folders)\/[A-Za-z0-9_-]+(?:[/?#].*)?$/i.test(url) ? url : '';
 }
 
-function saveSession(token, nombre, rol){
+function saveSession(token, nombre, rol, correo, expiresAt){
   sessionStorage.setItem('mn_token', token);
   sessionStorage.setItem('mn_nombre', nombre);
   sessionStorage.setItem('mn_rol', rol);
+  sessionStorage.setItem('mn_correo', correo || '');
+  sessionStorage.setItem('mn_expires_at', String(expiresAt || ''));
 }
 function getSession(){
-  return {
+  const session = {
     token: sessionStorage.getItem('mn_token'),
     nombre: sessionStorage.getItem('mn_nombre'),
-    rol: sessionStorage.getItem('mn_rol')
+    rol: sessionStorage.getItem('mn_rol'),
+    correo: sessionStorage.getItem('mn_correo'),
+    expiresAt: Number(sessionStorage.getItem('mn_expires_at') || 0)
   };
+  if(session.token && session.expiresAt && Date.now() >= session.expiresAt){
+    clearSession();
+    return {token:null,nombre:null,rol:null,correo:null,expiresAt:0};
+  }
+  return session;
 }
 function clearSession(){
-  sessionStorage.removeItem('mn_token');
-  sessionStorage.removeItem('mn_nombre');
-  sessionStorage.removeItem('mn_rol');
+  ['mn_token','mn_nombre','mn_rol','mn_correo','mn_expires_at'].forEach(key => sessionStorage.removeItem(key));
 }
 
-async function doLogin(){
-  const correo = document.getElementById('login-correo').value.trim();
-  const pass = document.getElementById('login-pass').value;
-  const btn = document.getElementById('login-btn');
+async function apiPost_(action, payload, incluirSesion = true){
+  const body = Object.assign({action}, payload || {});
+  if(incluirSesion && !body.token) body.token = getSession().token;
+  const res = await fetch(API_URL, {method:'POST', body:JSON.stringify(body)});
+  return res.json();
+}
+
+async function handleGoogleCredential(response){
   const errEl = document.getElementById('login-error');
   errEl.textContent = '';
-  if(!correo || !pass){ errEl.textContent = 'Ingresa tu correo y contraseña.'; return; }
-  if(API_URL.indexOf('PEGA_AQUI') !== -1){
-    errEl.textContent = 'Falta configurar API_URL en este archivo.';
-    return;
-  }
-  btn.disabled = true; btn.textContent = 'Verificando...';
+  const note = document.getElementById('login-progress');
+  note.textContent = 'Verificando tu cuenta corporativa...';
   try{
-    // POST con body como texto plano (evita el preflight CORS que Apps Script no maneja)
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'login', correo, contrasena: pass })
-    });
-    const data = await res.json();
+    const data = await apiPost_('google_login', {credential:response && response.credential}, false);
     if(data.ok){
-      saveSession(data.token, data.nombre, data.rol);
+      saveSession(data.token, data.nombre, data.rol, data.correo, data.expiresAt);
       enterApp();
     } else {
-      errEl.textContent = data.error || 'Correo o contraseña incorrectos.';
+      errEl.textContent = data.error || 'No fue posible autorizar la cuenta.';
     }
   }catch(e){
     errEl.textContent = 'No se pudo conectar con el servidor.';
   }
-  btn.disabled = false; btn.textContent = 'Entrar';
+  note.textContent = '';
 }
 
-function doLogout(){
+function initGoogleIdentity_(intento = 0){
+  const errEl = document.getElementById('login-error');
+  if(GOOGLE_CLIENT_ID.indexOf('CONFIGURA_') === 0){
+    errEl.textContent = 'Falta configurar el Client ID corporativo de Google.';
+    return;
+  }
+  if(!window.google || !google.accounts || !google.accounts.id){
+    if(intento < 20){
+      setTimeout(() => initGoogleIdentity_(intento + 1), 250);
+      return;
+    }
+    errEl.textContent = 'No fue posible cargar el acceso de Google. Revisa la conexión y actualiza la página.';
+    return;
+  }
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: handleGoogleCredential,
+    hd: WORKSPACE_DOMAIN,
+    auto_select: false,
+    cancel_on_tap_outside: true
+  });
+  google.accounts.id.renderButton(document.getElementById('google-signin-button'), {
+    type:'standard', theme:'outline', size:'large', text:'signin_with', shape:'rectangular', width:268, locale:'es'
+  });
+}
+
+async function doLogout(){
+  const token = getSession().token;
   clearSession();
-  document.getElementById('login-correo').value = '';
-  document.getElementById('login-pass').value = '';
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
+  if(window.google && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect();
+  if(token){
+    try{ await apiPost_('logout', {token}, false); }catch(e){ /* la sesión local ya fue eliminada */ }
+  }
 }
 
 const ALL_VIEW_IDS = ['view-projects','view-timeline','view-new-project','view-flujocaja','view-kpis','view-resumen','view-alertas','view-directores','view-comparativo','view-todos-proyectos'];
@@ -987,8 +1020,7 @@ async function loadProjects(){
   note.textContent = '⏳ Cargando tus proyectos...';
   try{
     const s = getSession();
-    const res = await fetch(API_URL + '?action=proyectos&token=' + encodeURIComponent(s.token));
-    const data = await res.json();
+    const data = await apiPost_('proyectos');
     if(!data.ok) throw new Error(data.error || 'Error desconocido');
     note.style.display = 'none';
     allMyProjects = data.proyectos;
@@ -1029,7 +1061,7 @@ async function precalentarCarpetasEnSegundoPlano(proyectos){
       const p = cola.shift();
       actualizarBanner();
       try{
-        await fetch(API_URL + '?action=checklist_proyecto&token=' + encodeURIComponent(s.token) + '&codigo=' + encodeURIComponent(p.codigo));
+        await apiPost_('checklist_proyecto', {codigo:p.codigo});
       }catch(e){ /* si uno falla, no importa — se sigue con los demás */ }
       restantes--;
       actualizarBanner();
@@ -1143,8 +1175,7 @@ async function loadProjectChecklist(codigo){
   const miRequestId = ++_checklistRequestId; // si se navega a otro proyecto antes de que esto responda, esta respuesta se descarta
   try{
     const s = getSession();
-    const res = await fetch(API_URL + '?action=checklist_proyecto&token=' + encodeURIComponent(s.token) + '&codigo=' + encodeURIComponent(codigo));
-    const data = await res.json();
+    const data = await apiPost_('checklist_proyecto', {codigo});
     // Si mientras esperábamos la respuesta el usuario ya cambió de proyecto
     // (o de vista), o esta respuesta ya no es la más reciente, se ignora
     // por completo para no pisar lo que se está viendo ahora.
@@ -1573,9 +1604,5 @@ async function marcarVistoBueno(rowIndex, estado){
 document.addEventListener('DOMContentLoaded', function(){
   const s = getSession();
   if(s.nombre && s.token){ enterApp(); }
-  ['login-correo','login-pass'].forEach(id => {
-    document.getElementById(id).addEventListener('keydown', function(e){
-      if(e.key === 'Enter') doLogin();
-    });
-  });
+  else initGoogleIdentity_();
 });

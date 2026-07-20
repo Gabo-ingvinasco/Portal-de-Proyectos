@@ -6,6 +6,7 @@
 <title>Mínima Arquitectos — Portal de Proyectos</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,10 +16,9 @@
   <div class="login-card">
     <div class="login-logo">MÍNIMA<span>ARQUITECTOS</span></div>
     <div class="login-title">Portal de Proyectos</div>
-    <div class="login-sub">Ingresa tu código de acceso para continuar</div>
-    <input id="login-correo" class="login-input" type="email" placeholder="Correo" autocomplete="username" style="margin-bottom:10px" />
-    <input id="login-pass" class="login-input" type="password" placeholder="Contraseña" autocomplete="current-password" />
-    <button id="login-btn" class="login-btn" onclick="doLogin()">Entrar</button>
+    <div class="login-sub">Ingresa con tu cuenta corporativa @minimaarquitectos.com</div>
+    <div id="google-signin-button" class="google-signin-button"></div>
+    <div id="login-progress" class="login-progress"></div>
     <div id="login-error" class="login-error"></div>
   </div>
 </div>
@@ -172,6 +172,8 @@
             </label>
             <label>Director <input id="np-director" placeholder="Nombre exacto, igual que en Usuarios" /></label>
             <label>Residente <input id="np-residente" placeholder="Nombre exacto, igual que en Usuarios" /></label>
+            <label>Residente 2 <input id="np-residente-2" placeholder="Opcional" /></label>
+            <label>Residente 3 <input id="np-residente-3" placeholder="Opcional" /></label>
             <label>Gerente <input id="np-gerente" placeholder="Nombre exacto, igual que en Usuarios" /></label>
             <label class="npc-full">Carpeta de Drive (link) <input id="np-drive" placeholder="https://drive.google.com/drive/folders/..." /></label>
           </div>
