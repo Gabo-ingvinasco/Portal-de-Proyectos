@@ -101,6 +101,7 @@ async function loadFlujoCajaLive(){
   dropdownFilteredAll = financialProjects.slice();
   filteredProjects = dropdownFilteredAll.slice();
   financialMeta = flujoData;
+  updateSidebarLastUpdate_(flujoData.fechaActualizacion);
   resetFinancialFilters_();
   populateFilters();
   computeFilteredProjects();
@@ -368,6 +369,7 @@ async function loadFinancialProjects_(action){
     fuente:data.fuente,
     tipoDato:data.tipoDato
   };
+  updateSidebarLastUpdate_(data.fechaActualizacion);
   resetFinancialFilters_();
   populateFilters();
   return data;
@@ -376,6 +378,19 @@ async function loadFinancialProjects_(action){
 function financialMetaLabel_(){
   if(!financialMeta) return '';
   return ` · Corte ${financialMeta.fechaCorte || '—'} · ${financialMeta.tipoDato || 'real'}`;
+}
+
+function updateSidebarLastUpdate_(value){
+  const el = document.getElementById('sidebar-last-update');
+  if(!el) return;
+  const date = new Date(value || document.lastModified);
+  if(Number.isNaN(date.getTime())){
+    el.textContent = 'Última actualización: —';
+    return;
+  }
+  el.textContent = 'Última actualización: ' + date.toLocaleDateString('es-CO', {
+    day:'2-digit', month:'short', year:'numeric'
+  });
 }
 
 function populateFilters(){
@@ -825,6 +840,7 @@ function enterApp(){
   const strong = document.createElement('strong');
   strong.textContent = s.nombre || '';
   userInfo.replaceChildren(strong, document.createElement('br'), document.createTextNode(s.rol || ''));
+  updateSidebarLastUpdate_(document.lastModified);
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
   const esGerencia = s.rol === 'Gerente' || s.rol === 'Admin';
