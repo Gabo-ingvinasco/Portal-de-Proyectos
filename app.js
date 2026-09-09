@@ -919,7 +919,7 @@ function enterApp(){
   const esGerencia = s.rol === 'Gerente' || s.rol === 'Admin';
   const esGerenteEquipo = s.rol === 'Gerente';
   const puedeVerFinanzas = s.rol === 'Director' || esGerencia;
-  ['nav-todos-proyectos','nav-kpis','nav-resumen','nav-flujo-caja'].forEach(id => {
+  ['nav-todos-proyectos','nav-kpis','nav-flujo-caja'].forEach(id => {
     const modulo = document.getElementById(id);
     if(modulo) modulo.style.display = puedeVerFinanzas ? 'flex' : 'none';
   });
@@ -932,7 +932,9 @@ function enterApp(){
   document.getElementById('nav-comparativo').style.display = esGerencia ? 'flex' : 'none';
   document.getElementById('subtab-resumen').style.display = puedeVerFinanzas ? 'inline-block' : 'none';
   document.getElementById('nav-nuevo-proyecto').style.display = esGerencia ? 'flex' : 'none';
-  goToProjectList();
+  // "Mis Proyectos" ya no es una opción del menú, así que el punto de
+  // entrada por defecto tras iniciar sesión es Alertas (visible para todos los roles).
+  goToAlertas();
 }
 
 function moduloEnContencion_(nombre){
@@ -1213,7 +1215,9 @@ async function crearProyecto(){
     if(!data.ok) throw new Error(data.error || 'Error desconocido');
     okEl.textContent = '✓ Proyecto creado' + (data.checklist && data.checklist.filas_creadas ? ' con ' + data.checklist.filas_creadas + ' ítems de checklist.' : '.');
     ['np-codigo','np-nombre','np-cliente','np-director','np-residente','np-residente-2','np-residente-3','np-gerente','np-drive'].forEach(id => document.getElementById(id).value = '');
-    setTimeout(goToProjectList, 1500);
+    // "Mis Proyectos" ya no está en el menú; tras crear el proyecto se
+    // redirige a "Todos los Proyectos", donde el rol Gerente/Admin puede verlo.
+    setTimeout(goToTodosProyectos, 1500);
   }catch(e){
     errEl.textContent = '⚠ ' + e.message;
   }

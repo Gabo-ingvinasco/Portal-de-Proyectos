@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mínima Arquitectos — Control de Portafolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+<!-- ══════════════ PANTALLA DE LOGIN ══════════════ -->
+<div id="login-screen" class="login-screen">
+  <div class="login-card">
+    <div class="login-logo-panel">
+      <img class="brand-logo login-brand-logo" src="logo-minima-blanco.png" alt="Mínima Arquitectos">
+    </div>
+    <div class="login-title">Control de Portafolio</div>
+    <div class="login-sub">Ingresa con tu cuenta corporativa de Mínima Arquitectos</div>
+    <div id="google-signin-button" class="google-signin-button"></div>
+    <div id="login-progress" class="login-progress"></div>
+    <div id="login-error" class="login-error"></div>
+  </div>
+</div>
+
+<!-- ══════════════ PORTAL (oculto hasta iniciar sesión) ══════════════ -->
+<div id="app" class="app" style="display:none">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <img class="brand-logo sidebar-brand-logo" src="logo-minima-blanco.png" alt="Mínima Arquitectos">
+      <div class="sub">Control de Portafolio</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">Portafolio</div>
+      <a class="nav-item" id="nav-todos-proyectos" onclick="goToTodosProyectos()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Todos los Proyectos
+      </a>
+      <a class="nav-item" id="nav-kpis" onclick="goToKPIs()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        KPI's
+      </a>
+      <a class="nav-item" id="nav-flujo-caja" onclick="goToFlujoCaja()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M15 9.5c0-1.4-1.3-2.5-3-2.5s-3 1.1-3 2.5 1.3 2 3 2.5 3 1.1 3 2.5-1.3 2.5-3 2.5-3-1.1-3-2.5"/></svg>
+        Flujo de Caja
+      </a>
+      <a class="nav-item active" id="nav-alertas" onclick="goToAlertas()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
+        Alertas
+      </a>
+
+      <div class="nav-section" id="nav-section-equipo" style="margin-top:10px;display:none">Equipo</div>
+      <a class="nav-item" id="nav-directores" onclick="goToDirectores()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Directores
+      </a>
+      <a class="nav-item" id="nav-residentes" onclick="goToResidentes()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        Residentes
+      </a>
+      <a class="nav-item" id="nav-contratistas" onclick="goToContratistas()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+        Contratistas
+      </a>
+
+      <div class="nav-section" style="margin-top:10px">Gerencia</div>
+      <a class="nav-item" id="nav-comparativo" onclick="goToComparativo()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        Comparativo Anual
+      </a>
+      <a class="nav-item" id="nav-nuevo-proyecto" onclick="goToNewProject()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Nuevo Proyecto
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-data-status">
+        <div class="sidebar-data-title">Datos del Sheet</div>
+        <div class="sidebar-data-row">Fuente actualizada<br><strong id="sidebar-source-update">—</strong></div>
+        <div class="sidebar-data-row">Última consulta<br><strong id="sidebar-data-extraction">—</strong></div>
+      </div>
+      <div class="upd" id="user-info">—</div>
+      <button class="logout-btn" onclick="doLogout()">Cerrar sesión</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="topbar-title">ALERTAS</div>
+        <div class="topbar-sub" id="topbar-sub">Observaciones y riesgos de tus proyectos asignados</div>
+      </div>
+      <div class="filters" id="topbar-filters" style="display:none">
+        <select class="filter-select" id="fil-anio" onchange="applyFilters()"><option value="todos">Año: todos</option></select>
+        <select class="filter-select" id="fil-mes" onchange="applyFilters()"><option value="todos">Mes: todos</option></select>
+        <select class="filter-select" id="fil-enc" onchange="applyFilters()"><option value="todos">Encargado: todos</option></select>
+        <select class="filter-select" id="fil-estado" onchange="applyFilters()">
+          <option value="todos">Estado: todos</option>
+          <option>Finalizado</option><option>En Ejecución</option><option>En Liquidación</option>
+          <option>Garantias</option><option>Por Iniciar</option><option>Cerrado</option>
+        </select>
+        <select class="filter-select" id="fil-sector" onchange="applyFilters()"><option value="todos">Sector: todos</option></select>
+      </div>
+      <button class="refresh-btn" id="refresh-btn" onclick="refreshCurrentView()" style="display:none">⟳ Actualizar</button>
+    </div>
+
+    <div class="content">
+      <div id="load-note" class="load-note" style="display:none"></div>
+      <div id="precarga-banner" class="load-note" style="display:none"></div>
+
+      <!-- ═══ MIS PROYECTOS (sin acceso desde el menú — se conserva por compatibilidad) ═══ -->
+      <div id="view-projects" class="view" style="display:none">
+        <div id="projects-status-tabs" class="status-tabs"></div>
+        <div id="projects-grid" class="projects-grid"></div>
+      </div>
+
+      <!-- ═══ TIMELINE DE PROYECTO (checklist documental) ═══ -->
+      <div id="view-timeline" class="view" style="display:none">
+        <button class="back-btn" onclick="goToProjectList()">← Volver a proyectos</button>
+        <div id="project-header" class="project-header"></div>
+
+        <div class="proj-subtabs">
+          <button class="proj-subtab active" id="subtab-documental" onclick="switchProjSubtab('documental')">Control Documental</button>
+          <button class="proj-subtab" id="subtab-fases" onclick="switchProjSubtab('fases')">Fases del Proyecto</button>
+          <button class="proj-subtab" id="subtab-resumen" style="display:none" onclick="switchProjSubtab('resumen')">Resumen General</button>
+        </div>
+
+        <div id="subview-documental" class="proj-subview">
+          <div class="drive-scan-toolbar" id="drive-scan-toolbar" style="display:none">
+            <div class="drive-scan-meta" id="drive-scan-meta"></div>
+            <button class="drive-scan-refresh" id="drive-scan-refresh" onclick="refreshDocumentScan()">⟳ Reescanear Drive</button>
+          </div>
+          <div id="drive-scan-note" class="load-note" style="display:none"></div>
+          <div class="proj-layout">
+            <div class="proj-fase-sidebar" id="proj-carpeta-sidebar"></div>
+            <div class="fase-detail-wrap" id="carpeta-detail-wrap"></div>
+          </div>
+        </div>
+
+        <div id="subview-fases" class="proj-subview" style="display:none">
+          <div class="proj-layout">
+            <div class="proj-fase-sidebar" id="proj-fase-sidebar"></div>
+            <div class="fase-detail-wrap" id="fase-detail-wrap"></div>
+          </div>
+        </div>
+
+        <div id="subview-resumen" class="proj-subview" style="display:none">
+          <div id="resumen-proyecto-note" class="load-note" style="display:none"></div>
+          <div id="ficha-header" class="ficha-header" style="display:none"></div>
+          <div id="ficha-kpis" class="ficha-kpis"></div>
+          <div class="grid21">
+            <div class="panel">
+              <div class="panel-head"><div class="panel-title">Curva S — Avance planeado vs. real</div></div>
+              <div id="resumen-curva-nota" class="load-note" style="display:none"></div>
+              <div style="height:260px"><canvas id="curvaSChart"></canvas></div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><div class="panel-title">Salud del Proyecto</div></div>
+              <div id="ficha-health"></div>
+            </div>
+          </div>
+          <div class="grid21">
+            <div class="panel">
+              <div class="panel-head"><div class="panel-title">Cronograma por Capítulo</div></div>
+              <div class="load-note">⚠ Datos de muestra — pendiente de conectar al cronograma real del proyecto.</div>
+              <div id="cronograma-list"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><div class="panel-title">Presupuesto por Capítulo</div></div>
+              <div class="presupuesto-caps" id="presupuesto-caps"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ NUEVO PROYECTO ═══ -->
+      <div id="view-new-project" class="view" style="display:none">
+        <div class="new-project-card">
+          <div class="npc-title">Crear proyecto</div>
+          <div class="npc-sub">Se crea el proyecto en el portal y se le clona automáticamente el checklist documental de la plantilla seleccionada.</div>
+          <div class="npc-grid">
+            <label>Código<input type="text" id="np-codigo" placeholder="Ej. C-26-050"></label>
+            <label>Nombre del proyecto<input type="text" id="np-nombre" placeholder="Nombre comercial del proyecto"></label>
+            <label>Cliente<input type="text" id="np-cliente" placeholder="Nombre del cliente"></label>
+            <label>Plantilla de checklist
+              <select id="np-plantilla"><option value="MINIMA">Plantilla Mínima</option><option value="ENEL">Plantilla ENEL</option></select>
+            </label>
+            <label>Estado inicial
+              <select id="np-estado"><option>Por Iniciar</option><option>En Ejecución</option></select>
+            </label>
+            <label>Director<input type="text" id="np-director" placeholder="Nombre del director"></label>
+            <label>Residente 1<input type="text" id="np-residente" placeholder="Nombre del residente"></label>
+            <label>Residente 2<input type="text" id="np-residente-2" placeholder="Opcional"></label>
+            <label>Residente 3<input type="text" id="np-residente-3" placeholder="Opcional"></label>
+            <label>Gerente<input type="text" id="np-gerente" placeholder="Nombre del gerente"></label>
+            <label class="npc-full">Carpeta de Drive (URL)<input type="text" id="np-drive" placeholder="https://drive.google.com/drive/folders/..."></label>
+          </div>
+          <button class="npc-submit" id="np-submit-btn" onclick="crearProyecto()">Crear proyecto</button>
+          <div class="np-error" id="np-error"></div>
+          <div class="np-success" id="np-success"></div>
+        </div>
+      </div>
+
+      <!-- ═══ FLUJO DE CAJA ═══ -->
+      <div id="view-flujocaja" class="view" style="display:none">
+        <div class="fc-refresh-bar">
+          <button class="fc-refresh-btn" id="fc-refresh-btn" onclick="refreshFlujoCaja()">⟳ Actualizar datos</button>
+          <span class="fc-refresh-time" id="fc-refresh-time"></span>
+        </div>
+        <div id="fc-note" class="load-note" style="display:none"></div>
+        <div class="kpi-strip" id="fc-kpi-strip"></div>
+
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">Resumen próximas 4 semanas</div></div>
+          <div class="fc-r4-grid" id="fc-resumen4"></div>
+          <div id="fc-resumen4-detail"></div>
+        </div>
+
+        <div class="fc-venc-panel panel">
+          <div class="panel-head"><div class="panel-title venc">Pagos Vencidos</div><span class="fc-venc-sub" id="fc-venc-sub"></span></div>
+          <div class="fc-venc-note">Hitos cuya fecha de ingreso o presentación ya pasó y siguen sin confirmarse.</div>
+          <div class="fc-venc-split">
+            <div class="fc-venc-table-col">
+              <div class="dir-tbl-wrap">
+                <table class="dir-proj-tbl">
+                  <thead><tr><th>Proyecto</th><th>Encargado</th><th>Hito</th><th style="text-align:right">Valor</th><th>Ingreso</th><th>Presentación</th><th style="text-align:right">Atraso</th><th>Estado</th></tr></thead>
+                  <tbody id="fc-vencidos-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="fc-venc-chart-col">
+              <div class="fc-venc-chart-title">Vencido por tipo</div>
+              <div class="donut-chart-wrap"><canvas id="fcVencTipoChart"></canvas>
+                <div class="donut-center"><div class="donut-big-n" id="fc-venc-donut-n">0</div><div class="donut-sub">hitos</div></div>
+              </div>
+              <div class="legend-list" id="fc-venc-tipo-legend"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-donut">
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Proyección de ingresos — próximas 12 semanas</div></div>
+            <div style="height:260px"><canvas id="fcSemanaChart"></canvas></div>
+          </div>
+          <div class="panel fc-donut-wrap">
+            <div class="donut-chart-wrap"><canvas id="fcTipoChart"></canvas>
+              <div class="donut-center"><div class="donut-big-n" id="fc-donut-n">0</div><div class="donut-sub">hitos</div></div>
+            </div>
+            <div class="fc-tipo-legend-list" id="fc-tipo-legend"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">Hitos pendientes</div></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Semana</th><th>Proyecto</th><th>Encargado</th><th>Hito</th><th style="text-align:right">Valor</th><th>Estado</th><th style="text-align:center">Presentado</th></tr></thead>
+              <tbody id="fc-hitos-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">Programación por proyecto</div></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Código</th><th>Proyecto</th><th>Encargado</th><th>Estado</th><th style="text-align:right">Valor</th><th style="text-align:right">Programado</th><th style="text-align:right">Sin programar</th></tr></thead>
+              <tbody id="fc-proy-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ KPI'S ═══ -->
+      <div id="view-kpis" class="view" style="display:none">
+        <div class="finance-bar" id="finance-bar"></div>
+        <div class="kpi-strip" id="kpi-strip"></div>
+
+        <div class="grid-donut">
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Proyectos por sector</div></div>
+            <div style="height:230px"><canvas id="sectorChart"></canvas></div>
+          </div>
+          <div class="grid-donut-right">
+            <div class="panel donut-wrap">
+              <div class="panel-head" style="width:100%"><div class="panel-title">Estado del portafolio</div></div>
+              <div class="donut-chart-wrap"><canvas id="donutChart"></canvas>
+                <div class="donut-center" id="donut-center-text"></div>
+              </div>
+              <div class="legend-list" id="donut-legend"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="kpi-bottom-grid">
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Riesgos financieros principales</div></div>
+            <div id="kpi-risk-list"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Salud del portafolio</div></div>
+            <div id="health-list"></div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-bottom:12px">
+          <div class="panel-head"><div class="panel-title">Acciones financieras pendientes</div></div>
+          <div id="kpi-action-list"></div>
+        </div>
+
+        <div class="panel kpi-project-indicators-panel">
+          <div class="panel-head kpi-indicators-head">
+            <div class="panel-title">Indicadores de ejecución por proyecto</div>
+            <select class="filter-select" id="kpi-indicator-project" onchange="renderProjectedIndicators_(this.value)"></select>
+          </div>
+          <div class="kpi-indicators-sub">Indicadores proyectados — la medición automática todavía está en desarrollo.</div>
+          <div id="kpi-project-indicators"></div>
+        </div>
+      </div>
+
+      <!-- ═══ POR RIESGOS (sin acceso desde el menú — se conserva por compatibilidad) ═══ -->
+      <div id="view-resumen" class="view" style="display:none">
+        <div class="grid2">
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Riesgos financieros</div></div>
+            <div id="risk-list"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Acciones recomendadas</div></div>
+            <div id="action-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ ALERTAS ═══ -->
+      <div id="view-alertas" class="view" style="display:none">
+        <div id="alertas-scope-note" class="load-note" style="display:none"></div>
+
+        <div class="checklist-comments-panel panel">
+          <div class="panel-head"><div class="panel-title">Comentarios de revisión de calidad</div></div>
+          <div id="checklist-comments-list"></div>
+        </div>
+
+        <div id="financial-alerts-observations" class="panel" style="display:none">
+          <div class="panel-head"><div class="panel-title">Observaciones críticas</div></div>
+          <div id="obs-list"></div>
+        </div>
+
+        <div id="financial-alerts-grid" class="grid2" style="display:none">
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Retrasos de cronograma</div></div>
+            <div id="delay-list"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Diferencias de margen (SN)</div></div>
+            <div id="margin-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ DIRECTORES ═══ -->
+      <div id="view-directores" class="view" style="display:none">
+        <div class="dir-page-wrap">
+          <div class="dir-grid-col">
+            <div class="dir-grid" id="dir-grid"></div>
+          </div>
+          <div class="dir-drawer" id="dir-drawer">
+            <div class="dir-drawer-inner">
+              <div class="dir-panel">
+                <div class="dir-drawer-hd">
+                  <div class="dir-drawer-ttl" id="dir-drawer-ttl">—</div>
+                  <button class="dir-close-btn" onclick="closeDrawer()">✕</button>
+                </div>
+                <div class="dir-tbl-wrap">
+                  <table class="dir-proj-tbl">
+                    <thead><tr><th>Código</th><th>Proyecto</th><th>Estado</th><th style="text-align:right">Valor</th><th style="text-align:right">Dif. CCV%</th><th style="text-align:right">Dif. SCV%</th><th style="text-align:right">Facturar</th><th style="text-align:right">Cobrar</th><th style="text-align:right">Avance</th></tr></thead>
+                    <tbody id="dir-drawer-body"></tbody>
+                  </table>
+                </div>
+                <div class="dir-totals">
+                  <div class="dir-tot-item"><div class="dir-tot-l">Proyectos</div><div class="dir-tot-v" id="tot-n">—</div></div>
+                  <div class="dir-tot-item"><div class="dir-tot-l">Valor</div><div class="dir-tot-v" id="tot-val">—</div></div>
+                  <div class="dir-tot-item"><div class="dir-tot-l">Facturar</div><div class="dir-tot-v" id="tot-fac">—</div></div>
+                  <div class="dir-tot-item"><div class="dir-tot-l">Cobrar</div><div class="dir-tot-v" id="tot-cob">—</div></div>
+                  <div class="dir-tot-item"><div class="dir-tot-l">Dif. CCV%</div><div class="dir-tot-v" id="tot-ccv">—</div></div>
+                  <div class="dir-tot-item"><div class="dir-tot-l">Dif. SCV%</div><div class="dir-tot-v" id="tot-scv">—</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ RESIDENTES ═══ -->
+      <div id="view-residentes" class="view" style="display:none">
+        <div class="team-module-card">
+          <div class="team-module-icon">👷</div>
+          <div>
+            <div class="team-module-title">Residentes</div>
+            <div class="team-module-text">El módulo de equipo residente y asignaciones de proyectos está en desarrollo. Próximamente encontrarás aquí el listado de residentes y los proyectos activos de cada uno.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ CONTRATISTAS ═══ -->
+      <div id="view-contratistas" class="view" style="display:none">
+        <div class="team-module-card">
+          <div class="team-module-icon">🧰</div>
+          <div>
+            <div class="team-module-title">Contratistas</div>
+            <div class="team-module-text">El módulo de contratistas vinculados a los proyectos está en desarrollo. Próximamente encontrarás aquí el directorio de contratistas y su historial de participación.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ COMPARATIVO ANUAL ═══ -->
+      <div id="view-comparativo" class="view" style="display:none">
+        <div class="cmp-wrap">
+          <div class="cmp-yr">
+            <div class="cmp-yr-badge y25">2025</div>
+            <div class="cmp-kpi-grid" id="cmp-kpi-25"></div>
+          </div>
+          <div class="cmp-sep">VS</div>
+          <div class="cmp-yr">
+            <div class="cmp-yr-badge y26">2026</div>
+            <div class="cmp-kpi-grid" id="cmp-kpi-26"></div>
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Valor finalizado por mes</div></div>
+            <div style="height:260px"><canvas id="compMesChart"></canvas></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Proyectos por director</div></div>
+            <div style="height:260px"><canvas id="compDirCountChart"></canvas></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">Comparativo por sector</div></div>
+          <div id="comp-sector-table"></div>
+        </div>
+      </div>
+
+      <!-- ═══ TODOS LOS PROYECTOS ═══ -->
+      <div id="view-todos-proyectos" class="view" style="display:none">
+        <div class="proj-filters" id="estado-filters-todos"></div>
+        <div class="dir-tbl-wrap">
+          <table class="dir-proj-tbl">
+            <thead><tr><th>Código</th><th>Proyecto</th><th>Cliente</th><th>Estado</th><th>Encargado</th><th>Ciudad</th><th style="text-align:right">Valor</th><th style="text-align:right">Pend. Cobrar</th><th style="text-align:right">Dif. SN%</th><th>Avance</th></tr></thead>
+            <tbody id="todos-proyectos-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
