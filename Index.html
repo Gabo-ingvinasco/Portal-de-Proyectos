@@ -3,26 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mínima Arquitectos — Portal de Proyectos</title>
+<title>Mínima Arquitectos — Control de Portafolio</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
-body{font-family:'Inter',sans-serif;background:#f6f1ee;color:#1a1a1a}
-
-/* ═══ CONFIG: pega aquí la URL de tu Apps Script desplegado ═══ */
-</style>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
 <!-- ══════════════ PANTALLA DE LOGIN ══════════════ -->
 <div id="login-screen" class="login-screen">
   <div class="login-card">
-    <div class="login-logo">MÍNIMA<span>ARQUITECTOS</span></div>
-    <div class="login-title">Portal de Proyectos</div>
-    <div class="login-sub">Ingresa tu código de acceso para continuar</div>
-    <input id="login-code" class="login-input" type="password" placeholder="Código de acceso" autocomplete="off" />
-    <button id="login-btn" class="login-btn" onclick="doLogin()">Entrar</button>
+    <div class="login-logo-panel">
+      <img class="brand-logo login-brand-logo" src="logo-minima-blanco.png" alt="Mínima Arquitectos">
+    </div>
+    <div class="login-title">Control de Portafolio</div>
+    <div class="login-sub">Ingresa con tu cuenta corporativa de Mínima Arquitectos</div>
+    <div id="google-signin-button" class="google-signin-button"></div>
+    <div id="login-progress" class="login-progress"></div>
     <div id="login-error" class="login-error"></div>
   </div>
 </div>
@@ -31,15 +29,60 @@ body{font-family:'Inter',sans-serif;background:#f6f1ee;color:#1a1a1a}
 <div id="app" class="app" style="display:none">
   <div class="sidebar">
     <div class="sidebar-logo">
-      <div class="logo-text">MÍNIMA<span>ARQUITECTOS</span></div>
-      <div class="sub">PORTAL DE PROYECTOS</div>
+      <img class="brand-logo sidebar-brand-logo" src="logo-minima-blanco.png" alt="Mínima Arquitectos">
+      <div class="sub">Control de Portafolio</div>
     </div>
-    <div class="sidebar-nav">
-      <div class="nav-section">Checklist</div>
-      <div class="nav-item active" data-sheet="MINIMA" onclick="switchSheet('MINIMA',this)">Plantilla Mínima</div>
-      <div class="nav-item" data-sheet="ENEL" onclick="switchSheet('ENEL',this)">Plantilla ENEL</div>
-    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">Portafolio</div>
+      <a class="nav-item" id="nav-todos-proyectos" onclick="goToTodosProyectos()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Todos los Proyectos
+      </a>
+      <a class="nav-item" id="nav-kpis" onclick="goToKPIs()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        KPI's
+      </a>
+      <a class="nav-item" id="nav-flujo-caja" onclick="goToFlujoCaja()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M15 9.5c0-1.4-1.3-2.5-3-2.5s-3 1.1-3 2.5 1.3 2 3 2.5 3 1.1 3 2.5-1.3 2.5-3 2.5-3-1.1-3-2.5"/></svg>
+        Flujo de Caja
+      </a>
+      <a class="nav-item active" id="nav-alertas" onclick="goToAlertas()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
+        Alertas
+      </a>
+
+      <div class="nav-section" id="nav-section-equipo" style="margin-top:10px;display:none">Equipo</div>
+      <a class="nav-item" id="nav-directores" onclick="goToDirectores()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Directores
+      </a>
+      <a class="nav-item" id="nav-residentes" onclick="goToResidentes()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        Residentes
+      </a>
+      <a class="nav-item" id="nav-contratistas" onclick="goToContratistas()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+        Contratistas
+      </a>
+
+      <div class="nav-section" style="margin-top:10px">Gerencia</div>
+      <a class="nav-item" id="nav-comparativo" onclick="goToComparativo()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        Comparativo Anual
+      </a>
+      <a class="nav-item" id="nav-nuevo-proyecto" onclick="goToNewProject()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Nuevo Proyecto
+      </a>
+    </nav>
+
     <div class="sidebar-footer">
+      <div class="sidebar-data-status">
+        <div class="sidebar-data-title">Datos del Sheet</div>
+        <div class="sidebar-data-row">Fuente actualizada<br><strong id="sidebar-source-update">—</strong></div>
+        <div class="sidebar-data-row">Última consulta<br><strong id="sidebar-data-extraction">—</strong></div>
+      </div>
       <div class="upd" id="user-info">—</div>
       <button class="logout-btn" onclick="doLogout()">Cerrar sesión</button>
     </div>
@@ -48,226 +91,377 @@ body{font-family:'Inter',sans-serif;background:#f6f1ee;color:#1a1a1a}
   <div class="main">
     <div class="topbar">
       <div>
-        <div class="topbar-title">FASES DEL PROYECTO</div>
-        <div class="topbar-sub" id="topbar-sub">Checklist organizado por fase — Mínima Arquitectos</div>
+        <div class="topbar-title" id="topbar-title">ALERTAS</div>
+        <div class="topbar-sub" id="topbar-sub">Observaciones y riesgos de tus proyectos asignados</div>
       </div>
-      <button class="refresh-btn" id="refresh-btn" onclick="loadChecklist()">⟳ Actualizar</button>
+      <div class="filters" id="topbar-filters" style="display:none">
+        <select class="filter-select" id="fil-anio" onchange="applyFilters()"><option value="todos">Año: todos</option></select>
+        <select class="filter-select" id="fil-mes" onchange="applyFilters()"><option value="todos">Mes: todos</option></select>
+        <select class="filter-select" id="fil-enc" onchange="applyFilters()"><option value="todos">Encargado: todos</option></select>
+        <select class="filter-select" id="fil-estado" onchange="applyFilters()">
+          <option value="todos">Estado: todos</option>
+          <option>Finalizado</option><option>En Ejecución</option><option>En Liquidación</option>
+          <option>Garantias</option><option>Por Iniciar</option><option>Cerrado</option>
+        </select>
+        <select class="filter-select" id="fil-sector" onchange="applyFilters()"><option value="todos">Sector: todos</option></select>
+      </div>
+      <button class="refresh-btn" id="refresh-btn" onclick="refreshCurrentView()" style="display:none">⟳ Actualizar</button>
     </div>
 
     <div class="content">
       <div id="load-note" class="load-note" style="display:none"></div>
-      <div id="fases-wrap" class="fases-wrap"></div>
+      <div id="precarga-banner" class="load-note" style="display:none"></div>
+
+      <!-- ═══ MIS PROYECTOS (sin acceso desde el menú — se conserva por compatibilidad) ═══ -->
+      <div id="view-projects" class="view" style="display:none">
+        <div id="projects-status-tabs" class="status-tabs"></div>
+        <div id="projects-grid" class="projects-grid"></div>
+      </div>
+
+      <!-- ═══ TIMELINE DE PROYECTO (checklist documental) ═══ -->
+      <div id="view-timeline" class="view" style="display:none">
+        <button class="back-btn" onclick="goToProjectList()">← Volver a proyectos</button>
+        <div id="project-header" class="project-header"></div>
+
+        <div class="proj-subtabs">
+          <button class="proj-subtab active" id="subtab-documental" onclick="switchProjSubtab('documental')">Control Documental</button>
+          <button class="proj-subtab" id="subtab-fases" onclick="switchProjSubtab('fases')">Fases del Proyecto</button>
+          <button class="proj-subtab" id="subtab-resumen" style="display:none" onclick="switchProjSubtab('resumen')">Resumen General</button>
+        </div>
+
+        <div id="subview-documental" class="proj-subview">
+          <div class="drive-scan-toolbar" id="drive-scan-toolbar" style="display:none">
+            <div class="drive-scan-meta" id="drive-scan-meta"></div>
+            <button class="drive-scan-refresh" id="drive-scan-refresh" onclick="refreshDocumentScan()">⟳ Reescanear Drive</button>
+          </div>
+          <div id="drive-scan-note" class="load-note" style="display:none"></div>
+          <div class="proj-layout">
+            <div class="proj-fase-sidebar" id="proj-carpeta-sidebar"></div>
+            <div class="fase-detail-wrap" id="carpeta-detail-wrap"></div>
+          </div>
+        </div>
+
+        <div id="subview-fases" class="proj-subview" style="display:none">
+          <div class="proj-layout">
+            <div class="proj-fase-sidebar" id="proj-fase-sidebar"></div>
+            <div class="fase-detail-wrap" id="fase-detail-wrap"></div>
+          </div>
+        </div>
+
+        <div id="subview-resumen" class="proj-subview" style="display:none">
+          <div id="resumen-proyecto-note" class="load-note" style="display:none"></div>
+          <div id="ficha-header" class="ficha-header" style="display:none"></div>
+          <div id="ficha-kpis" class="ficha-kpis"></div>
+          <div class="grid21">
+            <div class="panel">
+              <div class="panel-head"><div class="panel-title">Curva S — Avance planeado vs. real</div></div>
+              <div id="resumen-curva-nota" class="load-note" style="display:none"></div>
+              <div style="height:260px"><canvas id="curvaSChart"></canvas></div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><div class="panel-title">Salud del Proyecto</div></div>
+              <div id="ficha-health"></div>
+            </div>
+          </div>
+          <div class="grid21">
+            <div class="panel">
+              <div class="panel-head"><div class="panel-title">Cronograma por Capítulo</div></div>
+              <div class="load-note">⚠ Datos de muestra — pendiente de conectar al cronograma real del proyecto.</div>
+              <div id="cronograma-list"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><div class="panel-title">Presupuesto por Capítulo</div></div>
+              <div class="presupuesto-caps" id="presupuesto-caps"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ NUEVO PROYECTO ═══ -->
+      <div id="view-new-project" class="view" style="display:none">
+        <div class="new-project-card">
+          <div class="npc-title">Crear proyecto</div>
+          <div class="npc-sub">Se crea el proyecto en el portal y se le clona automáticamente el checklist documental de la plantilla seleccionada.</div>
+          <div class="npc-grid">
+            <label>Código<input type="text" id="np-codigo" placeholder="Ej. C-26-050"></label>
+            <label>Nombre del proyecto<input type="text" id="np-nombre" placeholder="Nombre comercial del proyecto"></label>
+            <label>Cliente<input type="text" id="np-cliente" placeholder="Nombre del cliente"></label>
+            <label>Plantilla de checklist
+              <select id="np-plantilla"><option value="MINIMA">Plantilla Mínima</option><option value="ENEL">Plantilla ENEL</option></select>
+            </label>
+            <label>Estado inicial
+              <select id="np-estado"><option>Por Iniciar</option><option>En Ejecución</option></select>
+            </label>
+            <label>Director<input type="text" id="np-director" placeholder="Nombre del director"></label>
+            <label>Residente 1<input type="text" id="np-residente" placeholder="Nombre del residente"></label>
+            <label>Residente 2<input type="text" id="np-residente-2" placeholder="Opcional"></label>
+            <label>Residente 3<input type="text" id="np-residente-3" placeholder="Opcional"></label>
+            <label>Gerente<input type="text" id="np-gerente" placeholder="Nombre del gerente"></label>
+            <label class="npc-full">Carpeta de Drive (URL)<input type="text" id="np-drive" placeholder="https://drive.google.com/drive/folders/..."></label>
+          </div>
+          <button class="npc-submit" id="np-submit-btn" onclick="crearProyecto()">Crear proyecto</button>
+          <div class="np-error" id="np-error"></div>
+          <div class="np-success" id="np-success"></div>
+        </div>
+      </div>
+
+      <!-- ═══ FLUJO DE CAJA ═══ -->
+      <div id="view-flujocaja" class="view" style="display:none">
+        <div class="fc-refresh-bar">
+          <button class="fc-refresh-btn" id="fc-refresh-btn" onclick="refreshFlujoCaja()">⟳ Actualizar datos</button>
+          <span class="fc-refresh-time" id="fc-refresh-time"></span>
+        </div>
+        <div id="fc-note" class="load-note" style="display:none"></div>
+        <div class="kpi-strip" id="fc-kpi-strip"></div>
+
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">Resumen próximas 4 semanas</div></div>
+          <div class="fc-r4-grid" id="fc-resumen4"></div>
+          <div id="fc-resumen4-detail"></div>
+        </div>
+
+        <div class="fc-venc-panel panel">
+          <div class="panel-head"><div class="panel-title venc">Pagos Vencidos</div><span class="fc-venc-sub" id="fc-venc-sub"></span></div>
+          <div class="fc-venc-note">Hitos cuya fecha de ingreso o presentación ya pasó y siguen sin confirmarse.</div>
+          <div class="fc-venc-split">
+            <div class="fc-venc-table-col">
+              <div class="dir-tbl-wrap">
+                <table class="dir-proj-tbl">
+                  <thead><tr><th>Proyecto</th><th>Encargado</th><th>Hito</th><th style="text-align:right">Valor</th><th>Ingreso</th><th>Presentación</th><th style="text-align:right">Atraso</th><th>Estado</th></tr></thead>
+                  <tbody id="fc-vencidos-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="fc-venc-chart-col">
+              <div class="fc-venc-chart-title">Vencido por tipo</div>
+              <div class="donut-chart-wrap"><canvas id="fcVencTipoChart"></canvas>
+                <div class="donut-center"><div class="donut-big-n" id="fc-venc-donut-n">0</div><div class="donut-sub">hitos</div></div>
+              </div>
+              <div class="legend-list" id="fc-venc-tipo-legend"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-donut">
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Proyección de ingresos — próximas 12 semanas</div></div>
+            <div style="height:260px"><canvas id="fcSemanaChart"></canvas></div>
+          </div>
+          <div class="panel fc-donut-wrap">
+            <div class="donut-chart-wrap"><canvas id="fcTipoChart"></canvas>
+              <div class="donut-center"><div class="donut-big-n" id="fc-donut-n">0</div><div class="donut-sub">hitos</div></div>
+            </div>
+            <div class="fc-tipo-legend-list" id="fc-tipo-legend"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">Hitos pendientes</div></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Semana</th><th>Proyecto</th><th>Encargado</th><th>Hito</th><th style="text-align:right">Valor</th><th>Estado</th><th style="text-align:center">Presentado</th></tr></thead>
+              <tbody id="fc-hitos-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">Programación por proyecto</div></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Código</th><th>Proyecto</th><th>Encargado</th><th>Estado</th><th style="text-align:right">Valor</th><th style="text-align:right">Programado</th><th style="text-align:right">Sin programar</th></tr></thead>
+              <tbody id="fc-proy-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ KPI'S ═══ -->
+      <div id="view-kpis" class="view" style="display:none">
+        <div class="finance-bar" id="finance-bar"></div>
+        <div class="kpi-strip" id="kpi-strip"></div>
+
+        <div class="grid-donut">
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Proyectos por sector</div></div>
+            <div style="height:230px"><canvas id="sectorChart"></canvas></div>
+          </div>
+          <div class="grid-donut-right">
+            <div class="panel donut-wrap">
+              <div class="panel-head" style="width:100%"><div class="panel-title">Estado del portafolio</div></div>
+              <div class="donut-chart-wrap"><canvas id="donutChart"></canvas>
+                <div class="donut-center" id="donut-center-text"></div>
+              </div>
+              <div class="legend-list" id="donut-legend"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="kpi-bottom-grid">
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Riesgos financieros principales</div></div>
+            <div id="kpi-risk-list"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Salud del portafolio</div></div>
+            <div id="health-list"></div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-bottom:12px">
+          <div class="panel-head"><div class="panel-title">Acciones financieras pendientes</div></div>
+          <div id="kpi-action-list"></div>
+        </div>
+
+        <div class="panel kpi-project-indicators-panel">
+          <div class="panel-head kpi-indicators-head">
+            <div class="panel-title">Indicadores de ejecución por proyecto</div>
+            <select class="filter-select" id="kpi-indicator-project" onchange="renderProjectedIndicators_(this.value)"></select>
+          </div>
+          <div class="kpi-indicators-sub">Indicadores proyectados — la medición automática todavía está en desarrollo.</div>
+          <div id="kpi-project-indicators"></div>
+        </div>
+      </div>
+
+      <!-- ═══ POR RIESGOS (sin acceso desde el menú — se conserva por compatibilidad) ═══ -->
+      <div id="view-resumen" class="view" style="display:none">
+        <div class="grid2">
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Riesgos financieros</div></div>
+            <div id="risk-list"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Acciones recomendadas</div></div>
+            <div id="action-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ ALERTAS ═══ -->
+      <div id="view-alertas" class="view" style="display:none">
+        <div id="alertas-scope-note" class="load-note" style="display:none"></div>
+
+        <div class="checklist-comments-panel panel">
+          <div class="panel-head"><div class="panel-title">Comentarios de revisión de calidad</div></div>
+          <div id="checklist-comments-list"></div>
+        </div>
+
+        <div id="financial-alerts-observations" class="panel" style="display:none">
+          <div class="panel-head"><div class="panel-title">Observaciones críticas</div></div>
+          <div id="obs-list"></div>
+        </div>
+
+        <div id="financial-alerts-grid" class="grid2" style="display:none">
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Retrasos de cronograma</div></div>
+            <div id="delay-list"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Diferencias de margen (SN)</div></div>
+            <div id="margin-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ DIRECTORES ═══ -->
+      <div id="view-directores" class="view" style="display:none">
+        <div class="dir-page-wrap">
+          <div class="dir-grid-col">
+            <div class="dir-grid" id="dir-grid"></div>
+          </div>
+          <div class="dir-drawer" id="dir-drawer">
+            <div class="dir-drawer-inner">
+              <div class="dir-panel">
+                <div class="dir-drawer-hd">
+                  <div class="dir-drawer-ttl" id="dir-drawer-ttl">—</div>
+                  <button class="dir-close-btn" onclick="closeDrawer()">✕</button>
+                </div>
+                <div class="dir-tbl-wrap">
+                  <table class="dir-proj-tbl">
+                    <thead><tr><th>Código</th><th>Proyecto</th><th>Estado</th><th style="text-align:right">Valor</th><th style="text-align:right">Dif. CCV%</th><th style="text-align:right">Dif. SCV%</th><th style="text-align:right">Facturar</th><th style="text-align:right">Cobrar</th><th style="text-align:right">Avance</th></tr></thead>
+                    <tbody id="dir-drawer-body"></tbody>
+                  </table>
+                </div>
+                <div class="dir-totals">
+                  <div class="dir-tot-item"><div class="dir-tot-l">Proyectos</div><div class="dir-tot-v" id="tot-n">—</div></div>
+                  <div class="dir-tot-item"><div class="dir-tot-l">Valor</div><div class="dir-tot-v" id="tot-val">—</div></div>
+                  <div class="dir-tot-item"><div class="dir-tot-l">Facturar</div><div class="dir-tot-v" id="tot-fac">—</div></div>
+                  <div class="dir-tot-item"><div class="dir-tot-l">Cobrar</div><div class="dir-tot-v" id="tot-cob">—</div></div>
+                  <div class="dir-tot-item"><div class="dir-tot-l">Dif. CCV%</div><div class="dir-tot-v" id="tot-ccv">—</div></div>
+                  <div class="dir-tot-item"><div class="dir-tot-l">Dif. SCV%</div><div class="dir-tot-v" id="tot-scv">—</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ RESIDENTES ═══ -->
+      <div id="view-residentes" class="view" style="display:none">
+        <div class="team-module-card">
+          <div class="team-module-icon">👷</div>
+          <div>
+            <div class="team-module-title">Residentes</div>
+            <div class="team-module-text">El módulo de equipo residente y asignaciones de proyectos está en desarrollo. Próximamente encontrarás aquí el listado de residentes y los proyectos activos de cada uno.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ CONTRATISTAS ═══ -->
+      <div id="view-contratistas" class="view" style="display:none">
+        <div class="team-module-card">
+          <div class="team-module-icon">🧰</div>
+          <div>
+            <div class="team-module-title">Contratistas</div>
+            <div class="team-module-text">El módulo de contratistas vinculados a los proyectos está en desarrollo. Próximamente encontrarás aquí el directorio de contratistas y su historial de participación.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ COMPARATIVO ANUAL ═══ -->
+      <div id="view-comparativo" class="view" style="display:none">
+        <div class="cmp-wrap">
+          <div class="cmp-yr">
+            <div class="cmp-yr-badge y25">2025</div>
+            <div class="cmp-kpi-grid" id="cmp-kpi-25"></div>
+          </div>
+          <div class="cmp-sep">VS</div>
+          <div class="cmp-yr">
+            <div class="cmp-yr-badge y26">2026</div>
+            <div class="cmp-kpi-grid" id="cmp-kpi-26"></div>
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Valor finalizado por mes</div></div>
+            <div style="height:260px"><canvas id="compMesChart"></canvas></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Proyectos por director</div></div>
+            <div style="height:260px"><canvas id="compDirCountChart"></canvas></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">Comparativo por sector</div></div>
+          <div id="comp-sector-table"></div>
+        </div>
+      </div>
+
+      <!-- ═══ TODOS LOS PROYECTOS ═══ -->
+      <div id="view-todos-proyectos" class="view" style="display:none">
+        <div class="proj-filters" id="estado-filters-todos"></div>
+        <div class="dir-tbl-wrap">
+          <table class="dir-proj-tbl">
+            <thead><tr><th>Código</th><th>Proyecto</th><th>Cliente</th><th>Estado</th><th>Encargado</th><th>Ciudad</th><th style="text-align:right">Valor</th><th style="text-align:right">Pend. Cobrar</th><th style="text-align:right">Dif. SN%</th><th>Avance</th></tr></thead>
+            <tbody id="todos-proyectos-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
 
-<style>
-/* ═══ LOGIN ═══ */
-.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#474545}
-.login-card{background:#fff;border-radius:14px;padding:40px 36px;width:340px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.25)}
-.login-logo{font-family:'Montserrat',sans-serif;font-weight:700;font-size:20px;letter-spacing:1px;color:#1a1a1a;margin-bottom:4px}
-.login-logo span{display:block;font-size:8px;letter-spacing:3px;font-weight:600;color:#e8622a;margin-top:2px}
-.login-title{font-family:'Montserrat',sans-serif;font-weight:700;font-size:15px;color:#1a1a1a;margin-top:20px}
-.login-sub{font-size:11px;color:#6b6b66;margin-top:6px;margin-bottom:20px}
-.login-input{width:100%;border:1px solid #d4d3cf;border-radius:8px;padding:11px 14px;font-size:13px;font-family:'Inter',sans-serif;outline:none;transition:border-color .15s;letter-spacing:1px}
-.login-input:focus{border-color:#e8622a}
-.login-btn{width:100%;margin-top:12px;background:#e8622a;color:#fff;border:none;border-radius:8px;padding:11px;font-family:'Montserrat',sans-serif;font-weight:600;font-size:12px;cursor:pointer;transition:background .15s}
-.login-btn:hover{background:#d1531f}
-.login-btn:disabled{background:#e8b8a2;cursor:wait}
-.login-error{color:#c0392b;font-size:11px;margin-top:12px;min-height:14px}
-
-/* ═══ SHELL (mismo lenguaje visual del dashboard de portafolio) ═══ */
-.app{display:flex;min-height:100vh}
-.sidebar{position:fixed;left:0;top:0;width:210px;height:100%;background:#474545;display:flex;flex-direction:column;z-index:100}
-.sidebar-logo{padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,.18)}
-.logo-text{font-family:'Montserrat',sans-serif;font-weight:700;font-size:16px;color:#fff;letter-spacing:.5px}
-.logo-text span{display:block;font-size:7px;letter-spacing:2px;color:#f59d1d;margin-top:2px}
-.sidebar-logo .sub{font-family:'Montserrat',sans-serif;font-size:8px;letter-spacing:2px;color:rgba(255,255,255,.35);text-transform:uppercase;margin-top:10px}
-.sidebar-nav{flex:1;padding:14px 0}
-.nav-section{padding:8px 20px 4px;font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.55);text-transform:uppercase;font-weight:600}
-.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:12px;color:rgba(255,255,255,.82);cursor:pointer;transition:all .15s;border-left:2px solid transparent}
-.nav-item:hover{background:rgba(255,255,255,.04)}
-.nav-item.active{color:#fff;background:rgba(245,157,29,.22);border-left-color:#f59d1d}
-.sidebar-footer{padding:14px 20px;border-top:1px solid rgba(255,255,255,.18)}
-.sidebar-footer .upd{font-size:11px;color:rgba(255,255,255,.75);line-height:1.5;margin-bottom:10px}
-.logout-btn{width:100%;background:rgba(255,255,255,.08);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.18);border-radius:7px;padding:8px;font-family:'Inter',sans-serif;font-size:11px;cursor:pointer;transition:background .15s}
-.logout-btn:hover{background:rgba(255,255,255,.15)}
-.main{margin-left:210px;flex:1;display:flex;flex-direction:column;min-height:100vh}
-.topbar{background:#eae7e3;border-bottom:1px solid #d0cdc8;padding:14px 28px;display:flex;align-items:center;justify-content:space-between}
-.topbar-title{font-family:'Montserrat',sans-serif;font-weight:700;font-size:16px;letter-spacing:.5px;color:#1a1a1a}
-.topbar-sub{font-size:11px;color:#6b6b66;margin-top:2px}
-.refresh-btn{font-family:'Montserrat',sans-serif;font-weight:600;font-size:11px;color:#fff;background:#e8622a;border:none;border-radius:7px;padding:8px 14px;cursor:pointer;transition:background .15s}
-.refresh-btn:hover{background:#d1531f}
-.content{flex:1;padding:24px 28px 40px}
-.load-note{font-size:11px;color:#a0620a;background:#fff8f5;border:1px solid #f0c8b8;border-radius:8px;padding:9px 14px;margin-bottom:16px}
-.load-note.error{color:#c0392b;background:#fbf1ef;border-color:#f0c8c4}
-
-/* ═══ FASES ═══ */
-.fases-wrap{display:flex;flex-direction:column;gap:14px}
-.fase-panel{background:#fff;border:1px solid #d4d3cf;border-radius:12px;overflow:hidden}
-.fase-head{display:flex;align-items:center;gap:14px;padding:16px 20px;cursor:pointer;user-select:none}
-.fase-badge{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;font-weight:700;font-size:16px;color:#fff;flex-shrink:0}
-.fase-info{flex:1;min-width:0}
-.fase-name{font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;color:#1a1a1a;letter-spacing:.3px}
-.fase-progress-track{background:#eeece9;border-radius:5px;height:6px;margin-top:7px;overflow:hidden}
-.fase-progress-fill{height:100%;border-radius:5px;transition:width .3s}
-.fase-count{font-size:11px;color:#6b6b66;white-space:nowrap}
-.fase-chevron{font-size:11px;color:#a09c96;transition:transform .2s;flex-shrink:0}
-.fase-panel.open .fase-chevron{transform:rotate(180deg)}
-.fase-items{display:none;border-top:1px solid #eeece9}
-.fase-panel.open .fase-items{display:block}
-.fase-item{display:flex;align-items:flex-start;gap:12px;padding:12px 20px;border-bottom:1px solid #f5f3f0}
-.fase-item:last-child{border-bottom:none}
-.fase-item .chk{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px}
-.fase-item .chk.yes{background:#e5f7ef;color:#1a8a52}
-.fase-item .chk.no{background:#fbf1ef;color:#c0392b}
-.fase-item .body{flex:1;min-width:0}
-.fase-item .carpeta{font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:#a09c96;margin-bottom:2px}
-.fase-item .sub{font-size:12.5px;font-weight:600;color:#1a1a1a}
-.fase-item .doc{font-size:11px;color:#6b6b66;margin-top:3px;line-height:1.4}
-.fase-item .resp{font-size:10px;color:#a0620a;background:#fff3e9;border-radius:5px;padding:2px 8px;white-space:nowrap;flex-shrink:0;margin-top:1px}
-.fase-empty{padding:24px 20px;text-align:center;color:#aaa;font-size:12px}
-</style>
-
-<script>
-/* ═══════════════════════════════════════════════════════════
-   CONFIGURA ESTO: pega aquí la URL de tu Apps Script desplegado
-   (Implementar → Nueva implementación → Aplicación web → Copiar URL)
-   ═══════════════════════════════════════════════════════════ */
-const API_URL = 'https://script.google.com/macros/s/AKfycbyvCcj8tRB1kOCduOschbG6OpDT9otNzaBjhj4E6COHL9ziCYs0r8jxsV-CAqaSPf6TVg/exec';
-
-const FASE_ORDER = ['Inicio','Planeación','Ejecución','Cierre','Seguimiento y control'];
-const FASE_COLOR = {
-  'Inicio':'#f59d1d','Planeación':'#474545','Ejecución':'#f59d1d',
-  'Cierre':'#474545','Seguimiento y control':'#f59d1d'
-};
-let currentSheet = 'MINIMA';
-
-function saveSession(nombre, rol){
-  sessionStorage.setItem('mn_nombre', nombre);
-  sessionStorage.setItem('mn_rol', rol);
-}
-function getSession(){
-  return { nombre: sessionStorage.getItem('mn_nombre'), rol: sessionStorage.getItem('mn_rol') };
-}
-function clearSession(){
-  sessionStorage.removeItem('mn_nombre');
-  sessionStorage.removeItem('mn_rol');
-}
-
-async function doLogin(){
-  const code = document.getElementById('login-code').value.trim();
-  const btn = document.getElementById('login-btn');
-  const errEl = document.getElementById('login-error');
-  errEl.textContent = '';
-  if(!code){ errEl.textContent = 'Ingresa tu código.'; return; }
-  if(API_URL.indexOf('PEGA_AQUI') !== -1){
-    errEl.textContent = 'Falta configurar API_URL en este archivo (ver instrucciones).';
-    return;
-  }
-  btn.disabled = true; btn.textContent = 'Verificando...';
-  try{
-    const res = await fetch(API_URL + '?action=login&code=' + encodeURIComponent(code));
-    const data = await res.json();
-    if(data.ok){
-      saveSession(data.nombre, data.rol);
-      enterApp();
-    } else {
-      errEl.textContent = data.error || 'Código inválido.';
-    }
-  }catch(e){
-    errEl.textContent = 'No se pudo conectar con el servidor. Revisa la configuración de API_URL.';
-  }
-  btn.disabled = false; btn.textContent = 'Entrar';
-}
-
-function doLogout(){
-  clearSession();
-  document.getElementById('login-code').value = '';
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('login-screen').style.display = 'flex';
-}
-
-function enterApp(){
-  const s = getSession();
-  document.getElementById('user-info').innerHTML =
-    '<strong>' + s.nombre + '</strong><br>' + (s.rol || '');
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
-  loadChecklist();
-}
-
-function switchSheet(sheet, el){
-  currentSheet = sheet;
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('topbar-sub').textContent =
-    'Checklist organizado por fase — Plantilla ' + sheet;
-  loadChecklist();
-}
-
-async function loadChecklist(){
-  const note = document.getElementById('load-note');
-  const wrap = document.getElementById('fases-wrap');
-  const btn = document.getElementById('refresh-btn');
-  note.style.display = 'block'; note.className = 'load-note';
-  note.textContent = '⏳ Cargando checklist en vivo...';
-  btn.disabled = true;
-  try{
-    const res = await fetch(API_URL + '?action=checklist&sheet=' + encodeURIComponent(currentSheet));
-    const data = await res.json();
-    if(!data.ok) throw new Error(data.error || 'Error desconocido');
-    note.style.display = 'none';
-    renderFases(data.fases, data.resumen);
-  }catch(e){
-    note.className = 'load-note error';
-    note.textContent = '⚠ No se pudo cargar el checklist: ' + e.message;
-    wrap.innerHTML = '';
-  }
-  btn.disabled = false;
-}
-
-function renderFases(fases, resumen){
-  const wrap = document.getElementById('fases-wrap');
-  wrap.innerHTML = FASE_ORDER.map((fase, idx) => {
-    const items = fases[fase] || [];
-    const r = resumen[fase] || {total:0, hechos:0};
-    const pct = r.total ? Math.round(100 * r.hechos / r.total) : 0;
-    const color = FASE_COLOR[fase];
-    const itemsHtml = items.length ? items.map(it => `
-      <div class="fase-item">
-        <div class="chk ${it.check?'yes':'no'}">${it.check?'✓':'✗'}</div>
-        <div class="body">
-          <div class="carpeta">${it.carpetaBase}</div>
-          <div class="sub">${it.subcarpeta}</div>
-          <div class="doc">${it.documento || ''}</div>
-        </div>
-        <div class="resp">${it.responsable}</div>
-      </div>`).join('') : '<div class="fase-empty">Sin ítems clasificados en esta fase.</div>';
-    return `
-      <div class="fase-panel ${idx===0?'open':''}">
-        <div class="fase-head" onclick="this.parentElement.classList.toggle('open')">
-          <div class="fase-badge" style="background:${color}">${idx+1}</div>
-          <div class="fase-info">
-            <div class="fase-name">${fase}</div>
-            <div class="fase-progress-track"><div class="fase-progress-fill" style="width:${pct}%;background:${color}"></div></div>
-          </div>
-          <div class="fase-count">${r.hechos}/${r.total} completos</div>
-          <div class="fase-chevron">▾</div>
-        </div>
-        <div class="fase-items">${itemsHtml}</div>
-      </div>`;
-  }).join('');
-}
-
-// ─── Al cargar la página: ¿ya hay sesión activa? ───
-document.addEventListener('DOMContentLoaded', function(){
-  const s = getSession();
-  if(s.nombre){ enterApp(); }
-  document.getElementById('login-code').addEventListener('keydown', function(e){
-    if(e.key === 'Enter') doLogin();
-  });
-});
-</script>
+<script src="app.js"></script>
 </body>
 </html>
